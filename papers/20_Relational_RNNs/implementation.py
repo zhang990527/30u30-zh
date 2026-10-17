@@ -1,17 +1,17 @@
 """
-Day 20: Relational Recurrent Neural Networks (RMC) - Implementation
+第 20 天：关系循环神经网络（RMC）实现
 =====================================================================
 
-A complete PyTorch implementation of the Relational Memory Core (RMC), covering:
-- Multi-Head Dot Product Attention (MHDPA) over memory slots
-- LSTM-style Gating for memory updates
-- Comparison: RMC vs. Standard LSTM Baseline
+关系记忆核心（RMC）的 PyTorch 教学实现，包含：
+- 对记忆槽位进行多头点积注意力（MHDPA）
+- 使用 LSTM 式门控更新记忆
+- 比较 RMC 与标准 LSTM 基线
 
-Paper: "Relational recurrent neural networks"
-        by Adam Santoro et al. (2018)
+论文：《关系循环神经网络》（Relational recurrent neural networks）
+        作者：Adam Santoro 等（2018）
 
-Think of this as: An RNN where the hidden state is a "team" of vectors 
-that talk to each other before making a decision.
+可理解为这样的 RNN：隐藏状态是一组向量，
+在更新前会相互交流。
 """
 
 import torch
@@ -21,10 +21,10 @@ import math
 
 class RelationalMemory(nn.Module):
     """
-    Relational Memory Core (RMC) from Santoro et al. (2018).
+    Santoro 等人（2018）提出的关系记忆核心（RMC）。
     
-    A recurrent module that uses self-attention to allow memory slots to interact
-    at each time step.
+    循环模块，在每个时间步使用自注意力，
+    使记忆槽位交互。
     """
     def __init__(self, mem_slots, mem_size, input_size, num_heads=4, num_blocks=1, dropout=0.1):
         super().__init__()
@@ -35,28 +35,28 @@ class RelationalMemory(nn.Module):
         self.num_blocks = num_blocks
 
         # ---------------------------------------------------------------------
-        # 1. Input Projection
+        # 1. 输入投影
         # ---------------------------------------------------------------------
-        # Implementation Note:
-        # Per Santoro et al. (2018), Section 2: "we simply concatenate this 
-        # projected input to each row of the memory matrix."
-        # This implies: M_in = [M_{t-1}; x_projected_tiled]
+        # 实现说明：
+        # 原仓库将“把投影输入与记忆矩阵每行拼接”归于 Santoro 等（2018）第 2 节；
+        # 译注：官方 Sonnet 源码将输入作为额外槽位，不能将此处拼接方式当作已核实的论文原话。
+        # 本章约定：M_in = [M_{t-1}; x_projected_tiled]
         #
-        # We project input to the same size as memory slots to allow additive 
-        # or concatenative interaction.
+        # 将输入投影为与记忆槽位相同大小，
+        # 以支持相加或拼接交互。
         self.input_projector = nn.Linear(input_size, mem_size)
         
         # ---------------------------------------------------------------------
-        # 2. Attention Mechanism (Self-Attention over Memory Slots)
+        # 2. 注意力机制：对记忆槽位应用自注意力
         # ---------------------------------------------------------------------
-        # The input to attention is the concatenation [Memory; Input_Tiled].
-        # Feature dimension = mem_size (from memory) + mem_size (from input)
+        # 注意力输入为拼接后的 [Memory; Input_Tiled]。
+        # 特征维度 = mem_size（记忆）+ mem_size（输入）
         feature_dim_in = 2 * mem_size 
         
         self.attention_key_size = mem_size // num_heads 
         self.attention_value_size = mem_size // num_heads
 
-        # Q, K, V Projections
+        # Q、K、V 投影
         self.q_proj = nn.Linear(feature_dim_in, mem_size)
         self.k_proj = nn.Linear(feature_dim_in, mem_size)
         self.v_proj = nn.Linear(feature_dim_in, mem_size)
@@ -67,29 +67,29 @@ class RelationalMemory(nn.Module):
         self.layer_norm_output = nn.LayerNorm(mem_size)
         
         # ---------------------------------------------------------------------
-        # 3. Gating Mechanism (LSTM-style Input/Forget Gates)
+        # 3. 门控机制：LSTM 式输入门／遗忘门
         # ---------------------------------------------------------------------
-        # Implementation Note:
-        # Standard RMC implementations (e.g., DeepMind Sonnet) apply gating 
-        # to the ATTENDED memory and the OLD memory.
+        # 实现说明：
+        # 标准 RMC 实现（例如 DeepMind Sonnet）用门控
+        # 将注意力处理后的候选记忆与旧记忆结合。
         #
-        # Update rule:
+        # 更新规则：
         # m_t = f_t * m_{prev} + i_t * tanh(m_attended)
         
         self.gate_forget = nn.Linear(feature_dim_in, mem_size)
         self.gate_input = nn.Linear(feature_dim_in, mem_size)
         
-        # Initialize forget gate bias to 1.0 to encourage remembering long-term dependencies
+        # 将遗忘门偏置初始化为 1.0，以鼓励保留长期依赖
         nn.init.constant_(self.gate_forget.bias, 1.0)
-        # No output gate in basic RMC, just next memory state.
+        # 基本 RMC 无输出门，直接产生下一记忆状态。
         
-        # State initialization
-        # "We treat the initial memory state as a learnable parameter."
+        # 状态初始化
+        # 原仓库说明：“将初始记忆状态视为可学习参数。”这是本实现选择。
         self.initial_memory = nn.Parameter(torch.randn(1, mem_slots, mem_size) * 0.01)
 
     def forward(self, input_step, memory_state=None):
         """
-        One step of RMC.
+        RMC 的单步更新。
         
         input_step: (batch, input_size)
         memory_state: (batch, mem_slots, mem_size)
@@ -100,64 +100,64 @@ class RelationalMemory(nn.Module):
             memory_state = self.initial_memory.expand(batch_size, -1, -1)
             
         # ---------------------------------------------------------------------
-        # 1. Project Input and Tile
+        # 1. 投影输入并复制
         # ---------------------------------------------------------------------
         # input_proj: (batch, mem_size)
         input_proj = self.input_projector(input_step)
         
-        # Tile: (batch, mem_slots, mem_size)
+        # 复制为：(batch, mem_slots, mem_size)
         input_tiled = input_proj.unsqueeze(1).expand(-1, self.mem_slots, -1)
         
         # ---------------------------------------------------------------------
-        # 2. Augmented Memory (Memory + Input)
+        # 2. 扩充记忆（记忆 + 输入）
         # ---------------------------------------------------------------------
         # memory_aug: (batch, mem_slots, 2*mem_size)
         memory_aug = torch.cat([memory_state, input_tiled], dim=-1)
         
         # ---------------------------------------------------------------------
-        # 3. Multi-Head Self-Attention
+        # 3. 多头自注意力
         # ---------------------------------------------------------------------
-        # Create Q, K, V from [M_old; x]
+        # 从 [M_old; x] 创建 Q、K、V
         q = self.q_proj(memory_aug)
         k = self.k_proj(memory_aug)
         v = self.v_proj(memory_aug)
         
-        # Reshape for multi-head: (batch, heads, slots, head_dim)
+        # 重塑为多头形式：(batch, heads, slots, head_dim)
         head_dim = self.mem_size // self.num_heads
         
         q = q.view(batch_size, self.mem_slots, self.num_heads, head_dim).transpose(1, 2)
         k = k.view(batch_size, self.mem_slots, self.num_heads, head_dim).transpose(1, 2)
         v = v.view(batch_size, self.mem_slots, self.num_heads, head_dim).transpose(1, 2)
         
-        # Scaled Dot-Product Attention
+        # 缩放点积注意力
         scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(head_dim)
         probs = F.softmax(scores, dim=-1)
         
-        # Weighted sum & Recombine
+        # 加权求和并重新组合
         output = torch.matmul(probs, v)
         output = output.transpose(1, 2).contiguous().view(batch_size, self.mem_slots, self.mem_size)
         
-        # Linear + Residual + LayerNorm
+        # 线性变换 + 残差连接 + 层归一化
         output = self.output_proj(output)
         m_attended = output + memory_state
         m_attended = self.layer_norm_mem(m_attended)
         
         # ---------------------------------------------------------------------
-        # 4. Gated Update
+        # 4. 门控更新
         # ---------------------------------------------------------------------
-        # Compute gates using the original augmented memory state [M_old; x]
+        # 用原始扩充状态 [M_old; x] 计算门
         f_gate = torch.sigmoid(self.gate_forget(memory_aug))
         i_gate = torch.sigmoid(self.gate_input(memory_aug))
         
-        # Candidate memory state (tanh nonlinearity)
-        # We use the attended memory 'output' as the basis for the new content
+        # 候选记忆状态（tanh 非线性）
+        # 用注意力处理后的 output 作为新内容的基础
         candidate = torch.tanh(output) 
         
-        # Final LSTM-style update:
+        # 最终 LSTM 式更新：
         # m_new = f * m_old + i * candidate
         next_memory = f_gate * memory_state + i_gate * candidate
         
-        # Final LSTM-style update:
+        # 最终 LSTM 式更新：
         # m_new = f * m_old + i * candidate
         next_memory = f_gate * memory_state + i_gate * candidate
         
@@ -165,7 +165,7 @@ class RelationalMemory(nn.Module):
 
 class RelationalRNN(nn.Module):
     """
-    Wrapper for sequence processing using RMC.
+    用 RMC 处理序列的封装。
     """
     def __init__(self, input_size, mem_slots, mem_size, output_size, num_heads=4):
         super().__init__()
@@ -184,21 +184,21 @@ class RelationalRNN(nn.Module):
             if return_attention:
                 attention_history.append(probs)
         
-        # Flatten memory for output
+        # 展平记忆以供输出
         # (batch, slots*size)
         flat_memory = memory.view(batch_size, -1)
         output = self.out(flat_memory)
         
         if return_attention:
-            # Stack history: (batch, seq, heads, slots, slots)
+            # 堆叠历史：(batch, seq, heads, slots, slots)
             return output, torch.stack(attention_history, dim=1)
             
         return output
 
 class StandardLSTM(nn.Module):
     """
-    Baseline LSTM model for comparison.
-    Uses similar parameter count to RMC for fair(ish) comparison.
+    用于比较的 LSTM 基线模型。
+    使用与 RMC 接近的参数量，以尽量公平比较；公平性仍取决于具体配置。
     """
     def __init__(self, input_size, hidden_size, output_size, num_layers=1):
         super().__init__()
@@ -207,11 +207,11 @@ class StandardLSTM(nn.Module):
         
     def forward(self, x):
         # x: (batch, seq, input)
-        # LSTM returns (output, (h_n, c_n))
+        # LSTM 返回 (output, (h_n, c_n))
         # output: (batch, seq, hidden_size)
         output, (h_n, c_n) = self.lstm(x)
         
-        # We only care about the final state for the N-th Farthest task
+        # 本章距离任务只使用最终状态
         # h_n: (num_layers, batch, hidden_size)
         final_state = h_n[-1]
         

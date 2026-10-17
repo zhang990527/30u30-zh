@@ -1,17 +1,17 @@
 """
-Day 5: MDL (Minimum Description Length) Principle - Implementation
+第 5 天：最小描述长度原理——实现
 =====================================================================
 
-A complete implementation of MDL-based model selection, covering:
-- Two-Part Codes (crude MDL)
-- Prequential (Predictive) MDL
-- Normalized Maximum Likelihood (NML)
-- Practical model selection for polynomials and linear models
+基于 MDL 的模型选择教学实现，包含：
+- 两段式编码（粗略 MDL）
+- 预序贯（预测式）MDL
+- 归一化最大似然（NML）的教学近似
+- 多项式与线性模型的实用模型选择
 
-Paper: "A Tutorial Introduction to the Minimum Description Length Principle"
-        by Peter Grünwald (2004)
+论文：《最小描述长度原理导论》（A Tutorial Introduction to the Minimum Description Length Principle）
+        作者：Peter Grünwald（2004）
 
-Think of this as: A library for finding the SHORTEST description of your data.
+可将其理解为寻找数据较短描述的工具库。
 """
 
 import numpy as np
@@ -22,7 +22,7 @@ import warnings
 
 
 # =============================================================================
-# SECTION 1: CORE MDL COMPUTATIONS
+# 第 1 部分：核心 MDL 计算
 # =============================================================================
 
 def log2(x: float) -> float:
@@ -34,33 +34,33 @@ def log2(x: float) -> float:
 
 def universal_code_integers(n: int) -> float:
     """
-    Universal prior code length for positive integers.
+    正整数的通用先验码长。
     
-    This is the "fair" way to encode integers when you don't know
-    their range in advance. Used for encoding model parameters.
+    当预先不知道整数取值范围时，使用这种
+    通用编码；用于描述模型参数。
     
     L(n) = log*(n) + log(c₀)
-    where log*(n) = log(n) + log(log(n)) + ... (only positive terms)
+    其中 log*(n) = log(n) + log(log(n)) + ...，只保留正项
     
-    Coding Analogy:
+    编码类比：
     ================
-    Imagine telling a receiver a number without knowing the range.
-    You can't just use 4 bits (that assumes max 15).
+    假设要向接收方传达一个取值范围未知的整数。
+    不能只用 4 比特，因为那隐含最大值为 15。
     
-    Universal code says: "First tell me how many digits, then the number."
-    This works for ANY number, big or small.
+    通用编码的思路是：“先告诉我有多少位，再告诉我这个数。”
+    这可以处理任意大小的正整数。
     
-    Args:
-        n: Positive integer to encode
+    参数：
+        n：需要编码的正整数
         
-    Returns:
-        Code length in bits
+    返回：
+        以比特为单位的码长
     """
     if n <= 0:
         return float('inf')
     
-    # Log-star: sum of iterated logs until negative
-    c0 = 2.865064  # Normalization constant for valid prefix code
+    # 迭代对数和：重复取对数并累加正项
+    c0 = 2.865064  # 用于有效前缀码的归一化常数
     length = log2(c0)
     
     current = float(n)
@@ -75,54 +75,54 @@ def universal_code_integers(n: int) -> float:
 
 def precision_code_length(precision_bits: int = 32) -> float:
     """
-    Code length for specifying precision of real numbers.
+    指定实数精度所需的码长。
     
-    When encoding real numbers, we must specify the precision.
-    Higher precision = more bits needed.
+    编码实数时，必须指定精度。
+    精度越高，通常需要更多比特。
     
-    Args:
-        precision_bits: Bits per floating-point number
+    参数：
+        precision_bits：每个浮点数使用的比特数
         
-    Returns:
-        Length of precision specification in bits
+    返回：
+        描述精度所需的比特数
     """
     return universal_code_integers(precision_bits)
 
 
 def real_number_code_length(value: float, precision_bits: int = 32) -> float:
     """
-    Code length for encoding a single real number.
+    编码单个实数所需的码长。
     
-    We need to encode:
-    1. The sign (1 bit)
-    2. The exponent (encoded with universal integer code)
-    3. The mantissa (precision_bits)
+    需要编码：
+    1. 符号（1 比特）
+    2. 指数（使用通用整数编码）
+    3. 尾数（precision_bits）
     
-    Args:
-        value: Real number to encode
-        precision_bits: Bits for mantissa
+    参数：
+        value：要编码的实数
+        precision_bits：尾数位数
         
-    Returns:
-        Total code length in bits
+    返回：
+        总码长，单位为比特
     """
     if value == 0:
-        return 1  # Just encode "zero" flag
+        return 1  # 仅编码“零”标志
     
     sign_bit = 1
     
-    # Exponent encoding
+    # 指数编码
     if abs(value) >= 1:
         exponent = int(np.floor(np.log2(abs(value)))) + 1
     else:
         exponent = -int(np.ceil(-np.log2(abs(value))))
     
-    exponent_length = universal_code_integers(abs(exponent) + 1) + 1  # +1 for sign
+    exponent_length = universal_code_integers(abs(exponent) + 1) + 1  # 加 1 表示符号位
     
     return sign_bit + exponent_length + precision_bits
 
 
 # =============================================================================
-# SECTION 2: TWO-PART CODE MDL
+# 第 2 部分：两段式编码 MDL
 # =============================================================================
 
 def two_part_mdl_polynomial(
@@ -132,34 +132,34 @@ def two_part_mdl_polynomial(
     precision_bits: int = 32
 ) -> Tuple[float, float, float]:
     """
-    Compute Two-Part MDL score for polynomial regression.
+    计算多项式回归的两段式 MDL 得分。
     
-    Two-Part Code = L(Model) + L(Data|Model)
+    两段式编码 = L(Model) + L(Data|Model)
     
-    Coding Analogy (Section 3 of the paper):
+    编码类比（原仓库称论文第 3 节，实际粗略 MDL 对应 §2.4）：
     ==========================================
-    You're sending temperature readings to a receiver.
+    向接收方发送温度读数。
     
-    L(Model): Cost of sending the polynomial formula
-              "Use: T = 23.5 + 0.02*hour - 0.001*hour²"
+    L(Model)：发送多项式公式的代价
+              “使用：T = 23.5 + 0.02*hour - 0.001*hour²”
               
-    L(Data|Model): Cost of sending the deviations
-                   "Actual readings differ from formula by: +0.1, -0.3, ..."
+    L(Data|Model)：发送偏差的代价
+                   “实际读数相对公式的偏差为：+0.1、-0.3、……”
     
-    The best polynomial minimizes the TOTAL message length.
+    最佳多项式使总消息长度最小。
     
-    Args:
-        x: Input values (shape: [n])
-        y: Target values (shape: [n])
-        degree: Polynomial degree (0 = constant, 1 = line, etc.)
-        precision_bits: Bits per floating-point coefficient
+    参数：
+        x：输入值，形状为 [n]
+        y：目标值，形状为 [n]
+        degree：多项式次数，0 为常数，1 为直线，依此类推
+        precision_bits：每个浮点系数的比特数
         
-    Returns:
-        Tuple of (total_mdl, model_cost, data_cost)
+    返回：
+        元组：(total_mdl, model_cost, data_cost)
     """
     n = len(x)
     
-    # Fit polynomial
+    # 拟合多项式
     try:
         coefficients = np.polyfit(x, y, degree)
         poly = np.poly1d(coefficients)
@@ -169,44 +169,44 @@ def two_part_mdl_polynomial(
         return float('inf'), float('inf'), 0.0
     
     # =========================================================================
-    # PART 1: Model Description Length L(H)
+    # 第一段：模型描述长度 L(H)
     # =========================================================================
     
-    # Cost to encode degree (which polynomial?)
+    # 编码次数的代价（使用哪个多项式？）
     degree_cost = universal_code_integers(degree + 1)
     
-    # Cost to encode coefficients
+    # 编码系数的代价
     num_params = degree + 1
-    param_cost = num_params * (precision_bits + 1)  # +1 for sign
+    param_cost = num_params * (precision_bits + 1)  # 加 1 表示符号位
     
-    # Cost to encode precision
+    # 编码精度的代价
     precision_cost = precision_code_length(precision_bits)
     
     model_cost = degree_cost + param_cost + precision_cost
     
     # =========================================================================
-    # PART 2: Data Description Length L(D|H)
+    # 第二段：数据描述长度 L(D|H)
     # =========================================================================
     
-    # We encode residuals using a Gaussian model
-    # Under optimal Gaussian coding, each residual costs:
+    # 使用高斯模型编码残差
+    # 原注释给出的每残差编码表达式如下，常数项与代码需分别核对：
     # log(σ√(2πe)) + (residual²)/(2σ²ln2) bits
     
     sigma = np.std(residuals) if np.std(residuals) > 0 else 1e-10
     
-    # Simplified: Use log-likelihood conversion
+    # 简化形式：转换对数似然
     # bits = -log₂(P(data|model))
     
     if sigma > 0:
-        # Gaussian log-likelihood
+        # 高斯对数似然
         nll = 0.5 * n * np.log2(2 * np.pi * sigma**2) + \
               np.sum(residuals**2) / (2 * sigma**2 * np.log(2))
         
-        # Add cost to encode sigma
+        # 加入编码 sigma 的代价
         sigma_cost = real_number_code_length(sigma, precision_bits)
         data_cost = nll + sigma_cost
     else:
-        data_cost = 0  # Perfect fit (rare)
+        data_cost = 0  # 完美拟合，较少见
     
     total_mdl = model_cost + data_cost
     
@@ -220,30 +220,30 @@ def select_polynomial_degree(
     precision_bits: int = 32
 ) -> Dict[str, Any]:
     """
-    Select optimal polynomial degree using Two-Part MDL.
+    使用两段式 MDL 选择最佳多项式次数。
     
-    This is the practical "just use this" function for polynomial model selection.
+    这是可直接使用的多项式模型选择函数。
     
-    Example:
+    示例：
     --------
     >>> x = np.linspace(0, 10, 100)
-    >>> y = 3 + 2*x - 0.5*x**2 + np.random.randn(100) * 0.5  # True: degree 2
+    >>> y = 3 + 2*x - 0.5*x**2 + np.random.randn(100) * 0.5  # 真实次数：2
     >>> result = select_polynomial_degree(x, y)
-    >>> print(f"Best degree: {result['best_degree']}")  # Should be 2
-    
-    Args:
-        x: Input values
-        y: Target values
-        max_degree: Maximum degree to consider
-        precision_bits: Bits per coefficient
-        
-    Returns:
-        Dictionary with:
-        - best_degree: Optimal polynomial degree
-        - scores: Dict mapping degree -> MDL score
-        - coefficients: Fitted coefficients for best model
-        - model_cost: L(H) for best model
-        - data_cost: L(D|H) for best model
+    >>> print(f"最佳次数：{result['best_degree']}")  # 预期为 2
+
+    参数：
+        x：输入值
+        y：目标值
+        max_degree：考虑的最高次数
+        precision_bits：每个系数的比特数
+
+    返回：
+        字典，包含：
+        - best_degree：最佳多项式次数
+        - scores：次数到 MDL 得分的映射
+        - coefficients：最佳模型的拟合系数
+        - model_cost：最佳模型的 L(H)
+        - data_cost：最佳模型的 L(D|H)
     """
     scores = {}
     details = {}
@@ -255,7 +255,7 @@ def select_polynomial_degree(
     
     best_degree = min(scores, key=scores.get)
     
-    # Get coefficients for best model
+    # 获取最佳模型的系数
     coefficients = np.polyfit(x, y, best_degree)
     
     return {
@@ -270,7 +270,7 @@ def select_polynomial_degree(
 
 
 # =============================================================================
-# SECTION 3: PREQUENTIAL (PREDICTIVE) MDL
+# 第 3 部分：预序贯（预测式）MDL
 # =============================================================================
 
 def prequential_mdl_polynomial(
@@ -280,41 +280,41 @@ def prequential_mdl_polynomial(
     start_index: int = None
 ) -> float:
     """
-    Compute Prequential MDL score for polynomial regression.
+    计算多项式回归的预序贯 MDL 得分。
     
-    Prequential = "Predict Each, Then Learn From It"
+    预序贯：先预测每个点，再用它更新模型。
     
-    The Weather Forecaster Analogy:
+    天气预报员类比：
     ================================
-    Imagine a weather forecaster who:
-    1. Predicts tomorrow's temperature (BEFORE seeing it)
-    2. Records how surprised they are by the actual value
-    3. Updates their model based on the new observation
-    4. Repeat for each day
+    设想一名天气预报员：
+    1. 在看到结果之前预测明天气温
+    2. 记录实际值带来的意外程度
+    3. 用新观测更新模型
+    4. 每天重复
     
-    Total "surprise" across all days = Prequential MDL score
+    所有天数的总意外程度对应预序贯 MDL 得分
     
-    This is MORE ROBUST than two-part code because:
-    - No need to specify parameter precision
-    - Naturally handles model complexity
-    - Better for time series and sequential data
+    相对于两段式编码，其优点包括（并非普遍更稳健）：
+    - 不必显式指定参数精度
+    - 通过预测表现处理模型复杂度
+    - 自然适用于时间序列与顺序数据
     
-    Mathematical Form:
+    数学形式：
     ===================
     L_prequential = -Σ log₂ P(yᵢ | y₁, ..., yᵢ₋₁, model)
     
-    Args:
-        x: Input values (shape: [n])
-        y: Target values (shape: [n])
-        degree: Polynomial degree
-        start_index: Where to start predictions (default: degree + 2)
+    参数：
+        x：输入值，形状为 [n]
+        y：目标值，形状为 [n]
+        degree：多项式次数
+        start_index：开始预测的位置，默认 degree + 2
         
-    Returns:
-        Prequential MDL score in bits
+    返回：
+        预序贯 MDL 得分，单位为比特
     """
     n = len(x)
     
-    # Need at least degree+1 points to fit, plus one to predict
+    # 拟合至少需要 degree+1 个点，另需一个待预测点
     if start_index is None:
         start_index = degree + 2
     
@@ -324,7 +324,7 @@ def prequential_mdl_polynomial(
     total_code_length = 0.0
     
     for i in range(start_index, n):
-        # Fit model on points 0..i-1
+        # 在第 0 至 i-1 个点上拟合模型
         x_train = x[:i]
         y_train = y[:i]
         
@@ -332,15 +332,15 @@ def prequential_mdl_polynomial(
             coefficients = np.polyfit(x_train, y_train, degree)
             poly = np.poly1d(coefficients)
             
-            # Predict point i
+            # 预测第 i 个点
             y_pred = poly(x[i])
             
-            # Estimate variance from training residuals
+            # 用训练残差估计方差
             train_pred = poly(x_train)
             residuals = y_train - train_pred
             sigma = np.std(residuals) if np.std(residuals) > 1e-10 else 1e-10
             
-            # Code length for this prediction (Gaussian model)
+            # 该预测的编码代价（高斯模型）
             error = y[i] - y_pred
             code_length = 0.5 * np.log2(2 * np.pi * sigma**2) + \
                           (error**2) / (2 * sigma**2 * np.log(2))
@@ -348,7 +348,7 @@ def prequential_mdl_polynomial(
             total_code_length += code_length
             
         except (np.linalg.LinAlgError, np.RankWarning):
-            total_code_length += 100  # Penalty for numerical issues
+            total_code_length += 100  # 数值问题的惩罚
     
     return total_code_length
 
@@ -359,22 +359,22 @@ def prequential_model_selection(
     max_degree: int = 10
 ) -> Dict[str, Any]:
     """
-    Select best polynomial using Prequential MDL.
+    使用预序贯 MDL 选择最佳多项式。
     
-    Example:
+    示例：
     --------
     >>> x = np.linspace(0, 5, 50)
     >>> y = np.sin(x) + 0.1 * np.random.randn(50)
     >>> result = prequential_model_selection(x, y)
-    >>> print(f"Best degree: {result['best_degree']}")
+    >>> print(f"最佳次数：{result['best_degree']}")
     
-    Args:
-        x: Input values
-        y: Target values
-        max_degree: Maximum degree to try
+    参数：
+        x：输入值
+        y：目标值
+        max_degree：尝试的最高次数
         
-    Returns:
-        Dictionary with best_degree, scores, etc.
+    返回：
+        包含 best_degree、scores 等项的字典
     """
     scores = {}
     
@@ -393,7 +393,7 @@ def prequential_model_selection(
 
 
 # =============================================================================
-# SECTION 4: NORMALIZED MAXIMUM LIKELIHOOD (NML)
+# 第 4 部分：归一化最大似然（NML）
 # =============================================================================
 
 def nml_complexity_polynomial(
@@ -403,58 +403,58 @@ def nml_complexity_polynomial(
     num_samples: int = 1000
 ) -> float:
     """
-    Estimate NML (stochastic) complexity for polynomial models.
+    估计多项式模型的 NML 参数复杂度（原文误称随机复杂度）。
     
-    NML Complexity = How many different datasets can this model explain well?
+    NML 参数复杂度反映模型能很好解释多少不同数据集。
     
-    The Restaurant Analogy:
+    餐厅类比：
     =======================
-    Model complexity is like a restaurant's menu:
-    - Simple model (degree 1): Can only make "lines" (small menu)
-    - Complex model (degree 9): Can make almost any shape (huge menu)
+    模型复杂度就像餐厅菜单：
+    - 简单模型（1 次）：只能做“直线”，菜单很小
+    - 复杂模型（9 次）：能拟合许多形状，菜单很大
     
-    NML says: "A bigger menu means more uncertainty about what you'll order."
+    NML 的类比：“菜单越大，对点什么菜的不确定性越大。”
     
-    The complex model gets penalized because it could explain TOO many things,
-    making it less impressive when it happens to fit your specific data.
+    复杂模型因能解释太多不同情形而受到惩罚，
+    碰巧拟合当前数据就不那么令人意外。
     
-    Mathematical Form:
+    数学形式：
     ==================
     COMP(M) = log Σ_{z∈Z} P(z | θ̂(z), M)
     
-    where θ̂(z) is the ML estimate for each possible dataset z.
+    其中 θ̂(z) 为每个可能数据集 z 的最大似然估计。
     
-    This is estimated via Monte Carlo sampling.
+    这里采用蒙特卡洛教学近似；未包含完整积分体积校正，不能视为严格 NML。
     
-    Args:
-        x: Input values (fixed design points)
-        degree: Polynomial degree
-        y_range: Range of possible y values
-        num_samples: Number of Monte Carlo samples
+    参数：
+        x：输入值，即固定设计点
+        degree：多项式次数
+        y_range：可能 y 值的范围
+        num_samples：蒙特卡洛样本数
         
-    Returns:
-        Estimated NML complexity in bits
+    返回：
+        估计的 NML 参数复杂度，单位为比特
     """
     n = len(x)
     
     max_log_likelihood = []
     
     for _ in range(num_samples):
-        # Sample random y values
+        # 采样随机 y 值
         y_sample = np.random.uniform(y_range[0], y_range[1], n)
         
-        # Fit polynomial (maximum likelihood)
+        # 拟合多项式（最大似然）
         try:
             coefficients = np.polyfit(x, y_sample, min(degree, n - 1))
             poly = np.poly1d(coefficients)
             predictions = poly(x)
             
-            # Compute maximum likelihood (under Gaussian noise)
+            # 在高斯噪声假设下计算最大似然
             residuals = y_sample - predictions
             sigma_ml = np.sqrt(np.mean(residuals**2)) if np.any(residuals) else 1e-10
             sigma_ml = max(sigma_ml, 1e-10)
             
-            # Log-likelihood at ML estimate
+            # 最大似然估计处的对数似然
             log_lik = -0.5 * n * np.log(2 * np.pi * sigma_ml**2) - \
                       np.sum(residuals**2) / (2 * sigma_ml**2)
             
@@ -466,12 +466,12 @@ def nml_complexity_polynomial(
     if not max_log_likelihood:
         return 0.0
     
-    # NML complexity = log of average max-likelihood
+    # NML 复杂度近似：平均最大似然的对数（原有实现缺少积分体积校正）
     # log(1/N * Σ exp(log_lik)) ≈ logsumexp(log_liks) - log(N)
     max_ll = np.max(max_log_likelihood)
     complexity = max_ll + np.log(np.mean(np.exp(np.array(max_log_likelihood) - max_ll)))
     
-    return complexity / np.log(2)  # Convert to bits
+    return complexity / np.log(2)  # 转换为比特
 
 
 def nml_mdl_polynomial(
@@ -481,18 +481,18 @@ def nml_mdl_polynomial(
     y_range: Tuple[float, float] = None
 ) -> Tuple[float, float, float]:
     """
-    Compute NML-based MDL score for polynomial regression.
+    计算多项式回归的 NML 近似 MDL 得分。
     
     NML MDL = -log P(data | ML params) + COMP(model)
     
-    Args:
-        x: Input values
-        y: Target values
-        degree: Polynomial degree
-        y_range: Range for complexity estimation (auto-detected if None)
+    参数：
+        x：输入值
+        y：目标值
+        degree：多项式次数
+        y_range：复杂度估计范围，None 时自动确定
         
-    Returns:
-        Tuple of (total_nml, fit_term, complexity_term)
+    返回：
+        元组：(total_nml, fit_term, complexity_term)
     """
     n = len(x)
     
@@ -500,7 +500,7 @@ def nml_mdl_polynomial(
         margin = 2 * (np.max(y) - np.min(y))
         y_range = (np.min(y) - margin, np.max(y) + margin)
     
-    # Fit polynomial
+    # 拟合多项式
     try:
         coefficients = np.polyfit(x, y, degree)
         poly = np.poly1d(coefficients)
@@ -509,14 +509,14 @@ def nml_mdl_polynomial(
     except:
         return float('inf'), float('inf'), 0.0
     
-    # Maximum likelihood fit (negative log-likelihood in bits)
+    # 最大似然拟合项（负对数似然，单位为比特）
     sigma_ml = np.sqrt(np.mean(residuals**2)) if np.any(residuals) else 1e-10
     sigma_ml = max(sigma_ml, 1e-10)
     
     fit_term = (0.5 * n * np.log2(2 * np.pi * sigma_ml**2) + 
                 np.sum(residuals**2) / (2 * sigma_ml**2 * np.log(2)))
     
-    # Complexity penalty
+    # 复杂度惩罚
     complexity = nml_complexity_polynomial(x, degree, y_range, num_samples=500)
     
     total = fit_term + complexity
@@ -525,19 +525,19 @@ def nml_mdl_polynomial(
 
 
 # =============================================================================
-# SECTION 5: MODEL CLASSES FOR GENERAL MDL
+# 第 5 部分：通用 MDL 模型类
 # =============================================================================
 
 @dataclass
 class MDLModel(ABC):
     """
-    Abstract base class for MDL-compatible models.
+    兼容 MDL 的模型抽象基类。
     
-    To create your own MDL model:
-    1. Inherit from MDLModel
-    2. Implement fit(), predict(), model_code_length(), and data_code_length()
+    创建自定义 MDL 模型的方法：
+    1. 继承 MDLModel
+    2. 实现 fit()、predict()、model_code_length()、data_code_length()
     
-    Example:
+    示例：
     --------
     class MyCustomModel(MDLModel):
         def fit(self, x, y): ...
@@ -573,9 +573,9 @@ class MDLModel(ABC):
 
 class PolynomialMDL(MDLModel):
     """
-    Polynomial model with MDL scoring.
+    带 MDL 评分的多项式模型。
     
-    Example:
+    示例：
     --------
     >>> model = PolynomialMDL(degree=2)
     >>> model.fit(x, y)
@@ -607,10 +607,10 @@ class PolynomialMDL(MDLModel):
         if self.coefficients is None:
             return float('inf')
         
-        # Degree specification
+        # 次数描述
         degree_cost = universal_code_integers(self.degree + 1)
         
-        # Coefficients
+        # 系数
         num_params = len(self.coefficients)
         param_cost = num_params * (self.precision_bits + 1)
         
@@ -625,11 +625,11 @@ class PolynomialMDL(MDLModel):
         residuals = y - predictions
         n = len(y)
         
-        # Gaussian coding
+        # 高斯编码
         nll = 0.5 * n * np.log2(2 * np.pi * self.sigma**2) + \
               np.sum(residuals**2) / (2 * self.sigma**2 * np.log(2))
         
-        # Add sigma encoding cost
+        # 加入 sigma 编码代价
         sigma_cost = real_number_code_length(self.sigma, self.precision_bits)
         
         return nll + sigma_cost
@@ -637,12 +637,12 @@ class PolynomialMDL(MDLModel):
 
 class GaussianMDL(MDLModel):
     """
-    Simple Gaussian model with MDL scoring.
+    带 MDL 评分的简单高斯模型。
     
-    Models data as y ~ N(μ, σ²).
+    将数据建模为 y ~ N(μ, σ²)。
     
-    Useful as a baseline - if a more complex model can't beat this,
-    there's no significant structure in the data.
+    可用作基线：若更复杂模型无法胜过它，
+    说明当前候选和编码下尚未获得更强结构证据，并非证明数据毫无结构。
     """
     
     def __init__(self, precision_bits: int = 32):
@@ -680,7 +680,7 @@ class GaussianMDL(MDLModel):
 
 
 # =============================================================================
-# SECTION 6: COMPARISON WITH AIC/BIC
+# 第 6 部分：与 AIC/BIC 比较
 # =============================================================================
 
 def aic_score(
@@ -689,16 +689,16 @@ def aic_score(
     degree: int
 ) -> float:
     """
-    Compute AIC (Akaike Information Criterion) score.
+    计算赤池信息准则（AIC）得分。
     
     AIC = 2k - 2ln(L)
     
-    where k = number of parameters, L = maximum likelihood.
+    其中 k 为参数数量，L 为最大似然。
     
-    Lower is better.
+    越低越好。
     """
     n = len(x)
-    k = degree + 2  # Polynomial coeffs + variance
+    k = degree + 2  # 多项式系数与方差
     
     try:
         coeffs = np.polyfit(x, y, degree)
@@ -706,7 +706,7 @@ def aic_score(
         residuals = y - poly(x)
         rss = np.sum(residuals**2)
         
-        # Log-likelihood (Gaussian)
+        # 高斯对数似然
         sigma_ml = np.sqrt(rss / n)
         if sigma_ml <= 0:
             sigma_ml = 1e-10
@@ -725,16 +725,16 @@ def bic_score(
     degree: int
 ) -> float:
     """
-    Compute BIC (Bayesian Information Criterion) score.
+    计算贝叶斯信息准则（BIC）得分。
     
     BIC = k*ln(n) - 2ln(L)
     
-    where k = number of parameters, n = sample size, L = maximum likelihood.
+    其中 k 为参数数量，n 为样本数，L 为最大似然。
     
-    Lower is better. BIC has a stronger penalty than AIC for large n.
+    越低越好。n 较大时，BIC 比 AIC 的参数惩罚更强。
     """
     n = len(x)
-    k = degree + 2  # Polynomial coeffs + variance
+    k = degree + 2  # 多项式系数与方差
     
     try:
         coeffs = np.polyfit(x, y, degree)
@@ -742,7 +742,7 @@ def bic_score(
         residuals = y - poly(x)
         rss = np.sum(residuals**2)
         
-        # Log-likelihood (Gaussian)
+        # 高斯对数似然
         sigma_ml = np.sqrt(rss / n)
         if sigma_ml <= 0:
             sigma_ml = 1e-10
@@ -761,21 +761,21 @@ def compare_mdl_aic_bic(
     max_degree: int = 10
 ) -> Dict[str, Any]:
     """
-    Compare MDL, AIC, and BIC for polynomial model selection.
+    比较 MDL、AIC、BIC 的多项式模型选择。
     
-    This is the "showdown" function to see how the criteria differ.
+    使用此函数观察不同准则之间的差异。
     
-    Example:
+    示例：
     --------
     >>> x = np.linspace(0, 10, 50)
-    >>> y = 2 + 3*x - 0.5*x**2 + np.random.randn(50) * 2  # True degree: 2
+    >>> y = 2 + 3*x - 0.5*x**2 + np.random.randn(50) * 2  # 真实次数：2
     >>> results = compare_mdl_aic_bic(x, y)
-    >>> print(f"MDL picks: {results['mdl_best']}")
-    >>> print(f"AIC picks: {results['aic_best']}")
-    >>> print(f"BIC picks: {results['bic_best']}")
+    >>> print(f"MDL 选择：{results['mdl_best']}")
+    >>> print(f"AIC 选择：{results['aic_best']}")
+    >>> print(f"BIC 选择：{results['bic_best']}")
     
-    Returns:
-        Dictionary with scores and best choices for each criterion.
+    返回：
+        包含各准则得分与最佳选择的字典。
     """
     mdl_scores = {}
     aic_scores = {}
@@ -797,7 +797,7 @@ def compare_mdl_aic_bic(
 
 
 # =============================================================================
-# SECTION 7: UTILITY FUNCTIONS
+# 第 7 部分：工具函数
 # =============================================================================
 
 def compression_ratio(
@@ -805,20 +805,20 @@ def compression_ratio(
     model_mdl: float
 ) -> float:
     """
-    Compute compression ratio achieved by MDL model.
+    计算 MDL 模型的启发式压缩比。
     
-    Ratio > 1: Model compresses data (good!)
-    Ratio < 1: Model expands data (bad!)
-    Ratio = 1: No compression (data might be random)
+    比值 > 1：估计的模型描述短于原始数据参照
+    比值 < 1：估计的描述比原始参照更长
+    比值 = 1：未估计出压缩收益，不能据此证明数据随机
     
-    Args:
-        data: Original data array
-        model_mdl: MDL score of the model
+    参数：
+        data：原始数据数组
+        model_mdl：模型 MDL 得分
         
-    Returns:
-        Compression ratio
+    返回：
+        压缩比估计
     """
-    # Raw data cost: float32 per element
+    # 原始数据参照代价：每个元素按 float32 计
     raw_bits = len(data) * 32
     
     return raw_bits / model_mdl if model_mdl > 0 else 0
@@ -828,23 +828,23 @@ def mdl_model_probability(
     mdl_scores: Dict[int, float]
 ) -> Dict[int, float]:
     """
-    Convert MDL scores to approximate posterior probabilities.
+    将 MDL 得分转换为归一化码长权重；不普遍等同于贝叶斯后验概率。
     
-    Using: P(model) ∝ 2^(-MDL score)
+    使用：P(model) ∝ 2^(-MDL score)
     
-    This gives an intuitive sense of how much better one model is.
+    用于直观比较模型之间的相对码长。
     
-    Args:
-        mdl_scores: Dict mapping model ID -> MDL score
+    参数：
+        mdl_scores：模型 ID 到 MDL 得分的映射
         
-    Returns:
-        Dict mapping model ID -> probability
+    返回：
+        模型 ID 到概率权重的映射
     """
-    # Normalize to prevent overflow
+    # 归一化以防溢出
     min_score = min(mdl_scores.values())
     normalized = {k: -(v - min_score) for k, v in mdl_scores.items()}
     
-    # Convert to probabilities
+    # 转换为概率权重
     powers = {k: 2**v for k, v in normalized.items()}
     total = sum(powers.values())
     
@@ -859,24 +859,24 @@ def generate_test_data(
     seed: int = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Generate synthetic polynomial data for testing.
+    生成用于测试的合成多项式数据。
     
-    Args:
-        true_degree: True polynomial degree
-        n_points: Number of data points
-        noise_std: Standard deviation of Gaussian noise
-        x_range: Range of x values
-        seed: Random seed for reproducibility
+    参数：
+        true_degree：真实多项式次数
+        n_points：数据点数量
+        noise_std：高斯噪声标准差
+        x_range：x 的取值范围
+        seed：用于复现的随机种子
         
-    Returns:
-        Tuple of (x, y_noisy, true_coefficients)
+    返回：
+        元组：(x, y_noisy, true_coefficients)
     """
     if seed is not None:
         np.random.seed(seed)
     
     x = np.linspace(x_range[0], x_range[1], n_points)
     
-    # Generate random coefficients
+    # 生成随机系数
     true_coeffs = np.random.randn(true_degree + 1) * 2
     poly = np.poly1d(true_coeffs)
     
@@ -887,19 +887,19 @@ def generate_test_data(
 
 
 # =============================================================================
-# SECTION 8: MAIN DEMONSTRATION
+# 第 8 部分：主程序演示
 # =============================================================================
 
 def main():
     """
-    Demonstrate MDL model selection on synthetic data.
+    在合成数据上演示 MDL 模型选择。
     """
     print("=" * 70)
     print("MDL (Minimum Description Length) Principle - Implementation Demo")
     print("=" * 70)
     print()
     
-    # Generate test data
+    # 生成测试数据
     np.random.seed(42)
     true_degree = 2
     x, y, true_coeffs = generate_test_data(
@@ -915,7 +915,7 @@ def main():
     print()
     
     # =========================================================================
-    # Two-Part Code MDL
+    # 两段式编码 MDL
     # =========================================================================
     print("-" * 50)
     print("METHOD 1: Two-Part Code MDL")
@@ -935,7 +935,7 @@ def main():
     print(f"  Total: {result['total_mdl']:.2f} bits")
     
     # =========================================================================
-    # Prequential MDL
+    # 预序贯 MDL
     # =========================================================================
     print()
     print("-" * 50)
@@ -953,7 +953,7 @@ def main():
     print(f"\nPrequential MDL selects: Degree {preq_result['best_degree']}")
     
     # =========================================================================
-    # Comparison with AIC and BIC
+    # 与 AIC、BIC 比较
     # =========================================================================
     print()
     print("-" * 50)
@@ -969,7 +969,7 @@ def main():
     print(f"  True: Degree {true_degree}")
     
     # =========================================================================
-    # Model Probabilities
+    # 模型概率权重
     # =========================================================================
     print()
     print("-" * 50)
@@ -984,7 +984,7 @@ def main():
         print(f"  Degree {deg}: {probs[deg]:.4f} {bar}")
     
     # =========================================================================
-    # Compression Analysis
+    # 压缩分析
     # =========================================================================
     print()
     print("-" * 50)

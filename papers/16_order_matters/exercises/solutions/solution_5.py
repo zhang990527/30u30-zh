@@ -1,8 +1,8 @@
 """
-Solution 5: Traveling Salesman Problem (TSP)
+解答 5：旅行商问题（TSP）
 ============================================
 
-Deep learning solution for approximately solving the TSP.
+用深度学习近似求解 TSP 的方案。
 """
 
 import torch
@@ -54,4 +54,4 @@ def train_tsp():
         optimizer.step()
 
 if __name__ == "__main__":
-    print("TSP solution loaded.")
+    print('TSP 参考解答已加载。')

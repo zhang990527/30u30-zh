@@ -1,102 +1,79 @@
-"""
-Exercise 3: Multi-Scale Complexity Analysis
+"""练习 3：多尺度复杂性分析
 
-Luca Trevisan (blog comment #17) suggested: divide the grid into blocks
-at each scale, compute average content per block, then track KC at each
-scale over time. This gives a 2D picture (scale x time) of where the
-complexity "bump" lives.
+Luca Trevisan（博文评论 #17）建议：在各尺度将网格划分成块，计算每块平均含量，随时间跟踪各尺度的 KC。这给出复杂性“隆起”所在位置的二维图景（尺度 x 时间）。
 
-Sean Carroll (#6-7) also emphasized coarse-graining: measure KC of a
-blurred version of the state to capture macroscopic structure.
+Sean Carroll（#6-7）也强调粗粒化：测量模糊状态的 KC，以捕捉宏观结构。
+参考：Aaronson（2011，博文），评论 #6-7 和 #17（编号沿用原仓库，未独立核验）。
 
-Reference: Aaronson (2011, blog post), comments #6-7 and #17
-
-Tasks:
-1. Implement coarse_grain(grid, block_size) -> smaller array
-2. Implement coarse_grained_kc(grid, block_size) -> int
-3. Run on coffee simulation at multiple scales
-4. Plot KC at each scale over time
-5. Create the scale-time heatmap Trevisan described
-"""
+任务：
+1. 实现 coarse_grain(grid, block_size) -> 较小数组
+2. 实现 coarse_grained_kc(grid, block_size) -> int
+3. 对咖啡模拟在多个尺度运行
+4. 绘制各尺度 KC 随时间的变化
+5. 创建 Trevisan 描述的尺度—时间热图"""
 
 import numpy as np
 import gzip
 
 
 def coarse_grain(grid: np.ndarray, block_size: int) -> np.ndarray:
-    """
-    Average grid values over block_size x block_size blocks.
+    """对 block_size x block_size 块内的网格值求平均。
 
-    Args:
-        grid: 2D array.
-        block_size: Side length of blocks.
-
-    Returns:
-        Smaller 2D array where each cell is the mean of a block.
-
-    TODO: Implement this function.
-    """
-    # YOUR CODE HERE
-    raise NotImplementedError("Implement coarse_grain")
+参数：
+    grid：二维数组。
+    block_size：块的边长。
+返回：
+    较小的二维数组，每格为一个块的均值。
+待完成：实现此函数。"""
+    # 在此编写代码
+    raise NotImplementedError('请实现 coarse_grain')
 
 
 def coarse_grained_kc(grid: np.ndarray, block_size: int) -> int:
-    """
-    KC of the coarse-grained grid.
+    """粗粒化网格的 KC 近似。
 
-    Steps:
-    1. Coarse-grain the grid
-    2. Quantize to uint8 (0-255)
-    3. Compress with gzip
+步骤：
+1. 粗粒化网格
+2. 量化为 uint8（0-255）
+3. 用 gzip 压缩
 
-    Args:
-        grid: 2D binary array.
-        block_size: Coarse-graining scale.
-
-    Returns:
-        Compressed size in bytes.
-
-    TODO: Implement this function.
-    """
-    # YOUR CODE HERE
-    raise NotImplementedError("Implement coarse_grained_kc")
+参数：
+    grid：二维二值数组。
+    block_size：粗粒化尺度。
+返回：
+    压缩后的字节数。
+待完成：实现此函数。"""
+    # 在此编写代码
+    raise NotImplementedError('请实现 coarse_grained_kc')
 
 
 def multiscale_analysis(grid: np.ndarray) -> dict:
-    """
-    Compute KC at multiple coarse-graining scales.
+    """计算多个粗粒化尺度的 KC 近似。
 
-    Args:
-        grid: 2D binary array.
-
-    Returns:
-        Dict mapping block_size -> compressed size.
-
-    TODO:
-    1. Compute scales as powers of 2 up to grid_size/4
-    2. For each scale, compute coarse_grained_kc
-    3. Return dict
-    """
-    # YOUR CODE HERE
-    raise NotImplementedError("Implement multiscale_analysis")
+参数：
+    grid：二维二值数组。
+返回：
+    将 block_size 映射到压缩大小的字典。
+待完成：
+1. 使用不超过 grid_size/4 的 2 的幂作为尺度
+2. 对每个尺度计算 coarse_grained_kc
+3. 返回字典"""
+    # 在此编写代码
+    raise NotImplementedError('请实现 multiscale_analysis')
 
 
 def run_multiscale_experiment(grid_size=64, n_steps=20000, swaps_per_step=50):
-    """
-    Run coffee simulation and track multi-scale KC over time.
+    """运行咖啡模拟，随时间跟踪多尺度 KC。
 
-    Returns:
-        (times, scale_data) where scale_data[scale] is a list of KC values.
-
-    TODO: Import coffee mixing from exercise 2 or implementation.py,
-    run simulation, measure multi-scale KC at intervals.
-    """
-    # YOUR CODE HERE
-    raise NotImplementedError("Implement experiment")
+返回：
+    (times, scale_data)，其中 scale_data[scale] 是 KC 值列表。
+待完成：从练习 2 或 implementation.py 导入咖啡混合实现，运行模拟，按间隔测量多尺度 KC。"""
+    # 在此编写代码
+    raise NotImplementedError('请实现 experiment')
 
 
 if __name__ == "__main__":
-    print("Exercise 3: Multi-Scale Complexity Analysis")
+    print('练习 3：多尺度复杂性分析')
     print("=" * 40)
     print()
 
@@ -105,25 +82,25 @@ if __name__ == "__main__":
     try:
         import matplotlib.pyplot as plt
 
-        # Line plot
+        # 折线图
         fig, axes = plt.subplots(1, 2, figsize=(14, 5))
         for scale, values in scale_data.items():
-            axes[0].plot(times, values, label=f"scale={scale}")
-        axes[0].set_xlabel("Total swaps")
-        axes[0].set_ylabel("Compressed bytes")
-        axes[0].set_title("KC at Different Scales")
+            axes[0].plot(times, values, label=f"尺度={scale}")
+        axes[0].set_xlabel('交换尝试总次数')
+        axes[0].set_ylabel('压缩后字节数')
+        axes[0].set_title('不同尺度的 KC')
         axes[0].legend()
 
-        # Heatmap
+        # 热图
         scales = sorted(scale_data.keys())
         matrix = np.array([scale_data[s] for s in scales])
         axes[1].imshow(matrix, aspect='auto', cmap='hot')
         axes[1].set_yticks(range(len(scales)))
         axes[1].set_yticklabels([str(s) for s in scales])
-        axes[1].set_title("Multi-Scale Heatmap (Trevisan)")
+        axes[1].set_title('多尺度热图（Trevisan）')
 
         plt.tight_layout()
         plt.savefig("multiscale_analysis.png", dpi=100)
-        print("Saved: multiscale_analysis.png")
+        print('已保存：multiscale_analysis.png')
     except ImportError:
-        print("(matplotlib not available, skipping plot)")
+        print('（matplotlib 不可用，跳过绘图）')

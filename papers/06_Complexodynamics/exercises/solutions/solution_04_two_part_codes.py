@@ -1,6 +1,4 @@
-"""
-Solution 4: Two-Part Codes (Sophistication Proxy)
-"""
+"""解答 4：两段式编码（精致复杂度代理量）"""
 
 import numpy as np
 import gzip
@@ -17,11 +15,11 @@ def gzip_size(data: bytes) -> int:
 
 
 def two_part_code(grid: np.ndarray, block_size: int = 4):
-    """Compute two-part code sizes."""
+    """计算两段式编码大小。"""
     h, w = grid.shape
     grid_f = grid.astype(np.float64)
 
-    # Coarse-grain
+    # 粗粒化
     h_new = h // block_size
     w_new = w // block_size
     coarse = np.zeros((h_new, w_new))
@@ -31,17 +29,17 @@ def two_part_code(grid: np.ndarray, block_size: int = 4):
                           j * block_size:(j + 1) * block_size]
             coarse[i, j] = block.mean()
 
-    # Part 1: model
+    # 第一部分：模型
     model_q = (coarse * 255).astype(np.uint8)
     part1 = gzip_size(model_q.tobytes())
 
-    # Reconstruct
+    # 重建
     reconstructed = np.repeat(
         np.repeat(coarse, block_size, axis=0),
         block_size, axis=1
     )[:h, :w]
 
-    # Part 2: residual
+    # 第二部分：残差
     residual = grid_f - reconstructed
     residual_uint8 = ((residual + 1.0) * 127.5).astype(np.uint8)
     part2 = gzip_size(residual_uint8.tobytes())
@@ -50,7 +48,7 @@ def two_part_code(grid: np.ndarray, block_size: int = 4):
 
 
 def verify_on_simple_grids():
-    """Verify sophistication proxy on known grid types."""
+    """用已知网格类型验证精致复杂度代理量。"""
     size = 64
 
     grids = {
@@ -62,18 +60,18 @@ def verify_on_simple_grids():
 
     for name, grid in grids.items():
         p1, p2 = two_part_code(grid.astype(np.uint8))
-        print(f"  {name:15s}: Part1={p1:4d}, Part2={p2:4d}, Total={p1+p2:4d}")
+        print(f"  {name:15s}：第一部分={p1:4d}，第二部分={p2:4d}，总计={p1+p2:4d}")
 
-    # Verify: simple grids have small Part 1
+    # 检查：简单网格的第一部分较小
     p1_zeros, _ = two_part_code(grids['all-zeros'])
     p1_random, _ = two_part_code(grids['random'])
     print()
-    print(f"  [OK] All-zeros Part1 ({p1_zeros}) and random Part1 ({p1_random})")
-    print("       Both should be relatively small (simple model or trivial model)")
+    print(f"  [OK] 全零网格第一部分（{p1_zeros}）和随机网格第一部分（{p1_random})")
+    print('       预期两者都较小（简单模型）')
 
 
 def sophistication_trajectory(grid_size=64, n_steps=20000, swaps_per_step=50):
-    """Track Part 1 size over time during coffee mixing."""
+    """随时间跟踪咖啡混合中第一部分的大小。"""
     np.random.seed(42)
     grid = create_initial_grid(grid_size)
 
@@ -99,39 +97,39 @@ def sophistication_trajectory(grid_size=64, n_steps=20000, swaps_per_step=50):
 
 
 if __name__ == "__main__":
-    print("Solution 4: Two-Part Codes (Sophistication Proxy)")
+    print('解答 4：两段式编码（精致复杂度代理量）')
     print("=" * 40)
     print()
 
-    print("Verifying on simple grids...")
+    print('用简单网格验证……')
     verify_on_simple_grids()
     print()
 
-    print("Computing sophistication trajectory...")
+    print('计算精致复杂度代理量轨迹……')
     times, part1_vals, gzip_vals = sophistication_trajectory()
 
     peak_soph = np.argmax(part1_vals)
     peak_gzip = np.argmax(gzip_vals)
-    print(f"  Sophistication peaks at t={times[peak_soph]:,}")
-    print(f"  gzip KC peaks at t={times[peak_gzip]:,}")
+    print(f"  精致复杂度代理量峰值位于 t={times[peak_soph]:,}")
+    print(f"  gzip KC 峰值位于 t={times[peak_gzip]:,}")
 
     try:
         import matplotlib.pyplot as plt
         fig, axes = plt.subplots(1, 2, figsize=(12, 5))
         axes[0].plot(times, gzip_vals, 'r-', label='gzip (KC)')
-        axes[0].set_title("gzip Complexity")
-        axes[0].set_xlabel("Total swaps")
+        axes[0].set_title('gzip 复杂度')
+        axes[0].set_xlabel('交换尝试总次数')
         axes[0].legend()
         axes[0].grid(True, alpha=0.3)
 
-        axes[1].plot(times, part1_vals, 'g-', label='Part 1 (sophistication)')
-        axes[1].set_title("Sophistication Proxy")
-        axes[1].set_xlabel("Total swaps")
+        axes[1].plot(times, part1_vals, 'g-', label='第一部分（精致复杂度）')
+        axes[1].set_title('精致复杂度代理量')
+        axes[1].set_xlabel('交换尝试总次数')
         axes[1].legend()
         axes[1].grid(True, alpha=0.3)
 
         plt.tight_layout()
         plt.savefig("sophistication_trajectory.png", dpi=100)
-        print("Saved: sophistication_trajectory.png")
+        print('已保存：sophistication_trajectory.png')
     except ImportError:
-        print("(matplotlib not available)")
+        print('（matplotlib 不可用）')

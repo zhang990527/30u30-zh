@@ -1,6 +1,4 @@
-"""
-Solution 5: Complexity Measures Comparison
-"""
+"""解答 5：比较复杂性度量"""
 
 import numpy as np
 import gzip
@@ -25,7 +23,7 @@ def normalize_to_01(values):
 
 def run_comparison(grid_size=64, n_steps=30000, swaps_per_step=50,
                    measure_interval=300):
-    """Run simulation and collect all complexity measures."""
+    """运行模拟并收集全部复杂性度量。"""
     np.random.seed(42)
     grid = create_initial_grid(grid_size)
 
@@ -55,19 +53,19 @@ def run_comparison(grid_size=64, n_steps=30000, swaps_per_step=50,
         if step % measure_interval == 0:
             measure(step)
             if step % (measure_interval * 10) == 0:
-                print(f"  Step {step}/{n_steps}")
+                print(f"  步数 {step}/{n_steps}")
 
     return data
 
 
 def analyze_results(data):
-    """Print analysis of each measure."""
+    """输出各度量的分析。"""
     measures = {
-        'gzip (KC proxy)': data['gzip'],
-        'coarse KC (bs=4)': data['coarse_kc_4'],
-        'coarse KC (bs=8)': data['coarse_kc_8'],
-        'sophistication (Part 1)': data['part1'],
-        'boundary fraction': data['boundary'],
+        'gzip（KC 代理量）': data['gzip'],
+        '粗粒化 KC（bs=4）': data['coarse_kc_4'],
+        '粗粒化 KC（bs=8）': data['coarse_kc_8'],
+        '精致复杂度（第一部分）': data['part1'],
+        '边界比例': data['boundary'],
         'entropy': data['entropy'],
     }
 
@@ -83,31 +81,31 @@ def analyze_results(data):
         final = arr[-1]
 
         print(f"  {name}:")
-        print(f"    Initial={initial:.1f}, Peak={peak:.1f} (t={times[peak_idx]:,}), "
+        print(f"    初值={initial:.1f}，峰值={peak:.1f}（t={times[peak_idx]:,}), "
               f"Final={final:.1f}")
         if is_monotone:
-            print(f"    --> MONOTONE (no hump)")
+            print(f"    --> 单调或端点最大（无内部隆起；并非严格单调性检验）")
         elif peak > initial and peak > final:
             ratio = peak / max(initial, 0.001)
-            print(f"    --> HUMP detected (peak/initial = {ratio:.2f}x)")
+            print(f"    --> 检测到隆起（峰值/初值 = {ratio:.2f}x)")
         else:
-            print(f"    --> Unclear pattern")
+            print(f"    --> 模式不明确")
         print()
 
 
 def plot_comparison(data):
-    """Plot all measures normalized on single figure."""
+    """将全部归一化度量绘制在同一张图上。"""
     try:
         import matplotlib.pyplot as plt
     except ImportError:
-        print("(matplotlib not available)")
+        print('（matplotlib 不可用）')
         return
 
     times = data['times']
 
     measures = {
         'gzip (KC)': ('r', data['gzip']),
-        'coarse KC (bs=4)': ('orange', data['coarse_kc_4']),
+        '粗粒化 KC（bs=4）': ('orange', data['coarse_kc_4']),
         'sophistication': ('g', data['part1']),
         'boundary': ('b', data['boundary']),
         'entropy': ('purple', data['entropy']),
@@ -115,55 +113,55 @@ def plot_comparison(data):
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-    # Raw values
+    # 原始值
     for name, (color, values) in measures.items():
         axes[0].plot(times, values, color=color, linewidth=1.5, label=name)
-    axes[0].set_title("Raw Values")
-    axes[0].set_xlabel("Total swaps")
-    axes[0].set_ylabel("Value")
+    axes[0].set_title('原始值')
+    axes[0].set_xlabel('交换尝试总次数')
+    axes[0].set_ylabel('数值')
     axes[0].legend()
     axes[0].grid(True, alpha=0.3)
 
-    # Normalized
+    # 归一化
     for name, (color, values) in measures.items():
         normed = normalize_to_01(values)
         axes[1].plot(times, normed, color=color, linewidth=1.5, label=name)
-    axes[1].set_title("Normalized [0, 1]")
-    axes[1].set_xlabel("Total swaps")
-    axes[1].set_ylabel("Normalized value")
+    axes[1].set_title('归一化 [0, 1]')
+    axes[1].set_xlabel('交换尝试总次数')
+    axes[1].set_ylabel('归一化数值')
     axes[1].legend()
     axes[1].grid(True, alpha=0.3)
 
     fig.suptitle(
-        "All Complexity Measures Comparison\n"
-        "Entropy is monotone; others should show the 'hump'",
+        '全部复杂性度量比较\n'
+        '全局熵守恒；其他代理量是否隆起需实测',
         fontsize=13
     )
     plt.tight_layout()
     plt.savefig("measures_comparison.png", dpi=150)
-    print("Saved: measures_comparison.png")
+    print('已保存：measures_comparison.png')
     plt.close()
 
 
 if __name__ == "__main__":
-    print("Solution 5: Complexity Measures Comparison")
+    print('解答 5：比较复杂性度量')
     print("=" * 40)
     print()
 
-    print("Running simulation with all measures...")
+    print('运行模拟并计算全部度量……')
     data = run_comparison()
     print()
 
-    print("Analysis:")
+    print('分析：')
     analyze_results(data)
 
-    print("Plotting comparison...")
+    print('绘制度量比较图……')
     plot_comparison(data)
     print()
 
-    print("Conclusions:")
-    print("- Entropy is monotone (no hump) -- as expected")
-    print("- gzip, coarse KC, and sophistication proxy all show the hump")
-    print("- Sophistication (Part 1) is closest to Aaronson's complextropy")
-    print("- Boundary fraction also peaks, but is a geometric measure,")
-    print("  not an information-theoretic one")
+    print('原脚本预设结论（请结合实际结果核对）：')
+    print('- 全局熵守恒，无隆起；局部熵不保证逐步单调')
+    print('- 原说明称 gzip、粗粒化 KC、精致复杂度代理量均呈隆起；不保证成立')
+    print('- 原说明认为精致复杂度代理量（第一部分）最接近复杂熵；未经严格验证')
+    print('- 原说明称边界比例也有峰值；它是几何度量，')
+    print('  不是信息论度量，后期也未必下降')

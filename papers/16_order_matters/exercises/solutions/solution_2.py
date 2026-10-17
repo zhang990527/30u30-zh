@@ -1,8 +1,8 @@
 """
-Solution 2: Order-Invariant Set Encoder
+解答 2：顺序不变集合编码器
 ========================================
 
-Implementation of a Set Encoder using permutation-invariant self-attention.
+使用自注意力的集合编码器实现；原仓库将逐元素的置换等变性称为置换不变性，见 README。
 """
 
 import torch
@@ -12,9 +12,9 @@ import torch.nn.functional as F
 
 class SetEncoder(nn.Module):
     """
-    Self-attention based encoder for sets.
-    Omitting positional encodings ensures the output is invariant to 
-    input permutations.
+    基于自注意力的集合编码器。
+    原仓库称省略位置编码可确保输出对输入置换不变；
+    此处应区分逐元素输出的置换等变性与聚合表示的置换不变性。
     """
     
     def __init__(self, input_dim, hidden_dim, num_heads=4):
@@ -35,30 +35,30 @@ class SetEncoder(nn.Module):
         
     def forward(self, x):
         """
-        Args:
+        参数：
             x: [batch, set_size, input_dim]
         """
-        # Step 1: Embedding
+        # 第 1 步：嵌入
         x = self.embedding(x)
         
-        # Step 2: Self-Attention (Order-Invariant)
-        # Note: No positional embeddings are added here.
+        # 第 2 步：自注意力（逐元素输出为置换等变）
+        # 注意：此处不添加位置嵌入。
         attn_out, _ = self.self_attention(x, x, x)
         
-        # Step 3: Normalize + Residual
+        # 第 3 步：归一化与残差连接
         x = self.norm1(x + attn_out)
         
-        # Step 4: Feedforward
+        # 第 4 步：前馈网络
         ff_out = self.ff(x)
         
-        # Step 5: Normalize + Residual
+        # 第 5 步：归一化与残差连接
         x = self.norm2(x + ff_out)
         
         return x
 
 
 def test_order_invariance():
-    print("Validating Order-Invariant Encoder")
+    print('验证顺序不变编码器')
     print("-" * 30)
     
     set_size = 5
@@ -80,8 +80,8 @@ def test_order_invariance():
     agg2 = encoded2.mean(dim=1)
     
     assert torch.allclose(agg1, agg2, atol=1e-5)
-    print("Permutation invariance verified via mean pooling.")
-    print("All validation tests complete")
+    print('已通过平均池化验证聚合表示的置换不变性。')
+    print('全部验证测试已完成')
 
 if __name__ == "__main__":
     test_order_invariance()

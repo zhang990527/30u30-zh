@@ -1,8 +1,8 @@
 """
-Solution to Exercise 2: Gate Analysis
+练习 2 解答：门分析
 =====================================
 
-Complete implementation for analyzing LSTM gate behaviors.
+分析 LSTM 门行为的完整实现。
 """
 
 import numpy as np
@@ -15,17 +15,17 @@ from lstm_implementation import LSTM
 
 def capture_gate_activations(lstm, text, char_to_idx):
     """
-    Process text through LSTM and capture all gate activations.
+    使用 LSTM 处理文本，记录所有门的激活值。
     
-    Returns:
-        Dict with keys: 'forget', 'input', 'cell_candidate', 'output', 'cell', 'hidden'
-        Each contains a list of activations over time.
+    返回：
+        字典键为 'forget'、'input'、'cell_candidate'、'output'、'cell'、'hidden'
+        每个值都是随时间变化的激活值列表。
     """
-    # Initialize states
+    # 初始化状态
     h = np.zeros(lstm.hidden_size)
     c = np.zeros(lstm.hidden_size)
     
-    # Storage for activations
+    # 存储激活值
     activations = {
         'forget': [],
         'input': [],
@@ -35,7 +35,7 @@ def capture_gate_activations(lstm, text, char_to_idx):
         'hidden': []
     }
     
-    # Process each character
+    # 处理每个字符
     for char in text:
         if char not in char_to_idx:
             continue
@@ -44,18 +44,18 @@ def capture_gate_activations(lstm, text, char_to_idx):
         x = np.zeros(lstm.vocab_size)
         x[idx] = 1
         
-        # Concatenate input and hidden state
+        # 拼接输入与隐藏状态
         combined = np.concatenate([h, x])
         
-        # Compute gates
-        f = sigmoid(np.dot(lstm.Wf, combined) + lstm.bf)  # Forget gate
-        i = sigmoid(np.dot(lstm.Wi, combined) + lstm.bi)  # Input gate
-        c_tilde = np.tanh(np.dot(lstm.Wc, combined) + lstm.bc)  # Cell candidate
-        c = f * c + i * c_tilde  # New cell state
-        o = sigmoid(np.dot(lstm.Wo, combined) + lstm.bo)  # Output gate
-        h = o * np.tanh(c)  # New hidden state
+        # 计算各门与候选状态
+        f = sigmoid(np.dot(lstm.Wf, combined) + lstm.bf)  # 遗忘门
+        i = sigmoid(np.dot(lstm.Wi, combined) + lstm.bi)  # 输入门
+        c_tilde = np.tanh(np.dot(lstm.Wc, combined) + lstm.bc)  # 候选细胞状态
+        c = f * c + i * c_tilde  # 新的细胞状态
+        o = sigmoid(np.dot(lstm.Wo, combined) + lstm.bo)  # 输出门
+        h = o * np.tanh(c)  # 新的隐藏状态
         
-        # Store activations (average across hidden dimensions)
+        # 存储激活值（在隐藏维度上取平均）
         activations['forget'].append(np.mean(f))
         activations['input'].append(np.mean(i))
         activations['cell_candidate'].append(np.mean(c_tilde))
@@ -67,7 +67,7 @@ def capture_gate_activations(lstm, text, char_to_idx):
 
 
 def sigmoid(x):
-    """Numerically stable sigmoid."""
+    """数值稳定的 sigmoid。"""
     return np.where(x >= 0,
                     1 / (1 + np.exp(-x)),
                     np.exp(x) / (1 + np.exp(x)))
@@ -75,156 +75,156 @@ def sigmoid(x):
 
 def analyze_gate_patterns(activations, text):
     """
-    Analyze patterns in gate activations.
+    分析门激活模式。
     
-    Insights to extract:
-    1. When does forget gate activate? (What does it forget?)
-    2. When does input gate activate? (What does it store?)
-    3. How do gates coordinate?
-    4. Relationship to input text structure
+    需要分析的内容：
+    1. 遗忘门何时激活？遗忘了什么？
+    2. 输入门何时激活？存储了什么？
+    3. 各门如何协作？
+    4. 与输入文本结构的关系
     """
     print("="*70)
-    print("GATE ACTIVATION ANALYSIS")
+    print('门激活分析')
     print("="*70)
     
-    # 1. Basic statistics
-    print("\n[1] GATE STATISTICS")
+    # 1. 基本统计量
+    print('\n[1] 门统计量')
     print("-" * 70)
     for gate_name in ['forget', 'input', 'output']:
         values = activations[gate_name]
-        print(f"\n{gate_name.upper()} GATE:")
-        print(f"  Mean: {np.mean(values):.3f}")
-        print(f"  Std:  {np.std(values):.3f}")
-        print(f"  Min:  {np.min(values):.3f}")
-        print(f"  Max:  {np.max(values):.3f}")
-    
-    # 2. Correlation analysis
-    print("\n[2] GATE CORRELATIONS")
+        print(f"\n{gate_name.upper()} 门：")
+        print(f"  均值：{np.mean(values):.3f}")
+        print(f"  标准差：{np.std(values):.3f}")
+        print(f"  最小值：{np.min(values):.3f}")
+        print(f"  最大值：{np.max(values):.3f}")
+
+    # 2. 相关性分析
+    print('\n[2] 门相关性')
     print("-" * 70)
     
     forget = np.array(activations['forget'])
     input_gate = np.array(activations['input'])
     output = np.array(activations['output'])
     
-    # Forget vs Input (should be negatively correlated)
+    # 遗忘门与输入门（原文预期为负相关，需用数据验证）
     corr_fi = np.corrcoef(forget, input_gate)[0, 1]
-    print(f"Forget ↔ Input:  {corr_fi:+.3f}")
+    print(f"遗忘门 ↔ 输入门：{corr_fi:+.3f}")
     if corr_fi < -0.3:
-        print("  ✓ Good! Gates are complementary (forget old when inputting new)")
+        print('  ✓ 各门呈互补关系：写入新信息时遗忘旧信息')
     else:
-        print("  Unexpected: Gates should be more anti-correlated")
+        print('  原文预期各门应有更强负相关；该预期并非理论保证')
     
-    # Input vs Output
+    # 输入门与输出门
     corr_io = np.corrcoef(input_gate, output)[0, 1]
-    print(f"Input ↔ Output:  {corr_io:+.3f}")
+    print(f"输入门 ↔ 输出门：{corr_io:+.3f}")
     
-    # 3. Identify key moments
-    print("\n[3] KEY MOMENTS")
+    # 3. 识别关键时刻
+    print('\n[3] 关键时刻')
     print("-" * 70)
     
-    # When forget gate is very active (>0.8)
+    # 遗忘门值较高（>0.8）时；高门值实际表示保留较多
     high_forget = np.where(forget > 0.8)[0]
     if len(high_forget) > 0:
-        print(f"\nHigh FORGET activity at {len(high_forget)} positions:")
-        for idx in high_forget[:5]:  # Show first 5
+        print(f"\n遗忘门高值出现在 {len(high_forget)} 个位置：")
+        for idx in high_forget[:5]:  # 显示前 5 项
             if idx < len(text):
                 context = text[max(0, idx-10):idx+10]
-                print(f"  Position {idx}: ...{context}...")
+                print(f"  位置 {idx}: ...{context}...")
     
-    # When input gate is very active (>0.8)
+    # 输入门值较高（>0.8）时
     high_input = np.where(input_gate > 0.8)[0]
     if len(high_input) > 0:
-        print(f"\nHigh INPUT activity at {len(high_input)} positions:")
+        print(f"\n输入门高值出现在 {len(high_input)} 个位置：")
         for idx in high_input[:5]:
             if idx < len(text):
                 context = text[max(0, idx-10):idx+10]
-                print(f"  Position {idx}: ...{context}...")
+                print(f"  位置 {idx}: ...{context}...")
     
-    # 4. Structural patterns
-    print("\n[4] STRUCTURAL PATTERNS")
+    # 4. 结构模式
+    print('\n[4] 结构模式')
     print("-" * 70)
     
-    # Check activity at sentence boundaries
+    # 检查句子边界处的活动
     sentence_ends = [i for i, char in enumerate(text) if char in '.!?']
     
     if sentence_ends:
         avg_forget_at_end = np.mean([forget[i] for i in sentence_ends if i < len(forget)])
         avg_forget_overall = np.mean(forget)
         
-        print(f"\nForget gate at sentence ends: {avg_forget_at_end:.3f}")
-        print(f"Forget gate overall:          {avg_forget_overall:.3f}")
+        print(f"\n句末的遗忘门值：{avg_forget_at_end:.3f}")
+        print(f"整体遗忘门值：{avg_forget_overall:.3f}")
         
         if avg_forget_at_end > avg_forget_overall + 0.1:
-            print("  ✓ LSTM forgets more at sentence boundaries!")
+            print('  ✓ 原文判断：LSTM 在句子边界遗忘更多；需注意遗忘门高值实际表示保留')
         else:
-            print("  → LSTM doesn't show strong forgetting at sentence ends")
+            print('  → LSTM 未在句末呈现明显的遗忘变化')
 
 
 def visualize_gates(activations, text, save_path='gate_analysis.png'):
     """
-    Create comprehensive 4-panel visualization of gate activations.
+    创建门激活值的综合四面板可视化。
     """
     fig, axes = plt.subplots(4, 1, figsize=(16, 12))
     
     time_steps = range(len(activations['forget']))
     
-    # Panel 1: All three gates
-    axes[0].plot(time_steps, activations['forget'], label='Forget gate', 
+    # 面板 1：三个门
+    axes[0].plot(time_steps, activations['forget'], label='遗忘门',
                 color='red', alpha=0.7, linewidth=1.5)
-    axes[0].plot(time_steps, activations['input'], label='Input gate', 
+    axes[0].plot(time_steps, activations['input'], label='输入门',
                 color='green', alpha=0.7, linewidth=1.5)
-    axes[0].plot(time_steps, activations['output'], label='Output gate', 
+    axes[0].plot(time_steps, activations['output'], label='输出门',
                 color='blue', alpha=0.7, linewidth=1.5)
-    axes[0].set_ylabel('Gate Activation', fontsize=12)
-    axes[0].set_title('Gate Activations Over Time', fontsize=14, fontweight='bold')
+    axes[0].set_ylabel('门激活值', fontsize=12)
+    axes[0].set_title('门激活值随时间变化', fontsize=14, fontweight='bold')
     axes[0].legend(loc='upper right')
     axes[0].grid(True, alpha=0.3)
     axes[0].set_ylim([0, 1])
     
-    # Panel 2: Cell state evolution
+    # 面板 2：细胞状态演化
     axes[1].plot(time_steps, activations['cell'], color='purple', linewidth=2)
-    axes[1].set_ylabel('Cell State', fontsize=12)
-    axes[1].set_title('Cell State Evolution', fontsize=14, fontweight='bold')
+    axes[1].set_ylabel('细胞状态', fontsize=12)
+    axes[1].set_title('细胞状态演化', fontsize=14, fontweight='bold')
     axes[1].grid(True, alpha=0.3)
     axes[1].axhline(y=0, color='black', linestyle='--', alpha=0.5)
     
-    # Panel 3: Gate complementarity (Forget vs Input)
-    axes[2].plot(time_steps, activations['forget'], label='Forget', 
+    # 面板 3：门的互补性（遗忘门与输入门）
+    axes[2].plot(time_steps, activations['forget'], label='遗忘门',
                 color='red', alpha=0.6, linewidth=1.5)
-    axes[2].plot(time_steps, activations['input'], label='Input', 
+    axes[2].plot(time_steps, activations['input'], label='输入门',
                 color='green', alpha=0.6, linewidth=1.5)
     axes[2].plot(time_steps, 
                 np.array(activations['forget']) + np.array(activations['input']),
-                label='Forget + Input', color='black', linestyle='--', linewidth=2)
+                label='遗忘门 + 输入门', color='black', linestyle='--', linewidth=2)
     axes[2].set_ylabel('Activation', fontsize=12)
-    axes[2].set_title('Gate Complementarity (Forget vs Input)', fontsize=14, fontweight='bold')
+    axes[2].set_title('门的互补性（遗忘门与输入门）', fontsize=14, fontweight='bold')
     axes[2].legend(loc='upper right')
     axes[2].grid(True, alpha=0.3)
     axes[2].set_ylim([0, 2])
     
-    # Panel 4: Hidden state activity
+    # 面板 4：隐藏状态活动
     axes[3].plot(time_steps, activations['hidden'], color='orange', linewidth=2)
-    axes[3].set_ylabel('Hidden State', fontsize=12)
-    axes[3].set_xlabel('Time Step', fontsize=12)
-    axes[3].set_title('Hidden State Activity', fontsize=14, fontweight='bold')
+    axes[3].set_ylabel('隐藏状态', fontsize=12)
+    axes[3].set_xlabel('时间步', fontsize=12)
+    axes[3].set_title('隐藏状态活动', fontsize=14, fontweight='bold')
     axes[3].grid(True, alpha=0.3)
     axes[3].axhline(y=0, color='black', linestyle='--', alpha=0.5)
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
-    print(f"\n✓ Visualization saved to {save_path}")
+    print(f"\n✓ 可视化已保存至 {save_path}")
     
     return fig
 
 
 def compare_gates_across_contexts(lstm, char_to_idx):
     """
-    Compare gate behaviors in different contexts.
+    比较不同上下文中的门行为。
     
-    Test cases:
-    1. Repetitive text: "the the the the"
-    2. Long-range dependency: "The dog, which was big, barked."
-    3. Changing context: "It was sunny. It was rainy."
+    测试用例：
+    1. 重复文本："the the the the"
+    2. 长程依赖："The dog, which was big, barked."
+    3. 上下文变化："It was sunny. It was rainy."
     """
     test_cases = {
         'Repetitive': "the the the the the the",
@@ -233,7 +233,7 @@ def compare_gates_across_contexts(lstm, char_to_idx):
     }
     
     print("\n" + "="*70)
-    print("GATE BEHAVIOR ACROSS CONTEXTS")
+    print('不同上下文中的门行为')
     print("="*70)
     
     for name, text in test_cases.items():
@@ -245,72 +245,72 @@ def compare_gates_across_contexts(lstm, char_to_idx):
         forget_vals = activations['forget']
         input_vals = activations['input']
         
-        print(f"Forget gate - Mean: {np.mean(forget_vals):.3f}, Std: {np.std(forget_vals):.3f}")
-        print(f"Input gate  - Mean: {np.mean(input_vals):.3f}, Std: {np.std(input_vals):.3f}")
+        print(f"遗忘门——均值：{np.mean(forget_vals):.3f}，标准差：{np.std(forget_vals):.3f}")
+        print(f"输入门——均值：{np.mean(input_vals):.3f}，标准差：{np.std(input_vals):.3f}")
         
-        # Analysis
+        # 分析
         if 'Repetitive' in name:
             if np.mean(forget_vals) > 0.7:
-                print("  → High forget: LSTM discards repetitive information ✓")
+                print('  → 原文判断：遗忘门高值表示丢弃重复信息 ✓；核对：高值实际表示保留')
         
         elif 'Long-range' in name:
             if np.std(input_vals) > 0.1:
-                print("  → Variable input: LSTM selectively stores information ✓")
+                print('  → 输入门变化：LSTM 有选择地存储信息 ✓')
         
         elif 'Context switch' in name:
             mid = len(forget_vals) // 2
             early_forget = np.mean(forget_vals[:mid])
             late_forget = np.mean(forget_vals[mid:])
             if late_forget > early_forget + 0.1:
-                print("  → Higher forgetting after context switch ✓")
+                print('  → 原文判断：上下文切换后遗忘更多 ✓；核对：此条件实际检测门值升高')
 
 
 # ============================================================================
-# MAIN ANALYSIS
+# 主分析流程
 # ============================================================================
 
 if __name__ == "__main__":
     print(__doc__)
     
     print("\n" + "="*70)
-    print("LSTM GATE ANALYSIS TOOLKIT")
+    print('LSTM 门分析工具集')
     print("="*70)
     
-    print("\nThis solution provides:")
-    print("  1. Gate activation capture during forward pass")
-    print("  2. Statistical analysis of gate behaviors")
-    print("  3. Correlation analysis between gates")
-    print("  4. Identification of key moments (high activity)")
-    print("  5. Structural pattern detection (sentence boundaries)")
-    print("  6. 4-panel visualization")
-    print("  7. Cross-context comparison")
+    print('\n本解答提供：')
+    print('  1. 前向传播时记录门激活值')
+    print('  2. 门行为的统计分析')
+    print('  3. 门之间的相关性分析')
+    print('  4. 识别关键时刻，即高激活时刻')
+    print('  5. 结构模式检测，例如句子边界')
+    print('  6. 四面板可视化')
+    print('  7. 跨上下文比较')
     
     print("\n" + "-"*70)
-    print("KEY INSIGHTS FROM GATE ANALYSIS")
+    print('原仓库的门分析预期（需实验核验）')
     print("-"*70)
     
-    print("\n1. FORGET GATE:")
-    print("   • Activates when old information is no longer relevant")
-    print("   • High at sentence boundaries")
-    print("   • High during context switches")
-    print("   • Negatively correlated with input gate")
+    print('\n1. 遗忘门：')
+    print('   • 原文称旧信息无关时激活；核对：门值低才表示遗忘较多')
+    print('   • 原文预期句子边界处门值高')
+    print('   • 原文预期上下文切换时门值高')
+    print('   • 原文预期与输入门负相关')
     
-    print("\n2. INPUT GATE:")
-    print("   • Activates when new important information appears")
-    print("   • High at content words (nouns, verbs)")
-    print("   • Low at function words (the, a, of)")
-    print("   • Complementary to forget gate")
+    print('\n2. 输入门：')
+    print('   • 新的重要信息出现时激活')
+    print('   • 实词（名词、动词）处门值高')
+    print('   • 功能词（the、a、of）处门值低')
+    print('   • 与遗忘门互补')
     
-    print("\n3. OUTPUT GATE:")
-    print("   • Controls what information to expose")
-    print("   • High when prediction is confident")
-    print("   • Regulates hidden state magnitude")
+    print('\n3. 输出门：')
+    print('   • 控制输出哪些信息')
+    print('   • 预测较确定时门值高')
+    print('   • 调节隐藏状态量级')
     
-    print("\n4. CELL STATE:")
-    print("   • Accumulates information over time")
-    print("   • Stable in meaningful contexts")
-    print("   • Resets at topic boundaries")
+    print('\n4. 细胞状态：')
+    print('   • 随时间累积信息')
+    print('   • 在有意义的上下文中保持稳定')
+    print('   • 在主题边界处重置')
     
     print("\n" + "="*70)
-    print("Run this on your trained LSTM to see gate behaviors!")
+    print('在训练好的 LSTM 上运行这些函数，观察门行为。')
     print("="*70)

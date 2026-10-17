@@ -2,18 +2,18 @@ import torch
 
 def masked_aggregation(g_out: torch.Tensor) -> torch.Tensor:
     """
-    Solution 6: Masked aggregation (ignoring self-relations).
+    解答 6：带掩码的聚合，忽略自身关系。
     """
     batch, n, n_inner, d = g_out.shape
     
-    # 1. Create Identity Mask
+    # 1. 创建单位矩阵掩码
     mask = torch.eye(n, device=g_out.device).bool()
-    # Invert mask: 0 for diagonal, 1 for others
+    # 反转掩码：对角线为 0，其余为 1
     mask = ~mask
     
-    # 2. Expand mask to match g_out shape: (N, N) -> (batch, N, N, D)
+    # 2. 扩展掩码以匹配 g_out 形状：(N, N) -> (batch, N, N, D)
     mask = mask.view(1, n, n, 1).expand(batch, -1, -1, d)
     
-    # 3. Apply mask and sum
+    # 3. 应用掩码并求和
     masked_g = g_out * mask.float()
     return masked_g.sum(dim=(1, 2))

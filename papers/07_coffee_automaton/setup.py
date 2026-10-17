@@ -1,16 +1,14 @@
-"""
-setup.py — Verify dependencies for Day 7: The Coffee Automaton
+"""setup.py——检查第 7 天“咖啡元胞自动机”的依赖
 
-Required: numpy, matplotlib (that's it — no scipy needed)
-The paper's model uses only binary grids and gzip compression.
-"""
+必需：numpy、matplotlib（仅此而已，不需要 scipy）。
+论文模型只使用二值网格和 gzip 压缩。"""
 
 import subprocess
 import sys
 
 
 def check_package(name):
-    """Check if a package is importable."""
+    """检查软件包是否可以导入。"""
     try:
         __import__(name)
         return True
@@ -20,35 +18,35 @@ def check_package(name):
 
 def main():
     required = ['numpy', 'matplotlib']
-    builtin = ['gzip', 'bz2', 'lzma', 'zlib']  # used for compression, all in stdlib
+    builtin = ['gzip', 'bz2', 'lzma', 'zlib']  # 用于压缩，均属于标准库
 
-    print("Day 7: The Coffee Automaton — Dependency Check")
+    print("第 7 天：咖啡元胞自动机——依赖检查")
     print("=" * 50)
 
     all_ok = True
 
-    # Check required packages
+    # 检查必需的软件包
     for pkg in required:
         if check_package(pkg):
             print(f"  [OK] {pkg}")
         else:
-            print(f"  [MISSING] {pkg}")
+            print(f"  [缺失] {pkg}")
             all_ok = False
 
-    # Check stdlib modules (should always be available)
+    # 检查标准库模块（正常情况下始终可用）
     for pkg in builtin:
         if check_package(pkg):
-            print(f"  [OK] {pkg} (stdlib)")
+            print(f"  [OK] {pkg}（标准库）")
         else:
-            print(f"  [MISSING] {pkg} — this shouldn't happen (stdlib)")
+            print(f"  [缺失] {pkg}——标准库不应出现此问题")
             all_ok = False
 
     if all_ok:
-        print("\nAll dependencies satisfied. Ready to go.")
-        print("\nQuick start:")
+        print("\n所有依赖均已满足，可以开始。")
+        print("\n快速开始：")
         print("  python train_minimal.py --grid-size 50 --steps 100000")
     else:
-        print("\nMissing packages. Install with:")
+        print("\n缺少软件包，请运行：")
         print("  pip install -r requirements.txt")
 
     return 0 if all_ok else 1

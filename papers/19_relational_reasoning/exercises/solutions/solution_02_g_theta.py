@@ -1,8 +1,8 @@
 """
-Solution 2: Building the Relation Function (g_theta)
-Standardized for Day 19 of 30u30
+解答 2：构建关系函数（g_theta）
+按 30u30 第 19 天的格式组织
 
-Based on: Santoro et al. (2017)
+依据：Santoro 等（2017）
 """
 
 import torch
@@ -10,7 +10,7 @@ import torch.nn as nn
 
 class RelationFunction(nn.Module):
     """
-    A 4-layer MLP as described in the RN paper.
+    RN 论文中描述的四层 MLP。
     """
     def __init__(self, input_dim, hidden_dim):
         super().__init__()

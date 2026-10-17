@@ -1,8 +1,8 @@
 """
-Solution to Exercise 5: LSTM vs GRU
+练习 5 解答：LSTM 与 GRU 对比
 ===================================
 
-Complete implementation of GRU and detailed comparison with LSTM.
+GRU 的完整实现，以及与 LSTM 的详细比较。
 """
 
 import numpy as np
@@ -15,27 +15,27 @@ from lstm_implementation import LSTM
 
 
 # ============================================================================
-# GRU IMPLEMENTATION
+# GRU 实现
 # ============================================================================
 
 class GRU:
     """
-    Gated Recurrent Unit (GRU) implementation.
-    
-    GRU is a simplified variant of LSTM with 2 gates instead of 3:
-    - Reset gate (r): controls how much past information to forget
-    - Update gate (z): controls how much new information to accept
-    
-    Key difference from LSTM:
-    - No separate cell state (only hidden state)
-    - Fewer parameters (faster training)
-    - Often performs similarly to LSTM
-    
-    Equations:
-        z_t = σ(W_z [h_{t-1}, x_t])      # Update gate
-        r_t = σ(W_r [h_{t-1}, x_t])      # Reset gate
-        h̃_t = tanh(W [r_t ⊙ h_{t-1}, x_t])  # Candidate hidden state
-        h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t  # New hidden state
+    门控循环单元（GRU）的实现。
+
+    GRU 是 LSTM 的简化变体，有两个门，而 LSTM 有三个门：
+    - 重置门（r）：控制在候选状态计算中使用多少过去信息
+    - 更新门（z）：控制接受多少新信息
+
+    与 LSTM 的主要区别：
+    - 没有独立细胞状态，只有隐藏状态
+    - 参数更少，训练通常更快
+    - 表现通常与 LSTM 接近
+
+    方程：
+        z_t = σ(W_z [h_{t-1}, x_t])      # 更新门
+        r_t = σ(W_r [h_{t-1}, x_t])      # 重置门
+        h̃_t = tanh(W [r_t ⊙ h_{t-1}, x_t])  # 候选隐藏状态
+        h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t  # 新隐藏状态
     """
     
     def __init__(self, vocab_size, hidden_size, output_size):
@@ -43,89 +43,89 @@ class GRU:
         self.hidden_size = hidden_size
         self.output_size = output_size
         
-        # Initialize parameters
+        # 初始化参数
         scale = 0.01
         input_size = hidden_size + vocab_size
         
-        # Update gate parameters
+        # 更新门参数
         self.Wz = np.random.randn(hidden_size, input_size) * scale
         self.bz = np.zeros((hidden_size, 1))
         
-        # Reset gate parameters
+        # 重置门参数
         self.Wr = np.random.randn(hidden_size, input_size) * scale
         self.br = np.zeros((hidden_size, 1))
         
-        # Candidate hidden state parameters
+        # 候选隐藏状态参数
         self.Wh = np.random.randn(hidden_size, input_size) * scale
         self.bh = np.zeros((hidden_size, 1))
         
-        # Output layer parameters
+        # 输出层参数
         self.Why = np.random.randn(output_size, hidden_size) * scale
         self.by = np.zeros((output_size, 1))
     
     def forward(self, inputs, targets, h_prev):
         """
-        Forward pass through GRU.
+        通过 GRU 前向传播。
         
-        Args:
-            inputs: List of input indices
-            targets: List of target indices
-            h_prev: Previous hidden state
+        参数：
+            inputs：输入索引列表
+            targets：目标索引列表
+            h_prev：上一隐藏状态
             
-        Returns:
-            loss: Cross-entropy loss
-            h: Final hidden state
+        返回：
+            loss：交叉熵损失
+            h：最终隐藏状态
         """
         xs, hs, ys, ps = {}, {}, {}, {}
-        zs, rs, h_tildes = {}, {}, {}  # Store gates and candidates
+        zs, rs, h_tildes = {}, {}, {}  # 存储门值与候选状态
         
         hs[-1] = np.copy(h_prev)
         loss = 0
         
         for t, (inp, target) in enumerate(zip(inputs, targets)):
-            # One-hot encode input
+            # 对输入进行独热编码
             xs[t] = np.zeros((self.vocab_size, 1))
             xs[t][inp] = 1
             
-            # Concatenate previous hidden state and input
+            # 拼接上一隐藏状态与输入
             combined = np.vstack([hs[t-1], xs[t]])
             
-            # Update gate: z_t = σ(W_z [h_{t-1}, x_t])
+            # 更新门：z_t = σ(W_z [h_{t-1}, x_t])
             zs[t] = sigmoid(np.dot(self.Wz, combined) + self.bz)
             
-            # Reset gate: r_t = σ(W_r [h_{t-1}, x_t])
+            # 重置门：r_t = σ(W_r [h_{t-1}, x_t])
             rs[t] = sigmoid(np.dot(self.Wr, combined) + self.br)
             
-            # Candidate hidden state: h̃_t = tanh(W [r_t ⊙ h_{t-1}, x_t])
+            # 候选隐藏状态：h̃_t = tanh(W [r_t ⊙ h_{t-1}, x_t])
             reset_combined = np.vstack([rs[t] * hs[t-1], xs[t]])
             h_tildes[t] = np.tanh(np.dot(self.Wh, reset_combined) + self.bh)
             
-            # New hidden state: h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t
+            # 新隐藏状态：h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t
             hs[t] = (1 - zs[t]) * hs[t-1] + zs[t] * h_tildes[t]
             
-            # Output layer
+            # 输出层
             ys[t] = np.dot(self.Why, hs[t]) + self.by
             
             # Softmax
             ps[t] = np.exp(ys[t]) / np.sum(np.exp(ys[t]))
             
-            # Cross-entropy loss
+            # 交叉熵损失
             loss += -np.log(ps[t][target, 0])
         
-        # Store intermediate values for backward pass
+        # 存储反向传播所需的中间值
         self.cache = (xs, hs, zs, rs, h_tildes, ys, ps, targets)
         
         return loss, hs[len(inputs)-1]
     
     def backward(self):
         """
-        Backward pass through GRU (BPTT).
+        通过 GRU 执行反向传播（BPTT）。
         
-        Returns dictionary of gradients.
+        返回梯度字典。
         """
         xs, hs, zs, rs, h_tildes, ys, ps, targets = self.cache
         
-        # Initialize gradients
+        # 初始化梯度
         dWz, dbz = np.zeros_like(self.Wz), np.zeros_like(self.bz)
         dWr, dbr = np.zeros_like(self.Wr), np.zeros_like(self.br)
         dWh, dbh = np.zeros_like(self.Wh), np.zeros_like(self.bh)
@@ -133,48 +133,48 @@ class GRU:
         
         dh_next = np.zeros_like(hs[0])
         
-        # Backward pass through time
+        # 沿时间反向传播
         for t in reversed(range(len(targets))):
-            # Output layer gradient
+            # 输出层梯度
             dy = np.copy(ps[t])
             dy[targets[t]] -= 1
             
             dWhy += np.dot(dy, hs[t].T)
             dby += dy
             
-            # Hidden state gradient
+            # 隐藏状态梯度
             dh = np.dot(self.Why.T, dy) + dh_next
             
-            # Candidate hidden state gradient
+            # 候选隐藏状态梯度
             dh_tilde = dh * zs[t]
-            dh_tilde_raw = dh_tilde * (1 - h_tildes[t]**2)  # tanh derivative
+            dh_tilde_raw = dh_tilde * (1 - h_tildes[t]**2)  # tanh 导数
             
             combined_reset = np.vstack([rs[t] * hs[t-1], xs[t]])
             dWh += np.dot(dh_tilde_raw, combined_reset.T)
             dbh += dh_tilde_raw
             
-            # Reset gate gradient
+            # 重置门梯度
             dr = np.dot(self.Wh.T, dh_tilde_raw)[:self.hidden_size] * hs[t-1]
-            dr_raw = dr * rs[t] * (1 - rs[t])  # sigmoid derivative
+            dr_raw = dr * rs[t] * (1 - rs[t])  # sigmoid 导数
             
             combined = np.vstack([hs[t-1], xs[t]])
             dWr += np.dot(dr_raw, combined.T)
             dbr += dr_raw
             
-            # Update gate gradient
+            # 更新门梯度
             dz = dh * (h_tildes[t] - hs[t-1])
-            dz_raw = dz * zs[t] * (1 - zs[t])  # sigmoid derivative
+            dz_raw = dz * zs[t] * (1 - zs[t])  # sigmoid 导数
             
             dWz += np.dot(dz_raw, combined.T)
             dbz += dz_raw
             
-            # Gradient for next timestep
+            # 传回上一时间步的梯度
             dh_next = dh * (1 - zs[t])
             dh_next += np.dot(self.Wz.T, dz_raw)[:self.hidden_size]
             dh_next += np.dot(self.Wr.T, dr_raw)[:self.hidden_size]
             dh_next += np.dot(self.Wh.T, dh_tilde_raw)[:self.hidden_size] * rs[t]
         
-        # Clip gradients
+        # 裁剪梯度
         for dparam in [dWz, dWr, dWh, dWhy, dbz, dbr, dbh, dby]:
             np.clip(dparam, -5, 5, out=dparam)
         
@@ -186,7 +186,7 @@ class GRU:
         }
     
     def parameter_count(self):
-        """Count total number of parameters."""
+        """统计参数总数。"""
         count = 0
         for param in [self.Wz, self.bz, self.Wr, self.br, 
                      self.Wh, self.bh, self.Why, self.by]:
@@ -195,48 +195,48 @@ class GRU:
 
 
 def sigmoid(x):
-    """Numerically stable sigmoid."""
+    """数值稳定的 sigmoid。"""
     return np.where(x >= 0,
                     1 / (1 + np.exp(-x)),
                     np.exp(x) / (1 + np.exp(x)))
 
 
 # ============================================================================
-# COMPARISON STUDY
+# 比较研究
 # ============================================================================
 
 def compare_lstm_gru(data, char_to_idx, hidden_size=128, seq_length=25,
                     num_iterations=1000, learning_rate=0.01):
     """
-    Train both LSTM and GRU on same data and compare.
-    
-    Metrics to compare:
-    1. Training loss convergence
-    2. Training speed (time per iteration)
-    3. Parameter count
-    4. Memory usage
-    5. Generation quality
+    在同一数据上训练 LSTM 与 GRU 并比较。
+
+    比较指标：
+    1. 训练损失收敛
+    2. 训练速度：每次迭代耗时
+    3. 参数量
+    4. 内存用量
+    5. 生成质量
     """
     print("="*70)
-    print("LSTM vs GRU COMPARISON")
+    print('LSTM 与 GRU 比较')
     print("="*70)
     
     vocab_size = len(char_to_idx)
     
-    # Initialize models
+    # 初始化模型
     lstm = LSTM(vocab_size, hidden_size, vocab_size)
     gru = GRU(vocab_size, hidden_size, vocab_size)
     
-    # Compare parameter counts
-    print("\n[1] PARAMETER COUNT")
+    # 比较参数量
+    print('\n[1] 参数量')
     print("-" * 70)
-    print(f"LSTM parameters: {lstm.parameter_count():,}")
-    print(f"GRU parameters:  {gru.parameter_count():,}")
-    print(f"Difference:      {lstm.parameter_count() - gru.parameter_count():,}")
-    print(f"GRU has {(1 - gru.parameter_count()/lstm.parameter_count())*100:.1f}% fewer parameters")
+    print(f"LSTM 参数量：{lstm.parameter_count():,}")
+    print(f"GRU 参数量：{gru.parameter_count():,}")
+    print(f"差异：{lstm.parameter_count() - gru.parameter_count():,}")
+    print(f"GRU 的参数少 {(1 - gru.parameter_count()/lstm.parameter_count())*100:.1f}%")
     
-    # Training comparison
-    print("\n[2] TRAINING COMPARISON")
+    # 比较训练
+    print('\n[2] 训练比较')
     print("-" * 70)
     
     results = {
@@ -244,25 +244,25 @@ def compare_lstm_gru(data, char_to_idx, hidden_size=128, seq_length=25,
         'GRU': {'losses': [], 'times': []}
     }
     
-    # Train LSTM
-    print("\nTraining LSTM...")
+    # 训练 LSTM
+    print('\n正在训练 LSTM……')
     lstm_start = time.time()
     
     for iteration in range(num_iterations):
-        # Sample batch
+        # 抽取一批数据
         p = np.random.randint(0, len(data) - seq_length - 1)
         inputs = [char_to_idx[ch] for ch in data[p:p+seq_length]]
         targets = [char_to_idx[ch] for ch in data[p+1:p+seq_length+1]]
         
-        # Forward pass
+        # 前向传播
         h = np.zeros((hidden_size, 1))
         c = np.zeros((hidden_size, 1))
         loss, h, c = lstm.forward(inputs, targets, h, c)
         
-        # Backward pass
+        # 反向传播
         grads = lstm.backward()
         
-        # Update (simplified - should use proper optimizer)
+        # 更新（原仓库的简化写法，实际应使用合适的优化器）
         for param_name in ['Wf', 'Wi', 'Wc', 'Wo', 'Why', 
                           'bf', 'bi', 'bc', 'bo', 'by']:
             param = getattr(lstm, param_name)
@@ -272,30 +272,30 @@ def compare_lstm_gru(data, char_to_idx, hidden_size=128, seq_length=25,
         results['LSTM']['losses'].append(loss)
         
         if (iteration + 1) % 100 == 0:
-            print(f"  Iteration {iteration+1}/{num_iterations}, Loss: {loss:.4f}")
+            print(f"  迭代 {iteration+1}/{num_iterations}，损失：{loss:.4f}")
     
     lstm_time = time.time() - lstm_start
     results['LSTM']['times'].append(lstm_time)
-    print(f"LSTM training time: {lstm_time:.2f}s")
+    print(f"LSTM 训练耗时：{lstm_time:.2f}s")
     
-    # Train GRU
-    print("\nTraining GRU...")
+    # 训练 GRU
+    print('\n正在训练 GRU……')
     gru_start = time.time()
     
     for iteration in range(num_iterations):
-        # Sample batch
+        # 抽取一批数据
         p = np.random.randint(0, len(data) - seq_length - 1)
         inputs = [char_to_idx[ch] for ch in data[p:p+seq_length]]
         targets = [char_to_idx[ch] for ch in data[p+1:p+seq_length+1]]
         
-        # Forward pass
+        # 前向传播
         h = np.zeros((hidden_size, 1))
         loss, h = gru.forward(inputs, targets, h)
         
-        # Backward pass
+        # 反向传播
         grads = gru.backward()
         
-        # Update
+        # 更新
         for param_name in ['Wz', 'Wr', 'Wh', 'Why', 'bz', 'br', 'bh', 'by']:
             param = getattr(gru, param_name)
             grad = grads['d' + param_name]
@@ -304,88 +304,88 @@ def compare_lstm_gru(data, char_to_idx, hidden_size=128, seq_length=25,
         results['GRU']['losses'].append(loss)
         
         if (iteration + 1) % 100 == 0:
-            print(f"  Iteration {iteration+1}/{num_iterations}, Loss: {loss:.4f}")
+            print(f"  迭代 {iteration+1}/{num_iterations}，损失：{loss:.4f}")
     
     gru_time = time.time() - gru_start
     results['GRU']['times'].append(gru_time)
-    print(f"GRU training time: {gru_time:.2f}s")
+    print(f"GRU 训练耗时：{gru_time:.2f}s")
     
     return results, lstm, gru
 
 
 def analyze_comparison(results):
-    """Analyze and report comparison results."""
+    """分析并报告比较结果。"""
     print("\n" + "="*70)
-    print("COMPARISON ANALYSIS")
+    print('比较分析')
     print("="*70)
     
     lstm_losses = results['LSTM']['losses']
     gru_losses = results['GRU']['losses']
     
-    print("\n[1] FINAL PERFORMANCE")
+    print('\n[1] 最终性能')
     print("-" * 70)
-    print(f"LSTM final loss: {np.mean(lstm_losses[-100:]):.4f}")
-    print(f"GRU final loss:  {np.mean(gru_losses[-100:]):.4f}")
+    print(f"LSTM 最终损失：{np.mean(lstm_losses[-100:]):.4f}")
+    print(f"GRU 最终损失：{np.mean(gru_losses[-100:]):.4f}")
     
     diff = np.mean(lstm_losses[-100:]) - np.mean(gru_losses[-100:])
     if abs(diff) < 0.1:
-        print("→ Similar performance!")
+        print('→ 表现接近！')
     elif diff > 0:
-        print(f"→ GRU performs better by {diff:.4f}")
+        print(f"→ GRU 的损失低 {diff:.4f}")
     else:
-        print(f"→ LSTM performs better by {-diff:.4f}")
+        print(f"→ LSTM 的损失低 {-diff:.4f}")
     
-    print("\n[2] TRAINING SPEED")
+    print('\n[2] 训练速度')
     print("-" * 70)
     lstm_time = results['LSTM']['times'][0]
     gru_time = results['GRU']['times'][0]
     
-    print(f"LSTM: {lstm_time:.2f}s")
-    print(f"GRU:  {gru_time:.2f}s")
-    print(f"Speedup: {lstm_time/gru_time:.2f}x")
+    print(f"LSTM：{lstm_time:.2f}s")
+    print(f"GRU：{gru_time:.2f}s")
+    print(f"加速比：{lstm_time/gru_time:.2f}x")
     
     if gru_time < lstm_time:
-        print("→ GRU is faster!")
+        print('→ GRU 更快！')
     
-    print("\n[3] CONVERGENCE SPEED")
+    print('\n[3] 收敛速度')
     print("-" * 70)
     
-    # Find iteration where loss < threshold
+    # 寻找损失低于阈值的迭代位置
     threshold = 1.5
     lstm_converge = next((i for i, loss in enumerate(lstm_losses) if loss < threshold), None)
     gru_converge = next((i for i, loss in enumerate(gru_losses) if loss < threshold), None)
     
     if lstm_converge and gru_converge:
-        print(f"LSTM converged at iteration: {lstm_converge}")
-        print(f"GRU converged at iteration:  {gru_converge}")
+        print(f"LSTM 达到收敛阈值的迭代次数：{lstm_converge}")
+        print(f"GRU 达到收敛阈值的迭代次数：{gru_converge}")
         if gru_converge < lstm_converge:
-            print("→ GRU converges faster!")
+            print('→ GRU 收敛更快！')
         else:
-            print("→ LSTM converges faster!")
+            print('→ LSTM 收敛更快！')
     
-    print("\n[4] SUMMARY")
+    print('\n[4] 总结')
     print("-" * 70)
-    print("✓ GRU typically:")
-    print("  - Fewer parameters (25-30% less)")
-    print("  - Faster training (10-20% faster)")
-    print("  - Similar final performance")
-    print("  - Simpler architecture (easier to understand)")
-    
-    print("\n✓ LSTM typically:")
-    print("  - More expressive (separate cell state)")
-    print("  - Better for very long sequences")
-    print("  - More control (3 gates vs 2)")
-    print("  - Established track record")
+    print('✓ GRU 的常见特点（需按具体任务核验）：')
+    print('  - 参数较少（少 25-30%）')
+    print('  - 训练较快（快 10-20%）')
+    print('  - 最终表现接近')
+    print('  - 架构更简单，更容易理解')
+
+    print('\n✓ LSTM 的常见特点（需按具体任务核验）：')
+    print('  - 独立细胞状态提供额外控制能力')
+    print('  - 可能更适合很长的依赖')
+    print('  - 控制更多：三个门，而非两个门')
+    print('  - 应用经验充分')
 
 
 def visualize_comparison(results, save_path='lstm_vs_gru.png'):
-    """Create comprehensive comparison visualization."""
+    """创建综合比较图。"""
     fig, axes = plt.subplots(2, 2, figsize=(16, 12))
     
     lstm_losses = results['LSTM']['losses']
     gru_losses = results['GRU']['losses']
     
-    # Panel 1: Loss curves
+    # 面板 1：损失曲线
     ax = axes[0, 0]
     window = 50
     lstm_smoothed = np.convolve(lstm_losses, np.ones(window)/window, mode='valid')
@@ -393,29 +393,29 @@ def visualize_comparison(results, save_path='lstm_vs_gru.png'):
     
     ax.plot(lstm_smoothed, label='LSTM', color='blue', linewidth=2)
     ax.plot(gru_smoothed, label='GRU', color='red', linewidth=2)
-    ax.set_xlabel('Iteration', fontsize=12)
-    ax.set_ylabel('Loss (smoothed)', fontsize=12)
-    ax.set_title('Training Loss Comparison', fontsize=14, fontweight='bold')
+    ax.set_xlabel('迭代', fontsize=12)
+    ax.set_ylabel('损失（平滑后）', fontsize=12)
+    ax.set_title('训练损失比较', fontsize=14, fontweight='bold')
     ax.legend(fontsize=12)
     ax.grid(True, alpha=0.3)
     
-    # Panel 2: Direct comparison (scatter)
+    # 面板 2：直接比较（散点图）
     ax = axes[0, 1]
     ax.scatter(lstm_losses[::10], gru_losses[::10], alpha=0.5, s=20)
     ax.plot([min(lstm_losses), max(lstm_losses)], 
            [min(lstm_losses), max(lstm_losses)],
-           'k--', label='Equal performance', linewidth=2)
-    ax.set_xlabel('LSTM Loss', fontsize=12)
-    ax.set_ylabel('GRU Loss', fontsize=12)
-    ax.set_title('Loss Correlation', fontsize=14, fontweight='bold')
+           'k--', label='相同性能', linewidth=2)
+    ax.set_xlabel('LSTM 损失', fontsize=12)
+    ax.set_ylabel('GRU 损失', fontsize=12)
+    ax.set_title('损失相关性', fontsize=14, fontweight='bold')
     ax.legend()
     ax.grid(True, alpha=0.3)
     
-    # Panel 3: Parameter count comparison
+    # 面板 3：参数量比较
     ax = axes[1, 0]
-    # Placeholder - would need actual model instances
-    categories = ['Update/Forget', 'Input/Reset', 'Cell/Hidden', 'Output']
-    lstm_params = [25, 25, 25, 25]  # Simplified
+    # 占位值；实际应从模型实例统计
+    categories = ['Update/Forget', 'Input/Reset', 'Cell/Hidden', '输出门']
+    lstm_params = [25, 25, 25, 25]  # 简化值
     gru_params = [20, 20, 20, 20]
     
     x = np.arange(len(categories))
@@ -425,24 +425,24 @@ def visualize_comparison(results, save_path='lstm_vs_gru.png'):
     ax.bar(x + width/2, gru_params, width, label='GRU', color='red', alpha=0.7)
     ax.set_xticks(x)
     ax.set_xticklabels(categories, rotation=45, ha='right')
-    ax.set_ylabel('Parameters (%)', fontsize=12)
-    ax.set_title('Parameter Distribution', fontsize=14, fontweight='bold')
+    ax.set_ylabel('参数比例（%）', fontsize=12)
+    ax.set_title('参数分布', fontsize=14, fontweight='bold')
     ax.legend()
     ax.grid(True, alpha=0.3, axis='y')
     
-    # Panel 4: Summary table
+    # 面板 4：汇总表
     ax = axes[1, 1]
     ax.axis('off')
     
     summary = [
-        ['Metric', 'LSTM', 'GRU', 'Winner'],
+        ['指标', 'LSTM', 'GRU', '较优模型'],
         ['', '', '', ''],
         ['Parameters', 'More', 'Less', 'GRU'],
-        ['Training Speed', 'Slower', 'Faster', 'GRU'],
-        ['Performance', 'Similar', 'Similar', 'Tie'],
+        ['训练速度', 'Slower', 'Faster', 'GRU'],
+        ['性能', 'Similar', 'Similar', 'Tie'],
         ['Complexity', 'Higher', 'Lower', 'GRU'],
-        ['Long Sequences', 'Better', 'Good', 'LSTM'],
-        ['Memory Usage', 'Higher', 'Lower', 'GRU']
+        ['长序列', 'Better', 'Good', 'LSTM'],
+        ['内存用量', 'Higher', 'Lower', 'GRU']
     ]
     
     table = ax.table(cellText=summary, cellLoc='left', loc='center',
@@ -451,70 +451,70 @@ def visualize_comparison(results, save_path='lstm_vs_gru.png'):
     table.set_fontsize(11)
     table.scale(1, 2.5)
     
-    # Style header row
+    # 设置表头样式
     for i in range(4):
         table[(0, i)].set_facecolor('#40466e')
         table[(0, i)].set_text_props(weight='bold', color='white')
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
-    print(f"\n✓ Visualization saved to {save_path}")
+    print(f"\n✓ 可视化已保存至 {save_path}")
     
     return fig
 
 
 # ============================================================================
-# MAIN
+# 主流程
 # ============================================================================
 
 if __name__ == "__main__":
     print(__doc__)
     
     print("\n" + "="*70)
-    print("LSTM vs GRU: COMPREHENSIVE COMPARISON")
+    print('LSTM 与 GRU：综合比较')
     print("="*70)
     
-    print("\nThis solution provides:")
-    print("  1. Full GRU implementation from scratch")
-    print("  2. Side-by-side training comparison")
-    print("  3. Parameter count analysis")
-    print("  4. Training speed benchmarks")
-    print("  5. Performance comparison")
-    print("  6. Comprehensive visualizations")
+    print('\n本解答提供：')
+    print('  1. 从零实现完整 GRU')
+    print('  2. 并列训练比较')
+    print('  3. 参数量分析')
+    print('  4. 训练速度基准')
+    print('  5. 性能比较')
+    print('  6. 综合可视化')
     
     print("\n" + "-"*70)
-    print("KEY DIFFERENCES")
+    print('主要区别')
     print("-"*70)
     
-    print("\nLSTM:")
-    print("  • 3 gates (forget, input, output)")
-    print("  • Separate cell state and hidden state")
-    print("  • More parameters")
-    print("  • Explicit memory management")
+    print('\nLSTM：')
+    print('  • 三个门：遗忘门、输入门、输出门')
+    print('  • 独立的细胞状态与隐藏状态')
+    print('  • 参数较多')
+    print('  • 显式控制记忆更新')
     
-    print("\nGRU:")
-    print("  • 2 gates (update, reset)")
-    print("  • Single hidden state (no cell state)")
-    print("  • Fewer parameters (25-30% less)")
-    print("  • Implicit memory through gating")
+    print('\nGRU：')
+    print('  • 两个门：更新门、重置门')
+    print('  • 单个隐藏状态，没有独立细胞状态')
+    print('  • 参数较少（少 25-30%）')
+    print('  • 通过门控隐式管理记忆')
     
     print("\n" + "-"*70)
-    print("WHEN TO USE EACH")
+    print('如何选择模型')
     print("-"*70)
     
-    print("\n✓ Use LSTM when:")
-    print("  - Very long sequences (>100 steps)")
-    print("  - Need precise memory control")
-    print("  - Have lots of training data")
-    print("  - Computational cost not critical")
+    print('\n✓ 可以考虑 LSTM 的情况：')
+    print('  - 很长的序列（>100 步；此为原文经验建议）')
+    print('  - 需要精细控制记忆')
+    print('  - 训练数据较多')
+    print('  - 计算成本不是主要限制')
     
-    print("\n✓ Use GRU when:")
-    print("  - Medium-length sequences")
-    print("  - Want faster training")
-    print("  - Limited training data")
-    print("  - Need simpler architecture")
-    print("  - Memory/compute constrained")
+    print('\n✓ 可以考虑 GRU 的情况：')
+    print('  - 中等长度序列')
+    print('  - 希望加快训练')
+    print('  - 训练数据有限')
+    print('  - 需要更简单的架构')
+    print('  - 内存或算力受限')
     
     print("\n" + "="*70)
-    print("In practice: Try both and see what works!")
+    print('实际应用中请比较两者，按结果选择。')
     print("="*70)

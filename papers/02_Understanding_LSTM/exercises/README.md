@@ -1,270 +1,270 @@
-# Exercises: Understanding LSTM Networks
+# 练习：理解 LSTM 网络
 
-5 hands-on exercises to master LSTM fundamentals. Work through them in order - each builds on the previous!
-
----
-
-## Exercise 1: Build LSTM from Scratch
-**Difficulty**: Hard  
-**Time**: 2-3 hours  
-**File**: `exercise_01_build_lstm.py`
-
-### Goal
-Implement a complete LSTM cell from scratch in NumPy, including all 4 gates and backpropagation.
-
-### What You'll Learn
-- How each gate works mathematically
-- How cell state and hidden state interact
-- How gradients flow backward through the gates
-- Why LSTMs solve vanishing gradients
-
-### Tasks
-1. Implement the forget gate: $f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$
-2. Implement the input gate: $i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$
-3. Implement the cell candidate: $\tilde{C}_t = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$
-4. Implement the output gate: $o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)$
-5. Update cell state: $C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t$
-6. Update hidden state: $h_t = o_t \odot \tanh(C_t)$
-7. Implement backpropagation through time (BPTT)
-8. Add gradient clipping
-
-### Success Criteria
-- Forward pass produces correct gate activations
-- Cell state evolves properly
-- Backward pass computes correct gradients
-- Model can learn simple sequence (e.g., "hello" → "ello ")
-
-### Hints
-- Initialize forget gate bias to 1.0 (default to remembering)
-- Use gradient clipping: `np.clip(grad, -5, 5)`
-- Test each gate independently before combining
-- Check shapes at every step!
+通过 5 个动手练习掌握 LSTM 基础。请按顺序完成，各练习建立在前面的内容之上。
 
 ---
 
-## Exercise 2: Gate Activation Analysis
-**Difficulty**: Medium  
-**Time**: 1-2 hours  
-**File**: `exercise_02_gate_analysis.py`
+## 练习 1：从零构建 LSTM
+**难度：** 高  
+**用时：** 2-3 小时  
+**文件：** `exercise_01_build_lstm.py`
 
-### Goal
-Train an LSTM on a text dataset and analyze what each gate learns to do.
+### 目标
+使用 NumPy 从零实现完整的 LSTM 单元，包括四组变换（三个门与候选细胞状态）和反向传播。
 
-### What You'll Learn
-- When forget gates activate (what to throw away)
-- When input gates activate (what to add)
-- When output gates activate (what to reveal)
-- How gates coordinate to solve tasks
+### 学习内容
+- 各个门的数学原理
+- 细胞状态与隐藏状态如何交互
+- 梯度如何穿过各个门反向传递
+- LSTM 为什么能够缓解梯度消失
 
-### Tasks
-1. Train LSTM on simple text (e.g., repeated pattern "abcabc...")
-2. Capture gate activations during forward pass
-3. Plot heatmaps of each gate over time
-4. Identify patterns:
-   - Which gates are most active?
-   - Do gates specialize (some always on/off)?
-   - How do gates respond to specific characters?
-5. Write a report on your findings
+### 任务
+1. 实现遗忘门：$f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$
+2. 实现输入门：$i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$
+3. 实现候选细胞状态：$\tilde{C}_t = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$
+4. 实现输出门：$o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)$
+5. 更新细胞状态：$C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t$
+6. 更新隐藏状态：$h_t = o_t \odot \tanh(C_t)$
+7. 实现随时间反向传播（BPTT）
+8. 增加梯度裁剪
 
-### Success Criteria
-- Training loss decreases
-- Gate visualizations are clear and interpretable
-- You can explain why certain gates activate
-- Report includes at least 3 insights
+### 完成标准
+- 前向传播得到正确的门激活值
+- 细胞状态正确更新
+- 反向传播计算出正确梯度
+- 模型能学习简单序列（例如 “hello” → “ello ”）
 
-### Hints
-- Use `visualization.py` functions: `plot_gate_activations()`, `analyze_gate_patterns()`
-- Try simple patterns first (e.g., "ababab...")
-- Look for gates that activate on specific characters
-- Compare gate behavior early vs late in training
-
----
-
-## Exercise 3: Ablation Study
-**Difficulty**: Medium  
-**Time**: 1-2 hours  
-**File**: `exercise_03_ablation_study.py`
-
-### Goal
-Remove each gate one at a time and measure the impact on performance. Understand which components are critical.
-
-### What You'll Learn
-- Which gates are most important
-- How gates complement each other
-- What happens when you remove each gate
-- Trade-offs between complexity and performance
-
-### Tasks
-1. Train baseline LSTM (all gates)
-2. Train "No Forget Gate" LSTM (set $f_t = 1$)
-3. Train "No Input Gate" LSTM (set $i_t = 1$)
-4. Train "No Output Gate" LSTM (set $o_t = 1$)
-5. Compare all 4 models on:
-   - Training loss
-   - Convergence speed
-   - Sample quality
-   - Long-range dependency performance
-
-### Success Criteria
-- All 4 models train successfully
-- Clear comparison of performance
-- Explanation of why each gate matters
-- Insights on which gate is most critical
-
-### Hints
-- Keep all other hyperparameters constant
-- Train for same number of iterations
-- Use same random seed for fair comparison
-- Expected: removing forget gate hurts most
+### 提示
+- 将遗忘门偏置初始化为 1.0，使初始门值倾向于保留信息
+- 使用梯度裁剪：`np.clip(grad, -5, 5)`
+- 先分别测试各门，再组合起来
+- 每一步都检查形状
 
 ---
 
-## Exercise 4: Long-Range Dependencies
-**Difficulty**: Medium  
-**Time**: 1-2 hours  
-**File**: `exercise_04_long_range_deps.py`
+## 练习 2：门激活分析
+**难度：** 中  
+**用时：** 1-2 小时  
+**文件：** `exercise_02_gate_analysis.py`
 
-### Goal
-Test LSTM's ability to remember information over different distances.
+### 目标
+在文本数据集上训练 LSTM，分析各门学到的行为。
 
-### What You'll Learn
-- How far back LSTMs can "remember"
-- When vanishing gradients still occur
-- Practical limits of LSTM memory
-- How to design tasks that test memory
+### 学习内容
+- 遗忘门何时激活，以及要丢弃什么
+- 输入门何时激活，以及要写入什么
+- 输出门何时激活，以及要输出什么
+- 各门如何协作完成任务
 
-### Tasks
-1. Create synthetic task: "Remember the first character"
-   - Input: `A _ _ _ _ ?` (N underscores)
-   - Target: `A`
-2. Test distances: 5, 10, 20, 50, 100 steps
-3. Train LSTM on each distance
-4. Measure accuracy vs distance
-5. Compare with vanilla RNN (optional)
+### 任务
+1. 在简单文本上训练 LSTM（例如重复模式 “abcabc...”）
+2. 在前向传播中记录门激活值
+3. 绘制各门激活值随时间变化的热力图
+4. 识别模式：
+   - 哪些门最活跃？
+   - 各门是否出现特化行为，例如某些单元始终开启或关闭？
+   - 各门如何响应特定字符？
+5. 撰写观察报告
 
-### Success Criteria
-- Task is correctly implemented
-- LSTM accuracy measured at each distance
-- Clear plot of accuracy vs distance
-- Analysis of where performance drops
+### 完成标准
+- 训练损失下降
+- 门的可视化清晰且可解释
+- 能解释某些门为何激活
+- 报告至少包含 3 项观察结论
 
-### Hints
-- Generate data programmatically
-- Use random characters for "noise"
-- Start with small distances to verify task
-- LSTM should handle 50+ steps easily
-- Vanilla RNN should fail beyond 10 steps
-
----
-
-## Exercise 5: LSTM vs GRU Comparison
-**Difficulty**: Hard  
-**Time**: 2-3 hours  
-**File**: `exercise_05_lstm_vs_gru.py`
-
-### Goal
-Implement a GRU (Gated Recurrent Unit) and compare it to LSTM.
-
-### What You'll Learn
-- GRU architecture (3 gates instead of 4)
-- Trade-offs: speed vs capacity
-- When to use GRU vs LSTM
-- How simplifications affect performance
-
-### Tasks
-1. Implement GRU from scratch:
-   - Reset gate: $r_t = \sigma(W_r \cdot [h_{t-1}, x_t] + b_r)$
-   - Update gate: $z_t = \sigma(W_z \cdot [h_{t-1}, x_t] + b_z)$
-   - Candidate: $\tilde{h}_t = \tanh(W \cdot [r_t \odot h_{t-1}, x_t] + b)$
-   - Hidden: $h_t = (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t$
-2. Train both LSTM and GRU on same dataset
-3. Compare:
-   - Training speed (time per iteration)
-   - Final loss
-   - Sample quality
-   - Number of parameters
-4. Write comparison report
-
-### Success Criteria
-- GRU correctly implemented
-- Both models train successfully
-- Fair comparison (same hyperparameters)
-- Report explains trade-offs
-
-### Hints
-- GRU has 3 weight matrices (vs LSTM's 4)
-- GRU is typically 20-30% faster
-- Performance is often similar
-- LSTM may be better for very long sequences
-- GRU is simpler and often preferred today
+### 提示
+- 使用 `visualization.py` 中的 `plot_gate_activations()`、`analyze_gate_patterns()`
+- 先尝试简单模式，例如 “ababab...”
+- 寻找对特定字符激活的门
+- 比较训练初期与后期的门行为
 
 ---
 
-## Bonus Challenges
+## 练习 3：消融研究（Ablation Study）
+**难度：** 中  
+**用时：** 1-2 小时  
+**文件：** `exercise_03_ablation_study.py`
 
-### Challenge 1: Bidirectional LSTM
-Implement a bidirectional LSTM that processes sequences forward AND backward. Combine the outputs.
+### 目标
+每次移除一个门，测量性能变化，理解哪些组成部分至关重要。
 
-### Challenge 2: Peephole Connections
-Add "peephole" connections where gates can see the cell state:
+### 学习内容
+- 哪些门最重要
+- 各门如何互补
+- 移除某个门会发生什么
+- 复杂度与性能之间的权衡
+
+### 任务
+1. 训练包含所有门的基线 LSTM
+2. 训练“无遗忘门”LSTM（令 $f_t = 1$）
+3. 训练“无输入门”LSTM（令 $i_t = 1$）
+4. 训练“无输出门”LSTM（令 $o_t = 1$）
+5. 比较这 4 种模型的：
+   - 训练损失
+   - 收敛速度
+   - 生成样本质量
+   - 长程依赖表现
+
+### 完成标准
+- 4 种模型均能成功训练
+- 清晰比较性能
+- 解释各门的作用
+- 分析哪个门最关键
+
+### 提示
+- 保持其他超参数不变
+- 使用相同迭代次数
+- 使用相同随机种子，以便公平比较
+- 原仓库的预期：移除遗忘门影响最大；需用实际实验验证
+
+---
+
+## 练习 4：长程依赖
+**难度：** 中  
+**用时：** 1-2 小时  
+**文件：** `exercise_04_long_range_deps.py`
+
+### 目标
+测试 LSTM 跨越不同距离保留信息的能力。
+
+### 学习内容
+- LSTM 能“记住”多远之前的信息
+- 哪些情况下仍会发生梯度消失
+- LSTM 记忆能力的实际限制
+- 如何设计用于测试记忆的任务
+
+### 任务
+1. 构造“记住第一个字符”的合成任务
+   - 输入：`A _ _ _ _ ?`（N 个下划线）
+   - 目标：`A`
+2. 测试距离：5、10、20、50、100 步
+3. 在每个距离上训练 LSTM
+4. 测量准确率随距离的变化
+5. 与基本 RNN 比较（可选）
+
+### 完成标准
+- 任务实现正确
+- 测量每个距离上的 LSTM 准确率
+- 清晰绘制准确率与距离的关系
+- 分析性能在哪些距离上下降
+
+### 提示
+- 用程序生成数据
+- 用随机字符作为“噪声”
+- 从短距离开始，验证任务实现
+- 原仓库预期 LSTM 可处理 50 步以上的距离；具体结果需验证
+- 原仓库预期基本 RNN 在超过 10 步后表现较差；这不是普遍的硬限制
+
+---
+
+## 练习 5：LSTM 与 GRU 对比
+**难度：** 高  
+**用时：** 2-3 小时  
+**文件：** `exercise_05_lstm_vs_gru.py`
+
+### 目标
+实现门控循环单元（Gated Recurrent Unit，GRU），并与 LSTM 比较。
+
+### 学习内容
+- GRU 架构（三组变换，而 LSTM 有四组；见核对说明）
+- 速度与容量的权衡
+- 何时选择 GRU 或 LSTM
+- 结构简化如何影响表现
+
+### 任务
+1. 从零实现 GRU：
+   - 重置门：$r_t = \sigma(W_r \cdot [h_{t-1}, x_t] + b_r)$
+   - 更新门：$z_t = \sigma(W_z \cdot [h_{t-1}, x_t] + b_z)$
+   - 候选隐藏状态：$\tilde{h}_t = \tanh(W \cdot [r_t \odot h_{t-1}, x_t] + b)$
+   - 隐藏状态：$h_t = (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t$
+2. 在同一数据集上训练 LSTM 与 GRU
+3. 比较：
+   - 训练速度（每次迭代耗时）
+   - 最终损失
+   - 生成样本质量
+   - 参数量
+4. 撰写比较报告
+
+### 完成标准
+- GRU 实现正确
+- 两种模型均成功训练
+- 公平比较，保持超参数一致
+- 报告解释各项权衡
+
+### 提示
+- GRU 有 3 组变换权重矩阵，LSTM 有 4 组
+- 原仓库经验：GRU 通常快 20-30%，需按实现与任务验证
+- 性能通常接近
+- 对很长的依赖，LSTM 可能更适合
+- GRU 更简单，原仓库认为它在不少场景中是优先选择
+
+---
+
+## 进阶挑战
+
+### 挑战 1：双向 LSTM
+实现双向 LSTM，分别正向和反向处理序列，再组合输出。
+
+### 挑战 2：窥孔连接
+加入“窥孔”连接，使门可以读取细胞状态：
 $$f_t = \sigma(W_f \cdot [h_{t-1}, x_t, C_{t-1}] + b_f)$$
 
-### Challenge 3: Gradient Visualization
-Implement gradient flow tracking and visualize how gradients change magnitude as they flow backward.
+### 挑战 3：梯度可视化
+跟踪梯度流，绘制梯度在反向传递时的量级变化。
 
-### Challenge 4: Layer Stacking
-Stack multiple LSTM layers and see if deeper networks learn better.
+### 挑战 4：堆叠层
+堆叠多层 LSTM，观察更深的网络是否学得更好。
 
-### Challenge 5: Real-World Task
-Train LSTM on a real task:
-- Sentiment classification (movie reviews)
-- Named entity recognition
-- Time series prediction
-- Music generation
-
----
-
-## Tips for Success
-
-### General Advice
-- **Start simple**: Get basic version working first
-- **Test incrementally**: Test each component before combining
-- **Visualize everything**: Plot losses, gates, gradients
-- **Compare baselines**: Always have a baseline to compare against
-- **Debug systematically**: Print shapes, check ranges, verify equations
-
-### Debugging Checklist
-When things go wrong:
-1. **Check shapes**: Print array shapes at each step
-2. **Check ranges**: Gates should be [0,1], tanh [-1,1]
-3. **Check gradients**: Should not be NaN or extremely large
-4. **Check initialization**: Forget bias should be 1
-5. **Check learning rate**: Try 0.001 first
-6. **Check data**: Print samples to verify correctness
-
-### Common Mistakes
-- Forget to initialize forget gate bias to 1
-- Mix up cell state (C) and hidden state (h)
-- Forget to detach gradients between sequences
-- Use wrong activation functions (tanh vs sigmoid)
-- Don't clip gradients
+### 挑战 5：实际任务
+在实际任务上训练 LSTM：
+- 情感分类（电影评论）
+- 命名实体识别
+- 时间序列预测
+- 音乐生成
 
 ---
 
-## Solutions
+## 学习建议
 
-Complete solutions are available in `solutions/` folder:
+### 一般建议
+- **从简单版本开始**：先让基础版本运行起来
+- **逐步测试**：组合之前先测试各组成部分
+- **多做可视化**：绘制损失、门值与梯度
+- **比较基线**：始终保留可供比较的基线
+- **系统调试**：打印形状、检查范围、核对方程
+
+### 调试检查表
+出现问题时：
+1. **检查形状**：打印每一步的数组形状
+2. **检查范围**：门值应在 [0,1]，tanh 输出应在 [-1,1]
+3. **检查梯度**：不应出现 NaN 或极大值
+4. **检查初始化**：遗忘门偏置应为 1
+5. **检查学习率**：先尝试 0.001
+6. **检查数据**：打印样本以核实正确性
+
+### 常见错误
+- 忘记将遗忘门偏置初始化为 1
+- 混淆细胞状态（C）与隐藏状态（h）
+- 未在序列边界切断梯度（适用于自动微分框架；本章 NumPy 实现显式管理缓存）
+- 混用 tanh 与 sigmoid 等激活函数
+- 未裁剪梯度
+
+---
+
+## 解答
+
+解答位于 `solutions/` 目录：
 - `solution_01_lstm_implementation.py`
 - `solution_02_gate_analysis.py`
 - `solution_03_ablation_study.py`
 - `solution_04_long_range_deps.py`
 - `solution_05_lstm_vs_gru.py`
 
-**Recommendation**: Try solving on your own first! Only check solutions if you're truly stuck.
+**建议：** 先独立尝试，确实遇到困难后再查看解答。
 
 ---
 
-## Estimated Time
+## 预计用时
 
 | Exercise | Difficulty | Time       | Prerequisites |
 |----------|-----------|------------|---------------|
@@ -274,32 +274,36 @@ Complete solutions are available in `solutions/` folder:
 | 4        | Medium    | 1-2 hours  | Exercise 1    |
 | 5        | Hard      | 2-3 hours  | Exercise 1    |
 
-**Total**: 7-12 hours for all exercises
+**总计：** 完成全部练习约 7-12 小时
 
 ---
 
-## Learning Path
+## 学习路径
 
 ```
-Day 2 README → Day 2 Paper Notes → Day 2 Implementation → Day 2 Notebook
+第 2 天 README → 原文笔记 → 实现 → Notebook
                                                                ↓
-                                                          Exercise 1
-                                                         (Build LSTM)
+                                                          练习 1
+                                                       （构建 LSTM）
                                                                ↓
                                         ┌──────────────────────┼──────────────────────┐
                                         ↓                      ↓                      ↓
-                                  Exercise 2              Exercise 3            Exercise 4
-                                (Gate Analysis)        (Ablation Study)   (Long-Range Deps)
+                                  练习 2                  练习 3                练习 4
+                                （门分析）             （消融研究）          （长程依赖）
                                         └──────────────────────┼──────────────────────┘
                                                                ↓
-                                                          Exercise 5
-                                                       (LSTM vs GRU)
+                                                          练习 5
+                                                     （LSTM 与 GRU 对比）
                                                                ↓
-                                                          Day 3!
+                                                          第 3 天！
 ```
 
 ---
 
-Good luck! Remember: **understanding comes from building**. Don't just read the code - type it out, break it, fix it, and make it your own.
+祝练习顺利！**理解来自动手构建。** 不要只阅读代码，亲手输入、试验、排错，让它成为你真正理解的实现。
 
-**Questions?** Open an issue or discussion on GitHub.
+**有问题？** 可以在 GitHub 创建议题或参与讨论。
+
+## 文件与术语核对
+
+原文将候选状态也计作门，称 LSTM“四个门”、GRU“三个门”；准确说法是 LSTM 三个门与一个候选状态，GRU 两个门与一个候选状态，公式保持原样。上面的 `solution_02_gate_analysis.py` 至 `solution_05_lstm_vs_gru.py` 是原文列出的名称，实际文件分别为 `exercise_02_solution.py` 至 `exercise_05_solution.py`。速度、记忆距离及门重要性的预期不是保证，需通过具体实验确认。

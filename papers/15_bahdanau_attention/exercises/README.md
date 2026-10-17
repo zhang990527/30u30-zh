@@ -1,118 +1,118 @@
-# Exercises: Build Bahdanau Attention from Scratch
+# 练习：从零构建 Bahdanau 注意力
 
-These exercises walk you through building the complete attention mechanism
-piece by piece, following the structure of the original paper.
+这些练习按照原论文的结构，带你逐步
+构建完整的注意力机制。
 
-## Overview
+## 概览
 
-| Exercise | Topic | Difficulty | Time |
+| 练习 | 主题 | 难度 | 用时 |
 |----------|-------|------------|------|
-| 1 | Additive Attention | 2/5 | 30 min |
-| 2 | Bidirectional Encoder | 2/5 | 25 min |
-| 3 | Attention Decoder | 3/5 | 40 min |
-| 4 | Training Loop | 2/5 | 30 min |
-| 5 | Visualization | 1/5 | 20 min |
+| 1 | 加性注意力 | 2/5 | 30 分钟 |
+| 2 | 双向编码器 | 2/5 | 25 分钟 |
+| 3 | 注意力解码器 | 3/5 | 40 分钟 |
+| 4 | 训练循环 | 2/5 | 30 分钟 |
+| 5 | 可视化 | 1/5 | 20 分钟 |
 
-## Exercise 1: Additive Attention
+## 练习 1：加性注意力
 
-**The Core Mechanism**
+**核心机制**
 
-Implement the attention scoring function:
+实现注意力评分函数：
 ```
 score(s, h) = v^T * tanh(W_s * s + W_h * h)
 ```
 
-You'll learn:
-- Why it's called "additive" (we ADD transformed vectors)
-- How attention weights are computed
-- The role of softmax normalization
+你将学到：
+- 为什么称为“加性”（将变换后的向量相加）
+- 如何计算注意力权重
+- softmax 归一化的作用
 
-## Exercise 2: Bidirectional Encoder
+## 练习 2：双向编码器
 
-**Bidirectional Encoding**
+**双向编码**
 
-Build an encoder that processes the source sequence in both directions:
-- Forward: left -> right
-- Backward: right -> left
+构建从两个方向处理源序列的编码器：
+- 正向：左 -> 右
+- 反向：右 -> 左
 
-You'll learn:
-- Why bidirectional context helps attention
-- How to handle packed sequences for efficiency
-- Combining forward/backward hidden states
+你将学到：
+- 为什么双向上下文有助于注意力
+- 如何用打包序列提高效率
+- 如何组合正向／反向隐藏状态
 
-## Exercise 3: Attention Decoder
+## 练习 3：注意力解码器
 
-**Attention-Based Decoder**
+**基于注意力的解码器**
 
-Implement a decoder that:
-1. Computes attention over encoder outputs
-2. Creates a context vector
-3. Combines context with input for prediction
+实现具备以下步骤的解码器：
+1. 在编码器输出上计算注意力
+2. 创建上下文向量
+3. 将上下文与输入组合，用于预测
 
-You'll learn:
-- The attention-GRU interaction
-- Teacher forcing for training
-- Step-by-step vs full sequence decoding
+你将学到：
+- 注意力与 GRU 如何交互
+- 训练中的教师强制
+- 逐步解码与完整序列解码的区别
 
-## Exercise 4: Training Loop
+## 练习 4：训练循环
 
-**Full Pipeline**
+**完整流程**
 
-Complete the training loop for the reversal task:
-- Loss computation with masking
-- Gradient clipping
-- Validation and accuracy calculation
+完成反转任务的训练循环：
+- 带屏蔽的损失计算
+- 梯度裁剪
+- 验证与准确率计算
 
-Goal: **Achieve >90% accuracy** on sequence reversal.
+目标：在序列反转任务中**达到 >90% 的准确率**。
 
-## Exercise 5: Visualization
+## 练习 5：可视化
 
-**Attention Visualization**
+**注意力可视化**
 
-Create attention heatmaps:
-- Visualize the reversed diagonal pattern
-- Analyze attention entropy
-- Debug model behavior visually
+创建注意力热力图：
+- 可视化反对角线模式
+- 分析注意力熵
+- 用可视化调试模型行为
 
-## How to Use
+## 使用方法
 
-1. **Read the exercise file** - Each has detailed instructions
-2. **Find the TODO sections** - These are what you implement
-3. **Run the tests** - Each file has a test function
-4. **Check solutions** - Compare with `solutions/solution_X.py`
+1. **阅读练习文件**——每个文件都有详细说明
+2. **找到 TODO 部分**——这些是需要你实现的内容
+3. **运行测试**——每个文件都有测试函数
+4. **查看解答**——与 `solutions/solution_X.py` 比较
 
-## Running Exercises
+## 运行练习
 
 ```bash
-# Test your implementation
+# 测试你的实现
 python exercise_1.py
 
-# After completing all exercises, run full training
+# 完成全部练习后，运行完整训练
 python exercise_4.py
 ```
 
-## Tips
+## 提示
 
-- **Start with Exercise 1** - Attention is the key concept
-- **Read the docstrings** - They contain hints
-- **Use the tests** - They verify your implementation
-- **Check shapes** - Print tensor shapes when debugging
-- **Compare with solutions** - But try first.
+- **从练习 1 开始**——注意力是关键概念
+- **阅读文档字符串**——其中包含提示
+- **使用测试**——检查你的实现
+- **检查形状**——调试时打印张量形状
+- **与参考解答比较**——但请先自己尝试。
 
-## Common Issues
+## 常见问题
 
-### "Shapes don't match"
-- Check batch dimension handling
-- Verify squeeze/unsqueeze operations
-- Print shapes at each step
+### “形状不匹配”
+- 检查批次维度的处理
+- 检查 squeeze/unsqueeze 操作
+- 打印每一步的形状
 
-### "Attention weights don't sum to 1"
-- Make sure softmax is on the right dimension
-- Check masking implementation
+### “注意力权重之和不为 1”
+- 确认 softmax 应用于正确维度
+- 检查屏蔽实现
 
-### "Training loss doesn't decrease"
-- Verify gradient flow (check .grad attributes)
-- Try smaller learning rate
-- Check that loss ignores padding
+### “训练损失不下降”
+- 检查梯度流（查看 .grad 属性）
+- 尝试更小的学习率
+- 检查损失是否忽略填充位置
 
-The attention mechanism is a widely used concept in modern deep learning. Understanding it provides a foundation for many subsequent architectures.
+注意力机制在现代深度学习中广泛使用。理解它能为学习许多后续架构打下基础。

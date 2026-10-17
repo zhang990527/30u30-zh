@@ -1,6 +1,4 @@
-"""
-Solution 1: Coarse-Graining and Complexity Measurement
-"""
+"""解答 1：粗粒化与复杂度测量"""
 
 import sys
 import os
@@ -12,10 +10,8 @@ from implementation import CoffeeAutomaton
 
 
 def coarse_grain(grid: np.ndarray, grain_size: int) -> np.ndarray:
-    """
-    Coarse-grain by averaging over grain_size x grain_size blocks.
-    Section 5.1 of the paper.
-    """
+    """对 grain_size x grain_size 块求平均，实现粗粒化。
+参见论文第 5.1 节。"""
     n = grid.shape[0]
     cn = n // grain_size
     if cn == 0:
@@ -33,31 +29,29 @@ def coarse_grain(grid: np.ndarray, grain_size: int) -> np.ndarray:
 
 
 def threshold(coarse: np.ndarray, num_buckets: int = 3) -> np.ndarray:
-    """
-    Threshold into discrete buckets.
-    Section 5.1: 3 buckets (mostly coffee, mixed, mostly cream).
-    """
+    """按阈值离散分箱。
+第 5.1 节：3 个分箱（以咖啡为主、混合、以奶油为主）。"""
     scaled = coarse * (num_buckets - 1)
     return np.clip(np.round(scaled), 0, num_buckets - 1).astype(np.uint8)
 
 
 def gzip_complexity(grid: np.ndarray, grain_size: int = 10,
                     num_buckets: int = 3) -> int:
-    """Apparent complexity: gzip(coarse-grained state)."""
+    """表观复杂度：gzip（粗粒化状态）。"""
     coarse = coarse_grain(grid, grain_size)
     discrete = threshold(coarse, num_buckets)
     return len(gzip.compress(discrete.tobytes(), compresslevel=9))
 
 
 def gzip_entropy(grid: np.ndarray) -> int:
-    """Entropy estimate: gzip(fine-grained state)."""
+    """熵估计：gzip（细粒度状态）。"""
     return len(gzip.compress(grid.astype(np.uint8).tobytes(), compresslevel=9))
 
 
 if __name__ == '__main__':
     ca = CoffeeAutomaton(grid_size=50, model='interacting', seed=42)
 
-    print("Time | Entropy | Complexity")
+    print("时间 | 熵 | 复杂度")
     print("-----|---------|----------")
 
     for t in [0, 10000, 50000]:
@@ -68,4 +62,4 @@ if __name__ == '__main__':
         c = gzip_complexity(grid, grain_size=5, num_buckets=3)
         print(f"{t:>5} | {e:>7} | {c:>10}")
 
-    print("\nComplexity should peak at intermediate time.")
+    print("\n复杂度应在中间时刻达到峰值。")

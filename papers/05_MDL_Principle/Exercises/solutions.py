@@ -1,14 +1,14 @@
 """
-Solutions for Day 5: MDL (Minimum Description Length) Exercises
+第 5 天最小描述长度练习参考解答
 ================================================================
 
-WARNING: Try the exercises yourself first!
-These solutions are for reference after you've attempted each problem.
+注意：请先自己尝试练习！
+这些解答供独立尝试后参考。
 
-Each solution includes:
-1. Complete working code
-2. Explanation of the approach
-3. Key insights
+每份解答包括：
+1. 完整代码
+2. 方法解释
+3. 关键认识
 """
 
 import numpy as np
@@ -16,21 +16,21 @@ from typing import Tuple, Dict, List
 
 
 # =============================================================================
-# EXERCISE 1 SOLUTIONS: Two-Part Code
+# 练习 1 解答：两段式编码
 # =============================================================================
 
 def solution_universal_code_length(n: int) -> float:
     """
-    Universal code for positive integers using log-star.
+    使用迭代对数和编码正整数。
     
     L(n) = log₂(c₀) + log₂(n) + log₂(log₂(n)) + ...
     
-    Only include positive terms in the sum.
+    求和中只包含正项。
     """
     if n <= 0:
         return float('inf')
     
-    c0 = 2.865064  # Normalization constant
+    c0 = 2.865064  # 归一化常数
     length = np.log2(c0)
     
     current = float(n)
@@ -45,14 +45,14 @@ def solution_universal_code_length(n: int) -> float:
 
 def solution_model_description_length(degree: int, precision_bits: int = 32) -> float:
     """
-    Model cost = degree encoding + coefficient encoding.
+    模型代价 = 次数编码 + 系数编码。
     """
-    # Encode degree
+    # 编码次数
     degree_cost = solution_universal_code_length(degree + 1)
     
-    # Encode coefficients (degree+1 of them)
+    # 编码系数，共 degree+1 个
     num_coefficients = degree + 1
-    coefficient_cost = num_coefficients * (precision_bits + 1)  # +1 for sign
+    coefficient_cost = num_coefficients * (precision_bits + 1)  # 加 1 表示符号位
     
     return degree_cost + coefficient_cost
 
@@ -64,26 +64,26 @@ def solution_data_description_length(
     precision_bits: int = 32
 ) -> float:
     """
-    Data cost = encode residuals using Gaussian model.
+    数据代价 = 使用高斯模型编码残差。
     """
     n = len(x)
     
-    # Fit polynomial
+    # 拟合多项式
     coeffs = np.polyfit(x, y, degree)
     poly = np.poly1d(coeffs)
     predictions = poly(x)
     residuals = y - predictions
     
-    # Estimate sigma
+    # 估计 sigma
     sigma = np.std(residuals)
-    sigma = max(sigma, 1e-10)  # Avoid division by zero
+    sigma = max(sigma, 1e-10)  # 避免除零
     
-    # Gaussian negative log-likelihood (in bits)
+    # 高斯负对数似然，单位为比特
     nll = 0.5 * n * np.log2(2 * np.pi * sigma**2) + \
           np.sum(residuals**2) / (2 * sigma**2 * np.log(2))
     
-    # Add cost to encode sigma
-    sigma_cost = precision_bits + 10  # Simplified
+    # 加入编码 sigma 的代价
+    sigma_cost = precision_bits + 10  # 简化形式
     
     return nll + sigma_cost
 
@@ -95,7 +95,7 @@ def solution_two_part_mdl(
     precision_bits: int = 32
 ) -> Tuple[float, float, float]:
     """
-    Complete two-part MDL: L(H) + L(D|H).
+    完整两段式 MDL：L(H) + L(D|H)。
     """
     model_cost = solution_model_description_length(degree, precision_bits)
     data_cost = solution_data_description_length(x, y, degree, precision_bits)
@@ -105,7 +105,7 @@ def solution_two_part_mdl(
 
 
 # =============================================================================
-# EXERCISE 2 SOLUTIONS: Prequential MDL
+# 练习 2 解答：预序贯 MDL
 # =============================================================================
 
 def solution_predict_next_point(
@@ -115,18 +115,18 @@ def solution_predict_next_point(
     degree: int
 ) -> Tuple[float, float]:
     """
-    Fit model on training data and predict the next point.
+    在训练数据上拟合模型，并预测下一个点。
     """
-    # Fit polynomial
+    # 拟合多项式
     coeffs = np.polyfit(x_train, y_train, degree)
     poly = np.poly1d(coeffs)
     
-    # Estimate sigma from training residuals
+    # 用训练残差估计 sigma
     train_pred = poly(x_train)
     residuals = y_train - train_pred
     sigma = np.std(residuals) if np.std(residuals) > 1e-10 else 1e-10
     
-    # Predict new point
+    # 预测新点
     prediction = poly(x_new)
     
     return prediction, sigma
@@ -138,7 +138,7 @@ def solution_code_length_for_point(
     sigma: float
 ) -> float:
     """
-    Gaussian code length for one observation.
+    单个观测的高斯编码代价。
     """
     sigma = max(sigma, 1e-10)
     error = y_actual - y_predicted
@@ -156,11 +156,11 @@ def solution_prequential_mdl(
     start_index: int = None
 ) -> float:
     """
-    Prequential MDL: predict each point, sum the surprises.
+    预序贯 MDL：预测每个点，并累加对数损失。
     """
     n = len(x)
     
-    # Need at least degree+1 points to fit, plus 1 to predict
+    # 拟合至少需要 degree+1 个点，另需 1 个预测点
     if start_index is None:
         start_index = degree + 2
     
@@ -170,16 +170,16 @@ def solution_prequential_mdl(
     total_code_length = 0.0
     
     for i in range(start_index, n):
-        # Training data: everything before point i
+        # 训练数据：第 i 个点之前的全部数据
         x_train = x[:i]
         y_train = y[:i]
         
-        # Predict point i
+        # 预测第 i 个点
         prediction, sigma = solution_predict_next_point(
             x_train, y_train, x[i], degree
         )
         
-        # Code length for this prediction
+        # 该预测的编码代价
         code_length = solution_code_length_for_point(y[i], prediction, sigma)
         total_code_length += code_length
     
@@ -192,7 +192,7 @@ def solution_prequential_model_selection(
     max_degree: int = 10
 ) -> Tuple[int, dict]:
     """
-    Select best degree using prequential MDL.
+    使用预序贯 MDL 选择最佳次数。
     """
     scores = {}
     
@@ -205,7 +205,7 @@ def solution_prequential_model_selection(
 
 
 # =============================================================================
-# EXERCISE 3 SOLUTIONS: Model Selection
+# 练习 3 解答：模型选择
 # =============================================================================
 
 class SolutionMDLModelSelector:
@@ -263,12 +263,12 @@ def solution_compare_with_cross_validation(
     n_folds: int = 5
 ) -> Dict[str, int]:
     """Compare MDL with k-fold cross-validation."""
-    # MDL selection
+    # MDL 选择
     selector = SolutionMDLModelSelector(max_degree=max_degree)
     selector.fit(x, y)
     mdl_best = selector.best_degree
     
-    # K-fold CV
+    # K 折交叉验证
     n = len(x)
     fold_size = n // n_folds
     
@@ -278,7 +278,7 @@ def solution_compare_with_cross_validation(
         fold_errors = []
         
         for fold in range(n_folds):
-            # Split data
+            # 划分数据
             val_start = fold * fold_size
             val_end = val_start + fold_size
             
@@ -289,7 +289,7 @@ def solution_compare_with_cross_validation(
             x_train, y_train = x[train_idx], y[train_idx]
             x_val, y_val = x[val_idx], y[val_idx]
             
-            # Fit and evaluate
+            # 拟合并评估
             coeffs = np.polyfit(x_train, y_train, deg)
             predictions = np.poly1d(coeffs)(x_val)
             mse = np.mean((y_val - predictions)**2)
@@ -303,7 +303,7 @@ def solution_compare_with_cross_validation(
 
 
 # =============================================================================
-# EXERCISE 4 SOLUTIONS: NML Complexity
+# 练习 4 解答：NML 复杂度
 # =============================================================================
 
 def solution_logsumexp(log_values: np.ndarray) -> float:
@@ -340,20 +340,20 @@ def solution_estimate_nml_complexity_polynomial(
     max_log_likelihoods = []
     
     for _ in range(n_samples):
-        # Sample random y values
+        # 采样随机 y 值
         y_random = np.random.uniform(y_range[0], y_range[1], n)
         
-        # Fit polynomial (ML estimate)
+        # 拟合多项式，得到最大似然估计
         try:
             coeffs = np.polyfit(x, y_random, min(degree, n - 1))
             predictions = np.poly1d(coeffs)(x)
             
-            # ML sigma
+            # sigma 的最大似然估计
             residuals = y_random - predictions
             sigma_ml = np.sqrt(np.mean(residuals**2))
             sigma_ml = max(sigma_ml, 1e-10)
             
-            # Log-likelihood
+            # 对数似然
             log_lik = solution_gaussian_log_likelihood(
                 y_random, predictions, sigma_ml
             )
@@ -364,11 +364,11 @@ def solution_estimate_nml_complexity_polynomial(
     if not max_log_likelihoods:
         return 0.0
     
-    # Complexity = log of average max-likelihood
+    # 复杂度近似 = 平均最大似然的对数；实际积分还需体积等校正
     log_liks = np.array(max_log_likelihoods)
     complexity = solution_logsumexp(log_liks) - np.log(len(log_liks))
     
-    return complexity / np.log(2)  # Convert to bits
+    return complexity / np.log(2)  # 转换为比特
 
 
 def solution_compute_nml_mdl(
@@ -380,24 +380,24 @@ def solution_compute_nml_mdl(
     """Compute NML-based MDL score."""
     n = len(x)
     
-    # Auto y_range
+    # 自动设置 y_range
     if y_range is None:
         margin = 2 * (np.max(y) - np.min(y))
         y_range = (np.min(y) - margin, np.max(y) + margin)
     
-    # Fit polynomial
+    # 拟合多项式
     coeffs = np.polyfit(x, y, degree)
     predictions = np.poly1d(coeffs)(x)
     residuals = y - predictions
     
-    # ML sigma
+    # sigma 的最大似然估计
     sigma_ml = np.sqrt(np.mean(residuals**2))
     sigma_ml = max(sigma_ml, 1e-10)
     
-    # Fit term (NLL in bits)
+    # 拟合项（负对数似然，单位为比特）
     fit_term = -solution_gaussian_log_likelihood(y, predictions, sigma_ml) / np.log(2)
     
-    # Complexity
+    # 复杂度
     complexity = solution_estimate_nml_complexity_polynomial(
         x, degree, y_range, n_samples=500
     )
@@ -406,13 +406,13 @@ def solution_compute_nml_mdl(
 
 
 # =============================================================================
-# EXERCISE 5 SOLUTIONS: MDL vs AIC vs BIC
+# 练习 5 解答：MDL、AIC 与 BIC
 # =============================================================================
 
 def solution_compute_aic(x: np.ndarray, y: np.ndarray, degree: int) -> float:
     """Compute AIC score."""
     n = len(x)
-    k = degree + 2  # Coefficients + variance
+    k = degree + 2  # 系数与方差
     
     coeffs = np.polyfit(x, y, degree)
     residuals = y - np.poly1d(coeffs)(x)
@@ -479,12 +479,12 @@ def solution_monte_carlo_comparison(
     for trial in range(n_trials):
         np.random.seed(trial)
         
-        # Generate polynomial
+        # 生成多项式
         true_coeffs = np.random.randn(true_degree + 1) * 2
         y_true = np.poly1d(true_coeffs)(x)
         y = y_true + np.random.randn(n_samples) * noise_std
         
-        # Run all criteria
+        # 运行全部准则
         results = solution_select_with_all_criteria(x, y, max_degree=10)
         
         for method in ['mdl', 'aic', 'bic']:
@@ -499,7 +499,7 @@ def solution_monte_carlo_comparison(
 
 
 # =============================================================================
-# MAIN: Verify solutions work
+# 主程序：验证参考解答
 # =============================================================================
 
 def verify_solutions():

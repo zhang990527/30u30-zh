@@ -3,15 +3,15 @@ import torch.nn as nn
 
 def generate_pairs_via_broadcasting(objects: torch.Tensor) -> torch.Tensor:
     """
-    TODO: Implement pairwise object concatenation using broadcasting.
-    As described in Section 2.1, the RN computes relations over all pairs.
+    TODO：通过广播实现成对对象拼接。
+    如第 2.1 节所述，RN 对全部对象对计算关系。
     
-    Input: (batch, N, D)
-    Output: (batch, N^2, 2*D)
+    输入：(batch, N, D)
+    输出：(batch, N^2, 2*D)
     
-    Constraint: No Python for-loops. Use unsqueeze, expand/repeat, and cat.
+    约束：不使用 Python for 循环，使用 unsqueeze、expand/repeat 与 cat。
     """
-    # YOUR CODE HERE
+    # 在此填写代码
     pass
 
 def test_pair_generator():
@@ -20,20 +20,20 @@ def test_pair_generator():
     
     pairs = generate_pairs_via_broadcasting(x)
     
-    # Validation
-    assert pairs.shape == (batch, N*N, 2*D), f"Expected {(batch, N*N, 2*D)}, got {pairs.shape}"
+    # 验证
+    assert pairs.shape == (batch, N*N, 2*D), f"预期 {(batch, N*N, 2*D)}，实际得到 {pairs.shape}"
     
-    # Check if first pair is actually (o0, o0)
+    # 检查第一个对象对是否确为 (o0, o0)
     first_pair = pairs[0, 0]
     expected_first = torch.cat([x[0, 0], x[0, 0]], dim=0)
-    assert torch.allclose(first_pair, expected_first), "First pair is incorrect."
+    assert torch.allclose(first_pair, expected_first), '第一个对象对错误。'
     
-    # Check if second pair is (o0, o1)
+    # 检查第二个对象对是否为 (o0, o1)
     second_pair = pairs[0, 1]
     expected_second = torch.cat([x[0, 0], x[0, 1]], dim=0)
-    assert torch.allclose(second_pair, expected_second), "Second pair is incorrect."
+    assert torch.allclose(second_pair, expected_second), '第二个对象对错误。'
     
-    print("Exercise 1: [PASS]")
+    print('练习 1：[PASS]')
 
 if __name__ == "__main__":
     test_pair_generator()

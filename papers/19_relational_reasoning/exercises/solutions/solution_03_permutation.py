@@ -3,19 +3,19 @@ from implementation import RelationNetwork
 
 def verify_permutation_invariance(model: RelationNetwork, objects: torch.Tensor) -> bool:
     """
-    Solution 3: Proving permutation invariance.
+    解答 3：验证排列不变性。
     """
     model.eval()
     
-    # Original Pass
+    # 原始顺序的前向传播
     with torch.no_grad():
         out_orig = model(objects)
         
-    # Shuffle the objects along the N dimension
+    # 沿 N 维打乱对象
     indices = torch.randperm(objects.size(1))
     shuffled_objects = objects[:, indices, :]
     
-    # Shuffled Pass
+    # 打乱后的前向传播
     with torch.no_grad():
         out_shuffled = model(shuffled_objects)
         

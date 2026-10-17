@@ -1,20 +1,17 @@
-"""
-setup.py - Verify environment for Day 6: The First Law of Complexodynamics
+"""setup.py —— 检查第 6 天《复杂动力学第一定律》的环境
 
-Run this to check that all dependencies are available:
+运行以下命令，检查依赖是否可用：
     python setup.py
-
-Reference: Scott Aaronson (2011) - https://scottaaronson.blog/?p=762
-"""
+参考：Scott Aaronson（2011）—— https://scottaaronson.blog/?p=762"""
 
 import sys
 
 
 def check_dependencies():
-    """Check that required packages are installed."""
+    """检查所需软件包是否安装。"""
     required = {
         'numpy': 'numpy',
-        'gzip': 'gzip',      # stdlib
+        'gzip': 'gzip',      # 标准库
         'matplotlib': 'matplotlib',
     }
 
@@ -24,14 +21,14 @@ def check_dependencies():
             __import__(import_name)
             print(f"  [OK] {name}")
         except ImportError:
-            print(f"  [FAIL] {name} -- install with: pip install {name}")
+            print(f"  [FAIL] {name} —— 安装命令：pip install {name}")
             missing.append(name)
 
     return missing
 
 
 def check_implementation():
-    """Verify core implementation imports work."""
+    """检查核心实现是否可以正常导入。"""
     try:
         from implementation import (
             create_initial_grid,
@@ -40,25 +37,25 @@ def check_implementation():
             two_part_code,
             run_simulation,
         )
-        print("  [OK] implementation.py imports")
+        print('  [OK] implementation.py 导入成功')
     except ImportError as e:
         print(f"  [FAIL] implementation.py: {e}")
         return False
 
-    # Quick smoke test
+    # 快速冒烟检查
     try:
         import numpy as np
         grid = create_initial_grid(16)
-        assert grid.shape == (16, 16), f"Expected (16,16), got {grid.shape}"
-        assert grid[:8, :].sum() == 16 * 8, "Top half should be all 1s"
-        assert grid[8:, :].sum() == 0, "Bottom half should be all 0s"
+        assert grid.shape == (16, 16), f"预期 (16,16)，实际为 {grid.shape}"
+        assert grid[:8, :].sum() == 16 * 8, '上半部分应全为 1'
+        assert grid[8:, :].sum() == 0, '下半部分应全为 0'
 
         kc = gzip_complexity(grid)
-        assert isinstance(kc, int) and kc > 0, f"gzip_complexity returned {kc}"
+        assert isinstance(kc, int) and kc > 0, f"gzip_complexity 返回 {kc}"
 
-        print("  [OK] Smoke test passed")
+        print('  [OK] 冒烟检查通过')
     except Exception as e:
-        print(f"  [FAIL] Smoke test: {e}")
+        print(f"  [FAIL] 冒烟检查：{e}")
         return False
 
     return True
@@ -66,12 +63,12 @@ def check_implementation():
 
 if __name__ == "__main__":
     print("=" * 50)
-    print("Day 6: The First Law of Complexodynamics")
-    print("Setup Verification")
+    print('第 6 天：复杂动力学第一定律')
+    print('环境检查')
     print("=" * 50)
     print()
 
-    print("Checking dependencies...")
+    print('检查依赖……')
     missing = check_dependencies()
     print()
 
@@ -79,21 +76,21 @@ if __name__ == "__main__":
         stdlib = {'gzip'}
         real_missing = [m for m in missing if m not in stdlib]
         if real_missing:
-            print(f"Missing packages: {', '.join(real_missing)}")
-            print(f"Install with: pip install {' '.join(real_missing)}")
+            print(f"缺少软件包：{', '.join(real_missing)}")
+            print(f"安装命令：pip install {' '.join(real_missing)}")
             sys.exit(1)
 
-    print("Checking implementation...")
+    print('检查实现……')
     if check_implementation():
         print()
-        print("All checks passed. Ready to go.")
+        print('全部检查通过，可以开始使用。')
         print()
-        print("Quick start:")
+        print('快速开始：')
         print("  python train_minimal.py --grid-size 64 --steps 50000")
         print()
-        print("Or run the full visualization suite:")
+        print('或运行完整可视化工具：')
         print("  python visualization.py")
     else:
         print()
-        print("Some checks failed. See errors above.")
+        print('部分检查失败，请查看上方错误。')
         sys.exit(1)

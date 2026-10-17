@@ -1,9 +1,8 @@
-This directory stores simulation output data.
+此目录存放模拟输出数据。
 
-Run `python train_minimal.py` to generate:
-- Grid snapshots at various time steps
-- Complexity measurements over time
+运行 `python train_minimal.py` 可生成：
+- 不同时间步的网格快照
+- 随时间变化的复杂性测量结果
 
-The simulation creates its own data from the coffee-milk initial
-condition (top half black, bottom half white) so no external data
-files are needed.
+模拟从咖啡—牛奶初始状态（上半部分黑、下半部分白）自行生成数据，
+因此无需外部数据文件。

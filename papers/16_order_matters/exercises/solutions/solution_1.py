@@ -1,9 +1,9 @@
 """
-Solution 1: Basic Pointer Attention Mechanism
+解答 1：基本指针注意力机制
 ==============================================
 
-Complete implementation of the Pointer Network attention mechanism.
-Maps to Equation 1 in Vinyals et al. (2015).
+指针网络注意力机制的完整实现。
+原仓库将其对应到 Vinyals 等（2015）的公式 1；该编号尚待一手核验。
 """
 
 import torch
@@ -13,8 +13,8 @@ import torch.nn.functional as F
 
 class SimplePointerAttention(nn.Module):
     """
-    Pointer attention: Given a query (decoder state) and keys (encoder outputs),
-    outputs a distribution over the input indices.
+    指针注意力：给定查询（解码器状态）与键（编码器输出），
+    输出输入索引上的分布。
     """
     
     def __init__(self, hidden_dim):
@@ -26,43 +26,43 @@ class SimplePointerAttention(nn.Module):
     
     def forward(self, query, keys, mask=None):
         """
-        Compute pointer attention.
+        计算指针注意力。
         
-        Args:
+        参数：
             query: [batch, hidden_dim]
             keys: [batch, seq_len, hidden_dim]
             mask: [batch, seq_len]
         """
         batch_size, seq_len, hidden_dim = keys.size()
         
-        # Step 1: Project keys
+        # 第 1 步：投影键
         keys_proj = self.W_key(keys)
         
-        # Step 2: Project query
+        # 第 2 步：投影查询
         query_proj = self.W_query(query).unsqueeze(1)
         
-        # Step 3: Energy computation (Eq 1)
-        # Using tanh activation as defined in the paper
+        # 第 3 步：能量计算（原仓库标为公式 1）
+        # 使用原仓库所述论文定义中的 tanh 激活
         combined = torch.tanh(keys_proj + query_proj)
         
-        # Step 4: Map to scores
+        # 第 4 步：映射为分数
         scores = self.v(combined).squeeze(-1)
         
-        # Step 5: Masking (sampling without replacement)
+        # 第 5 步：屏蔽（无放回采样）
         if mask is not None:
             scores = scores.masked_fill(mask == 0, float('-inf'))
         
-        # Step 6: Softmax
+        # 第 6 步：softmax
         attention_weights = F.softmax(scores, dim=-1)
         
-        # Step 7: Selection
+        # 第 7 步：选择
         pointer = torch.argmax(attention_weights, dim=-1)
         
         return pointer, attention_weights
 
 
 def test_pointer_attention():
-    print("Validating Pointer Attention Solution")
+    print('验证指针注意力参考解答')
     print("-" * 30)
     
     batch_size = 4
@@ -76,15 +76,15 @@ def test_pointer_attention():
     pointer, weights = attention(query, keys)
     assert pointer.shape == (batch_size,)
     assert torch.allclose(weights.sum(dim=1), torch.ones(batch_size))
-    print("Forward pass verified")
+    print('前向传播验证通过')
     
     mask = torch.ones(batch_size, seq_len)
     mask[:, -1] = 0
     _, weights_masked = attention(query, keys, mask=mask)
     assert weights_masked[0, -1] < 1e-7
-    print("Masking verified")
+    print('屏蔽验证通过')
     
-    print("All validation tests complete")
+    print('全部验证测试已完成')
 
 if __name__ == "__main__":
     test_pointer_attention()

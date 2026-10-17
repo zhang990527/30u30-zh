@@ -1,16 +1,16 @@
-# Data Directory
+# 数据目录
 
-This directory contains datasets and data generation utilities for Pointer Networks training.
+本目录说明指针网络训练所用的数据集与数据生成工具。
 
 ---
 
-## Available Datasets
+## 可用数据集
 
-### 1. Sorting Dataset
+### 1. 排序数据集
 
-**Purpose:** Train models to sort numbers
+**用途：**训练数字排序模型
 
-**Generation:**
+**生成方式：**
 ```python
 from torch.utils.data import Dataset
 import torch
@@ -26,57 +26,57 @@ class SortingDataset(Dataset):
         return values.unsqueeze(1), sorted_indices
 ```
 
-**Usage:**
+**用法：**
 ```bash
 python train.py --task sort --set-size 10 --train-samples 10000
 ```
 
-**Dataset stats:**
-- **Default size:** 10,000 training samples, 1,000 validation
-- **Element range:** [0.0, 1.0] (uniform random)
-- **Set sizes:** 5-50 elements (configurable)
+**数据集统计：**
+- **默认规模：**10,000 个训练样本、1,000 个验证样本
+- **元素范围：**[0.0, 1.0]（均匀随机）
+- **集合规模：**5-50 个元素（可配置）
 
 ---
 
-### 2. Convex Hull Dataset
+### 2. 凸包数据集
 
-**Purpose:** Learn geometric reasoning - find boundary points
+**用途：**学习几何推理——寻找边界点
 
-**Generation:**
+**生成方式：**
 ```python
 from scipy.spatial import ConvexHull
 import torch
 
-# Generate random 2D points
+# 生成随机二维点
 points = torch.rand(num_points, 2)
 
-# Compute ground truth hull
+# 计算真实凸包
 hull = ConvexHull(points.numpy())
-hull_indices = hull.vertices  # Boundary point indices
+hull_indices = hull.vertices  # 边界点索引
 ```
 
-**Usage:**
+**用法：**
 ```bash
 python train.py --task convex_hull --set-size 20 --train-samples 5000
 ```
 
-**Dataset stats:**
-- **Default size:** 5,000 training samples, 500 validation
-- **Point distribution:** Uniform in [0, 1]^2
-- **Hull size:** Variable (typically 30-40% of points)
+**数据集统计：**
+- **默认规模：**5,000 个训练样本、500 个验证样本
+- **点分布：**在 [0, 1]^2 内均匀分布
+- **凸包规模：**可变（原仓库称通常占全部点的 30-40%；该比例依赖点数和分布）
 
 ---
 
-### 3. TSP Dataset
+### 3. TSP 数据集
 
-**Purpose:** Traveling Salesman Problem - find good tours
+**用途：**旅行商问题——寻找高质量巡回路径
 
-**Generation:**
+**生成方式：**
 ```python
-# Generate city coordinates
+# 生成城市坐标
 cities = torch.rand(num_cities, 2)
 
-# Compute greedy nearest-neighbor tour (teacher signal)
+# 计算贪心最近邻巡回路径（监督信号）
 def greedy_tour(cities):
     current = 0
     unvisited = set(range(1, len(cities)))
@@ -92,53 +92,53 @@ def greedy_tour(cities):
     return tour
 ```
 
-**Usage:**
+**用法：**
 ```bash
 python train.py --task tsp --set-size 15 --train-samples 10000
 ```
 
-**Dataset stats:**
-- **Default size:** 10,000 training samples, 1,000 validation
-- **City distribution:** Uniform in [0, 1]^2
-- **Tour quality:** Greedy heuristic (~1.25x optimal)
+**数据集统计：**
+- **默认规模：**10,000 个训练样本、1,000 个验证样本
+- **城市分布：**在 [0, 1]^2 内均匀分布
+- **巡回路径质量：**贪心启发式（原仓库标为约最优值的 1.25 倍；未附验证依据）
 
 ---
 
-## Dynamic Data Generation
+## 动态数据生成
 
-All datasets are generated **on-the-fly** during training:
+所有数据集都在训练过程中**即时生成**：
 
-**Advantages:**
-- No storage required (generates as needed)  
-- Infinite dataset - never repeats  
-- Easy to adjust difficulty (change set size)  
-- No download needed
+**优点：**
+- 无需存储数据（按需生成）  
+- 理论上可持续采样，不受固定样本数限制；原仓库“永不重复”的表述不构成严格保证  
+- 易于调整难度（改变集合规模）  
+- 无需下载
 
-**How it works:**
+**工作方式：**
 ```python
-# In the dataloader
+# 在数据加载器中
 for epoch in range(num_epochs):
     for batch in dataloader:
-        # Generates new random instances each iteration
+        # 每次迭代生成新的随机实例
         inputs, targets = batch
 ```
 
 ---
 
-## Pre-generated Datasets (Optional)
+## 预生成数据集（可选）
 
-For reproducibility, you can generate fixed datasets:
+为便于复现，可以生成固定数据集：
 
-### Generate and Save
+### 生成并保存
 
 ```python
 import torch
 from train import get_dataset
 
-# Generate dataset
+# 生成数据集
 dataset = get_dataset(task='sort', num_samples=10000, set_size=10)
 
-# Save to disk
+# 保存到磁盘
 torch.save({
     'data': [dataset[i] for i in range(len(dataset))],
     'config': {
@@ -149,80 +149,80 @@ torch.save({
 }, 'sorting_dataset_10k.pt')
 ```
 
-### Load Pre-generated
+### 加载预生成数据集
 
 ```python
 import torch
 
-# Load dataset
+# 加载数据集
 data = torch.load('sorting_dataset_10k.pt')
 samples = data['data']
 config = data['config']
 
-print(f"Loaded {len(samples)} samples for {config['task']}")
+print(f"已加载任务 {config['task']} 的 {len(samples)} 个样本")
 ```
 
 ---
 
-## Dataset Difficulty Levels
+## 数据集难度等级
 
-### Easy (Good for Initial Training)
-- **Sorting:** 5-10 elements
-- **Convex Hull:** 10-15 points
-- **TSP:** 5-10 cities
+### 简单（适合初始训练）
+- **排序：**5-10 个元素
+- **凸包：**10-15 个点
+- **TSP：**5-10 个城市
 
-### Medium (Standard Training)
-- **Sorting:** 15-30 elements
-- **Convex Hull:** 20-30 points  
-- **TSP:** 15-20 cities
+### 中等（常规训练）
+- **排序：**15-30 个元素
+- **凸包：**20-30 个点  
+- **TSP：**15-20 个城市
 
-### Hard (Generalization Test)
-- **Sorting:** 50-100 elements
-- **Convex Hull:** 50+ points
-- **TSP:** 30-50 cities
+### 困难（泛化测试）
+- **排序：**50-100 个元素
+- **凸包：**50 个以上的点
+- **TSP：**30-50 个城市
 
 ---
 
-## Dataset Statistics
+## 数据集统计
 
-### Sorting
+### 排序
 
-| Set Size | Convergence Time | Accuracy |
+| 集合规模 | 收敛时间 | 准确率 |
 |----------|------------------|----------|
-| 5 | ~10 epochs | 100% |
-| 10 | ~20 epochs | 100% |
-| 20 | ~50 epochs | 99% |
-| 50 | ~100 epochs | 95% |
+| 5 | 约 10 轮 | 100% |
+| 10 | 约 20 轮 | 100% |
+| 20 | 约 50 轮 | 99% |
+| 50 | 约 100 轮 | 95% |
 
-### Convex Hull
+### 凸包
 
-| Num Points | Hull Size (avg) | Convergence | Accuracy |
+| 点数 | 凸包大小（平均） | 收敛时间 | 准确率 |
 |------------|-----------------|-------------|----------|
-| 10 | 4-5 points | ~50 epochs | 98% |
-| 20 | 6-8 points | ~100 epochs | 95% |
-| 50 | 10-15 points | ~200 epochs | 90% |
+| 10 | 4-5 个点 | 约 50 轮 | 98% |
+| 20 | 6-8 个点 | 约 100 轮 | 95% |
+| 50 | 10-15 个点 | 约 200 轮 | 90% |
 
 ### TSP
 
-| Num Cities | Tour Length (vs greedy) | Convergence |
+| 城市数 | 巡回路径长度（相对贪心算法） | 收敛时间 |
 |------------|-------------------------|-------------|
-| 10 | 5-10% better | ~100 epochs |
-| 20 | 3-8% better | ~200 epochs |
-| 50 | 0-5% better | ~500 epochs |
+| 10 | 改善 5-10% | 约 100 轮 |
+| 20 | 改善 3-8% | 约 200 轮 |
+| 50 | 改善 0-5% | 约 500 轮 |
 
 ---
 
-## Custom Datasets
+## 自定义数据集
 
-Want to try your own set-to-sequence problem?
+想尝试自己的集合到序列问题吗？
 
-### Template
+### 模板
 
 ```python
 from torch.utils.data import Dataset
 
 class CustomDataset(Dataset):
-    """Your custom set-to-sequence problem."""
+    """自定义的集合到序列问题。"""
     
     def __init__(self, num_samples, set_size):
         self.num_samples = num_samples
@@ -232,32 +232,32 @@ class CustomDataset(Dataset):
         return self.num_samples
     
     def __getitem__(self, idx):
-        # Step 1: Generate input set (order doesn't matter)
+        # 第 1 步：生成输入集合（顺序无关）
         inputs = self.generate_input_set(self.set_size)
         
-        # Step 2: Compute ground truth output sequence (order matters!)
+        # 第 2 步：计算真实输出序列（顺序很重要）
         targets = self.compute_target_sequence(inputs)
         
         return inputs, targets
     
     def generate_input_set(self, size):
-        # Your input generation logic
+        # 在此实现输入生成逻辑
         raise NotImplementedError
     
     def compute_target_sequence(self, inputs):
-        # Your target computation logic
+        # 在此实现目标计算逻辑
         raise NotImplementedError
 ```
 
-### Example: Sorting by Absolute Value
+### 示例：按绝对值排序
 
 ```python
 class AbsValueSortDataset(Dataset):
     def __getitem__(self, idx):
-        # Generate numbers (can be negative!)
+        # 生成数字（可以为负）
         values = torch.randn(self.set_size)
         
-        # Sort by absolute value
+        # 按绝对值排序
         abs_values = torch.abs(values)
         _, sorted_indices = torch.sort(abs_values)
         
@@ -266,45 +266,47 @@ class AbsValueSortDataset(Dataset):
 
 ---
 
-## Data Augmentation
+## 数据增强
 
-### For Better Generalization
+### 改善泛化能力
 
 ```python
-# Random scaling
+# 随机缩放
 values = values * random.uniform(0.5, 2.0)
 
-# Random offset
+# 随机偏移
 values = values + random.uniform(-1.0, 1.0)
 
-# Random subset (for variable-size training)
+# 随机子集（用于可变规模训练）
 actual_size = random.randint(5, max_size)
 values = values[:actual_size]
 ```
 
 ---
 
-## Quick Start
+## 快速开始
 
 ```bash
-# Train on sorting (easiest)
+# 训练排序任务（最简单）
 python train.py --task sort --set-size 10 --epochs 50
 
-# Train on convex hull (medium)
+# 训练凸包任务（中等）
 python train.py --task convex_hull --set-size 20 --epochs 100
 
-# Train on TSP (hardest)
+# 训练 TSP 任务（最难）
 python train.py --task tsp --set-size 15 --epochs 200
 ```
 
 ---
 
-## Resources
+## 资源
 
-- **Training script:** `../train.py`
-- **Dataset generators:** `../train.py` (SortingDataset, ConvexHullDataset, TSPDataset)
-- **Paper:** https://arxiv.org/abs/1511.06391
+- **训练脚本：**`../train.py`
+- **数据集生成器：**`../train.py`（SortingDataset、ConvexHullDataset、TSPDataset）
+- **论文：**https://arxiv.org/abs/1511.06391
 
 ---
 
-**Tip:** Start with small sets (5-10 elements) and gradually increase.
+**提示：**从小集合（5-10 个元素）开始，逐渐增大规模。
+
+> **译者核验注：**本页统计数字与预期性能保留自原仓库，未附实验日志、随机种子或评估协议，不能视为复现结果。实际 `train.py` 未提供 `get_dataset` 或命令行训练入口；其中数据集定义与本页声称的默认值、即时生成行为应逐项核对。本地化未补写这些接口。

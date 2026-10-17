@@ -1,43 +1,48 @@
-# Exercises: Pointer Networks
+# 练习：指针网络
 
-These exercises are designed to help you implement the core mechanics of Pointer Networks (Vinyals et al., 2015). Focus on the relationship between the decoder hidden state (query) and the encoder hidden states (keys) to produce valid indices.
+这些练习帮助你实现指针网络（Vinyals 等，2015）的核心机制。重点理解解码器隐藏状态（查询）与编码器隐藏状态（键）如何共同产生有效索引。
 
 ---
 
-## Overview
+## 概览
 
-| Exercise | Topic | Difficulty | Time |
+| 练习 | 主题 | 难度 | 用时 |
 |:---|:---|:---|:---|
-| 1 | Pointer Attention | Easy (2/5) | 30 min |
-| 2 | Masking | Medium (3/5) | 30 min |
-| 3 | Convex Hull | Medium (3/5) | 45 min |
-| 4 | TSP Cost | Easy (2/5) | 20 min |
-| 5 | Greedy Decoding | Hard (4/5) | 60 min |
+| 1 | 指针注意力 | 入门（2/5） | 30 分钟 |
+| 2 | 掩码 | 中等（3/5） | 30 分钟 |
+| 3 | 凸包 | 中等（3/5） | 45 分钟 |
+| 4 | TSP 代价 | 入门（2/5） | 20 分钟 |
+| 5 | 贪心解码 | 较难（4/5） | 60 分钟 |
 
-## Exercise 1: Pointer Attention Head
-Implement the additive scoring mechanism (Equation 3 from the paper). You will need to project both the encoder and decoder states, combine them, and apply the final projection to get a single score for each input position.
+## 练习 1：指针注意力头
 
-## Exercise 2: Masking & Constraints
-Implement the masking logic required for tasks like the Traveling Salesman Problem (TSP). You must ensure that the model doesn't select the same item twice and properly ignores any padding tokens in the input sequence.
+实现加性评分机制（论文公式 3）。你需要投影编码器和解码器状态，将二者结合，再应用最终投影，为每个输入位置得到一个标量分数。
 
-## Exercise 3: Convex Hull Formatting
-Geometric problems require specific input/output formatting. Implement a function to calculate the "pointer" targets for the Convex Hull task, outputting the indices of the hull vertices in order.
+## 练习 2：掩码与约束
 
-## Exercise 4: TSP Cost Analysis
-Write a utility function to calculate the total Euclidean distance of a TSP tour given a sequence of pointers. This reinforces the relationship between discrete pointers and the continuous geometric space they operate in.
+实现旅行商问题（TSP）等任务所需的掩码逻辑。确保模型不会重复选择同一项，并正确忽略输入序列的填充词元。
 
-## Exercise 5: Greedy Decoding Loop
-Implement the full autoregressive decoding loop. This includes passing inputs through the decoder, selecting the best pointer, and using that selection's representation as the input for the next time step.
+## 练习 3：凸包格式化
 
-## How to Use
+几何问题需要特定的输入输出格式。实现函数，按顺序输出凸包顶点的索引，作为凸包任务的“指针”目标。
 
-1. Read the exercise file -- each has detailed instructions.
-2. Find the TODO sections -- these are what you implement.
-3. Run the tests -- each file has a test function.
-4. Check solutions -- compare with `solutions/solution_X.py`.
+## 练习 4：TSP 代价分析
 
-## Tips
+编写工具函数，根据指针序列计算 TSP 巡回路径的欧氏距离总和，加深理解离散指针与连续几何空间之间的联系。
 
-- Use broadcasting to project the encoder states once before the decoding loop starts.
-- Remember to apply the mask *before* the Softmax operation.
-- In Pointer Networks, the attention distribution *is* the output layer.
+## 练习 5：贪心解码循环
+
+实现完整的自回归解码循环：将输入送入解码器，选择最佳指针，再将选中元素的表示用作下一时间步的输入。
+
+## 使用方法
+
+1. 阅读练习文件中的详细说明。
+2. 找到并实现 TODO 部分。
+3. 运行测试；每个文件都有测试函数。
+4. 对照 `solutions/solution_X.py` 中对应的参考解答。
+
+## 提示
+
+- 解码循环开始前，只计算一次编码器状态投影，再利用广播。
+- 一定在 softmax *之前*应用掩码。
+- 在指针网络中，注意力分布*就是*输出层。

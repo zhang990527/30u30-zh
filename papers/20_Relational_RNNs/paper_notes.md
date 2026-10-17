@@ -1,103 +1,118 @@
-# Paper Notes: Relational Recurrent Neural Networks
+# 论文笔记：关系循环神经网络（Relational Recurrent Neural Networks）
 
-## ELI5 (Explain Like I'm 5)
+## 通俗解释（ELI5）
 
-### The Memory Cocktail Party
+### 记忆中的交流会
 
-Imagine a standard RNN (like an LSTM) as a person trying to remember a long story. They have a notebook (the hidden state), and at each step, they write down new information and cross out old stuff. But they only look at *one page* at a time. If they need to connect a detail from Page 1 to Page 50, they have to hope they copied that detail forward over and over again for 49 pages.
+可以把标准 RNN（如 LSTM）想象成一个努力记住长故事的人。他有一本笔记本（内部状态），每一步写下新信息、划去旧信息，但一次只看*一页*。如果要把第 1 页的细节与第 50 页联系起来，就得希望这个细节连续被抄过 49 页。
 
-The **Relational Memory Core (RMC)** is like a cocktail party inside your head. instead of one single notebook page, you have distinct "memory slots"—like different people at a party. At every time step, before taking in new information, these memory slots *talk to each other*.
-- Memory A says: "I'm holding the color red."
-- Memory B says: "I'm holding the shape square."
-- They interact (via attention) and realize: "Oh, we're looking for a red square!"
+**关系记忆核心（Relational Memory Core，RMC）**像脑中举办的交流会。不再只有一页笔记，而是有不同的“记忆槽位”，像聚会中的不同人。每个时间步，这些槽位都会*相互交谈*。
 
-By letting memories interact *at each step*, the network doesn't just store facts; it reasons about how those facts relate to each other, even if they happened thousands of steps apart.
+- 记忆 A 说：“我记着红色。”
+- 记忆 B 说：“我记着正方形。”
+- 二者通过注意力交互，得到：“原来我们在找红色正方形！”
 
-> **Note:** This analogy is ours, not the authors'.
+让记忆在*每一步*交互，网络就不只存储事实，还能推理事实之间的关系，即使相关信息相隔很久。
 
----
-
-## What the Paper Actually Covers
-
-The paper (Santoro et al., 2018) introduces the **Relational Memory Core (RMC)**. It addresses a specific weakness in standard RNNs: **compartmentalized memory**.
-
-- **Section 1 (Introduction):** Argues that standard memory cells (like LSTM cells) effectively treat memory as a single dense vector (or unorganized slots). Interactive reasoning is hard because the bits of information don't explicitly "attend" to each other during storage.
-- **Section 2 (Relational Memory Core):** Proposes the RMC. It replaces the standard LSTM cell update with a multi-head self-attention mechanism.
-- **Section 3 (Experiments):** Shows results on:
-    - **N-th Farthest**: A synthetic task explicitly designs to break standard LSTMs.
-    - **Reinforcement Learning**: Mini PacMan (requiring spatial and temporal reasoning).
-    - **Language Modeling**: WikiText-103, where it achieves state-of-the-art (SOTA) results for LSTM-based models.
+> **说明：**类比来自本仓库，并非作者原话，也不是对任意跨度记忆成功的保证。
 
 ---
 
-## The Core Idea
+## 论文实际覆盖的内容
 
-The Big Idea is **Self-Attention in the Recurrent Update**.
+Santoro 等人（2018）提出 **RMC**，针对标准 RNN 中记忆缺少显式交互的问题。
 
-In a standard Transformer, attention happens over time (looking back at all previous words).
-In an RMC, attention happens **over memory slots** at the *current* time step.
+- **第 1 节（引言）：**标准记忆单元（如 LSTM）将记忆存为单个稠密向量，或缺少组织的槽位。存储时信息片段并不显式相互关注，因此交互推理较困难。
+- **第 2 节（关系记忆核心）：**提出 RMC，在记忆更新中引入多头自注意力，并结合门控。
+- **第 3 节（实验）：**展示以下结果：
+  - **第 N 远任务（N-th Farthest）：**用于检验标准 LSTM 的关系记忆能力的合成任务。
+  - **强化学习：**需要空间与时间推理的 Mini PacMan。
+  - **语言建模：**WikiText-103；原仓库称其达到当时 LSTM 类模型的先进水平。
 
-1.  **Fixed Slots**: The memory is a matrix $M$ of size $F \times W$ (F rows/slots, W features).
-2.  **Interaction**: At each step $t$, the slots run a self-attention mechanism ($M_{t-1}$ attends to itself).
-3.  **Update**: The attended memory is then updated using gates (similar to LSTM) to produce $M_t$.
-
-This allows the model to perform "relational reasoning" (connecting concepts) at every single tick of the clock.
+> 核验状态：本次读取了 DeepMind Sonnet 官方 RMC 源码，未成功取得论文正文；实验设置、节号和结果概述尚未独立核验。
 
 ---
 
-## The Math
+## 核心思想
 
-### 1. Multi-Head Dot Product Attention (MHDPA)
-Standard Transformer attention, but applied to the memory matrix $M$.
+核心是**在循环更新中使用自注意力**。
+
+标准 Transformer 可以沿时间关注此前词元；RMC 则在*当前*时间步对**记忆槽位**应用注意力。
+
+1. **固定槽位：**记忆是大小为 $F \times W$ 的矩阵 $M$，有 F 行／槽位、W 个特征。
+2. **交互：**每一步 $t$，槽位执行自注意力，$M_{t-1}$ 关注自身，并结合当前输入。
+3. **更新：**再使用类似 LSTM 的门控更新注意力处理后的记忆，得到 $M_t$。
+
+这样，模型可以在每个时间步进行关联概念的关系建模。
+
+---
+
+## 数学表达
+
+### 1. 多头点积注意力（MHDPA）
+
+将标准 Transformer 注意力应用于记忆矩阵 $M$：
 
 $$ A(Q, K, V) = \text{softmax}(\frac{QK^T}{\sqrt{d_k}})V $$
 
-In the RMC:
-- Input $x_t$ is concatenated to the memory slots (or projected into them).
-- Queries ($Q$), Keys ($K$), and Values ($V$) are computed from the memory $M_{t-1}$.
-- Output is $\tilde{M}_t$, the "attended" memory.
+在 RMC 中：
 
-### 2. The Gating Mechanism (LSTM-style)
-The paper uses an LSTM-like update to ensure stability. Instead of scalar gates, we have *row-wise* gates for the memory slots.
+- 输入 $x_t$ 拼接到记忆槽位，或投影后与其结合。
+- 从上一时刻记忆 $M_{t-1}$ 及相应输入表示计算查询（$Q$）、键（$K$）、值（$V$）。
+- 输出 $\tilde{M}_t$，即注意力处理后的记忆。
 
-For each memory slot $m$:
+### 2. 门控机制（LSTM 风格）
+
+论文使用类似 LSTM 的更新提高稳定性。对记忆槽位应用逐行或逐元素门控，而不仅是单个标量门。
+
+对每个记忆槽位 $m$：
+
 $$ f_t = \sigma(W_f x_t + U_f m_{t-1} + b_f) $$
 $$ i_t = \sigma(W_i x_t + U_i m_{t-1} + b_i) $$
 $$ \tilde{m}_t = \text{tanh}(W_c x_t + U_c m_{t-1} + b_c) $$
 $$ m_t = f_t \odot m_{t-1} + i_t \odot \tilde{m}_t $$
 
-*(Note: The actual implementation in the paper often uses the attention output as the input to these gates, effectively replacing the linear $x_t$ terms or augmenting them.)*
+*原仓库说明：实际 RMC 更新常使用注意力输出构造候选记忆，替代或扩充上述线性 $x_t$ 项。*
+
+> 译注：以上保留原仓库的 LSTM 式示意公式，不应当作论文方程的逐字转录。官方 Sonnet 源码从输入及旧记忆构造门，结合注意力产生的候选更新；其默认遗忘偏置为 1.0。
 
 ---
 
-## The Experiments
+## 实验
 
-### N-th Farthest (Section 3.1)
-- **Setup**: A sequence of vectors is shown. The model must identify which vector is farthest from the $N$-th vector in the sequence.
-- **Why it matters**: To solve this, you *must* remember the N-th vector, hold it, and compare it to every other vector. Standard LSTMs fail because they degrade the "held" vector over time.
-- **Result**: RMC solves this with near 100% accuracy, while LSTMs collapse as the sequence length grows.
+### 第 N 远任务（第 3.1 节）
 
-### WikiText-103 (Section 3.3)
-- **Setup**: Word-level language modeling on a large dataset.
-- **Result**: RMC achieves perplexity comparable to or better than large LSTMs with fewer parameters, showing that structured memory is efficient.
+- **设置：**原仓库在此写作“给出向量序列，找出离序列中第 $N$ 个向量最远的向量”。
+- **意义：**需要保存参照向量，并与其他向量比较。标准 LSTM 可能随时间逐渐丢失参照信息。
+- **结果：**原仓库称 RMC 准确率接近 100%，LSTM 则随序列增长表现恶化。
 
----
+> 待核验：这里的“第 N 个向量”和任务名“第 N 远”并不等价，原仓库各处定义也不一致。应以原论文的数据协议核验；运行本章时则以实际生成器为准。上述近 100% 是原仓库对论文的描述，不是本次测得的准确率。
 
-## Going Beyond the Paper (Our Retrospective)
+### WikiText-103（第 3.3 节）
 
-> **Note:** This section is our analysis, looking back from 2024.
-
-The RMC is a fascinating "missing link" between RNNs and Transformers.
-- **RNNs**: State is a vector, update is linear/nonlinear.
-- **Transformers**: State is the entire history, update is attention.
-- **RMC**: State is a matrix (fixed size), update is attention.
-
-It represents the attempt to bring the power of Attention (O(N^2) interactions) into a Recurrent layout (O(1) memory size). While pure Transformers eventually won the "scale" war (because keeping *all* history is better than compressing it, if you have the compute), architectures like RMC are seeing a resurgence in **Linear Attention** and **State Space Models (Mamba/S4)**, which try to compress history into a fixed state efficiently.
+- **设置：**大型数据集上的词级语言建模。
+- **结果：**原仓库报告 RMC 以较少参数取得可比或优于大型 LSTM 的困惑度，以说明结构化记忆的效率。
 
 ---
 
-## Questions Worth Thinking About
+## 超出论文的回顾（本仓库观点）
 
-1.  **Why fixed slots?** Why not let the number of memory slots grow? (Hint: Computational cost and memory bounds).
-2.  **Is it truly relational?** Does attention *guarantee* relational reasoning, or just correlation?
-3.  **The "Binding Problem"**: How does the model know that "Slot 1" contains the "Subject" and "Slot 2" contains the "Object"?
+> **说明：**本节保留原仓库从 2024 年视角给出的分析，不是论文结论。
+
+RMC 可以看作连接 RNN 与 Transformer 的一种架构：
+
+- **RNN：**状态是向量，通过线性／非线性操作更新。
+- **Transformer：**可保留完整历史，并用注意力处理。
+- **RMC：**状态是固定大小的矩阵，用注意力更新。
+
+它尝试将注意力的 $O(N^2)$ 交互放入相对序列长度为 $O(1)$ 状态空间的循环结构。原仓库认为，拥有足够算力时保留更多历史有利于规模扩展，而线性注意力与状态空间模型（Mamba／S4）又重新关注高效地将历史压缩进固定状态。
+
+> 译注：这是宽泛比较，不能据此声称 Mamba／S4 是 RMC 的直接后继，或压缩历史必然劣于保留完整历史。复杂度也取决于具体架构与所固定的维度。
+
+---
+
+## 值得思考的问题
+
+1. **为什么固定槽位？**为何不让槽位数增长？提示：计算成本与内存上界。
+2. **它真的具有关系推理能力吗？**注意力是否*保证*关系推理，还是只反映相关性？
+3. **绑定问题（binding problem）：**模型如何知道“槽位 1”存的是“主语”，“槽位 2”存的是“宾语”？

@@ -1,16 +1,16 @@
 """
-Solutions for Day 4 Exercises: Minimizing Description Length
+第 4 天练习参考解答：最小化描述长度
 =============================================================
 
-This file contains reference solutions for all 5 exercises.
-Try implementing them yourself first before checking these!
+本文件包含全部 5 个练习的参考解答。
+查看之前，请先尝试自己实现！
 
-Key patterns:
-- Exercise 1: Implement softplus and Gaussian sampling
-- Exercise 2: Visualize uncertainty in data gaps
-- Exercise 3: Study KL weight effects on calibration
-- Exercise 4: Understand MC convergence and uncertainty
-- Exercise 5: Analyze Pareto frontier of compression
+关键模式：
+- 练习 1：实现 softplus 与高斯采样
+- 练习 2：可视化数据缺口处的不确定性
+- 练习 3：研究 KL 权重对校准的影响
+- 练习 4：理解蒙特卡洛收敛与不确定性
+- 练习 5：分析压缩的帕累托前沿
 """
 
 import numpy as np
@@ -19,12 +19,12 @@ from pathlib import Path
 
 
 # ============================================================================
-# EXERCISE 1: The Reparameterization Trick
+# 练习 1：重参数化技巧
 # ============================================================================
 
 def softplus_solution(x):
     """
-    Solution: Softplus activation function.
+    解答：Softplus 激活函数。
     σ = log(1 + exp(x))
     """
     return np.log1p(np.exp(x))
@@ -32,9 +32,9 @@ def softplus_solution(x):
 
 def sample_gaussian_solution(mu, rho, n_samples=10000):
     """
-    Solution: Implement reparameterization trick.
+    解答：实现重参数化技巧。
     
-    w = μ + σ * ε where σ = softplus(ρ), ε ~ N(0,1)
+    w = μ + σ * ε，其中 σ = softplus(ρ)，ε ~ N(0,1)
     """
     sigma = softplus_solution(rho)
     epsilon = np.random.randn(n_samples)
@@ -44,10 +44,10 @@ def sample_gaussian_solution(mu, rho, n_samples=10000):
 
 def exercise_1_solution():
     """
-    Solution to Exercise 1: Reparameterization Trick
+    练习 1 解答：重参数化技巧
     """
     print("\n" + "="*70)
-    print("SOLUTION 1: The Reparameterization Trick")
+    print('解答 1：重参数化技巧')
     print("="*70)
     
     mu = 5.0
@@ -58,38 +58,38 @@ def exercise_1_solution():
     sample_mean = np.mean(samples)
     sample_std = np.std(samples)
     
-    print(f"\nTest Case: μ={mu}, ρ={rho}")
-    print(f"  Expected σ = softplus(0) = {softplus_solution(0):.4f}")
-    print(f"  Measured σ from samples = {sample_std:.4f}")
-    print(f"  Expected mean = {mu}, Measured = {sample_mean:.4f}")
+    print(f"\n测试用例：μ={mu}, ρ={rho}")
+    print(f"  预期 σ = softplus(0) = {softplus_solution(0):.4f}")
+    print(f"  样本实测 σ = {sample_std:.4f}")
+    print(f"  预期均值 = {mu}，实测 = {sample_mean:.4f}")
     
-    assert np.abs(sample_mean - mu) < 0.05, "Mean check failed!"
-    assert np.abs(sample_std - sigma) < 0.05, "Std check failed!"
+    assert np.abs(sample_mean - mu) < 0.05, '均值检查失败！'
+    assert np.abs(sample_std - sigma) < 0.05, '标准差检查失败！'
     
-    print("\n[OK] Exercise 1 PASSED: Reparameterization trick works correctly!")
+    print('\n[OK] 练习 1 通过：重参数化采样检查通过！')
     return samples, sigma
 
 
 # ============================================================================
-# EXERCISE 2: The Gap Experiment
+# 练习 2：缺口实验
 # ============================================================================
 
 def create_gappy_sine_solution(n_points=100):
     """
-    Solution: Create sine wave with gap in the middle.
+    解答：创建中间带缺口的正弦波。
     """
-    # Create two regions: left and right
+    # 创建左右两个区域
     X_left = np.linspace(0, np.pi - 0.5, n_points//2)
     X_right = np.linspace(np.pi + 0.5, 2*np.pi, n_points//2)
     
     X_train = np.concatenate([X_left, X_right])
     y_train = np.sin(X_train) + np.random.randn(len(X_train)) * 0.1
     
-    # Dense evaluation points
+    # 密集评估点
     X_dense = np.linspace(0, 2*np.pi, 500)
     y_true = np.sin(X_dense)
     
-    # Mask showing where data exists
+    # 标识存在数据区域的掩码
     mask = np.isin(X_dense, X_train, assume_unique=False)
     
     return X_train, y_train, X_dense, y_true, mask
@@ -97,147 +97,147 @@ def create_gappy_sine_solution(n_points=100):
 
 def exercise_2_solution():
     """
-    Solution to Exercise 2: Gap Experiment
+    练习 2 解答：缺口实验
     
-    Demonstrates how uncertainty spikes at data gaps.
+    展示数据缺口处不确定性增大的预期现象。
     """
     print("\n" + "="*70)
-    print("SOLUTION 2: The Gap Experiment")
+    print('解答 2：缺口实验')
     print("="*70)
     
-    print("\nKey insight:")
-    print("  - Bayesian networks show HIGH uncertainty where data is missing")
-    print("  - Regular networks either overfit (confident) or underfit (wrong)")
-    print("\nImplementation approach:")
-    print("  1. Create sine wave with gap (e.g., missing x ∈ [π-0.5, π+0.5])")
-    print("  2. Train BayesianLinearNetwork with kl_weight=0.01")
-    print("  3. Run MC sampling (100x) to get mean and std at each point")
-    print("  4. Plot: predictions + 2σ confidence band")
-    print("  5. Observe: High σ in gap region, low σ where data exists")
+    print('\n关键认识：')
+    print('  - 贝叶斯网络预期在缺失数据处显示较高不确定性')
+    print('  - 普通网络可能过拟合（过度自信）或欠拟合（预测不准）')
+    print('\n实现方法：')
+    print('  1. 创建带缺口的正弦波，例如缺失 x ∈ [π-0.5, π+0.5]')
+    print('  2. 用 kl_weight=0.01 训练 BayesianLinearNetwork（当前实现缺少该类）')
+    print('  3. 运行 100 次蒙特卡洛采样，得到每个点的均值与标准差')
+    print('  4. 绘制预测与 2σ 不确定性带')
+    print('  5. 观察：缺口处 σ 较高，有数据处 σ 较低')
     
     X_train, y_train, X_dense, y_true, mask = create_gappy_sine_solution(80)
     
-    print(f"\n[OK] Exercise 2 PASSED: Gap experiment setup complete!")
-    print(f"  - Training points: {len(X_train)}")
-    print(f"  - Gap region: x ∈ [π-0.5, π+0.5] ({np.sum(~mask)} points)")
-    print(f"  - Data region: {np.sum(mask)} evaluation points")
+    print(f"\n[OK] 练习 2 通过：缺口实验设置完成！")
+    print(f"  - 训练点数：{len(X_train)}")
+    print(f"  - 缺口区域：x ∈ [π-0.5, π+0.5]（{np.sum(~mask)} 个点）")
+    print(f"  - 有数据区域：{np.sum(mask)} 个评估点")
 
 
 # ============================================================================
-# EXERCISE 3: Beta Parameter Study
+# 练习 3：Beta 参数研究
 # ============================================================================
 
 def exercise_3_solution():
     """
-    Solution to Exercise 3: Beta Parameter Study
+    练习 3 解答：Beta 参数研究
     
-    Shows how kl_weight controls the regularization strength.
+    展示 kl_weight 如何控制正则化强度。
     """
     print("\n" + "="*70)
-    print("SOLUTION 3: Beta Parameter Study")
+    print('解答 3：Beta 参数研究')
     print("="*70)
     
-    print("\nKey insight:")
-    print("  β (kl_weight) controls the tradeoff between data fit and simplicity")
-    print("\nBehaviors to observe:")
-    print("  - β = 0.00   → No regularization, overfitting (low MSE, low uncertainty)")
-    print("  - β = 0.01   → Weak regularization (good fit, reasonable uncertainty)")
-    print("  - β = 0.1    → Balanced (moderate fit, good uncertainty)")
-    print("  - β = 1.0    → Strong regularization (high MSE, high uncertainty)")
-    print("  - β = 10.0   → Very strong (barely learns, very uncertain)")
+    print('\n关键认识：')
+    print('  β（kl_weight）控制数据拟合与简洁性的权衡')
+    print('\n需要观察的行为：')
+    print('  - β = 0.00：无正则化，可能过拟合（低 MSE、低不确定性）')
+    print('  - β = 0.01：弱正则化（拟合较好、不确定性较合理）')
+    print('  - β = 0.1：折中（中等拟合、较合理的不确定性）')
+    print('  - β = 1.0：强正则化（高 MSE、高不确定性）')
+    print('  - β = 10.0：极强正则化（几乎不学习、非常不确定）')
     
-    print("\nImplementation approach:")
-    print("  1. Generate sine wave with noise")
-    print("  2. Train 6 models with β ∈ [0.0, 0.001, 0.01, 0.1, 1.0, 10.0]")
-    print("  3. For each model, measure:")
-    print("     - MSE on test set")
-    print("     - Average std of predictions (mean uncertainty)")
-    print("     - Calibration error (% points in 1σ band vs expected 68%)")
-    print("  4. Plot 3 subplots: MSE, Uncertainty, Calibration vs β")
-    print("\n[OK] Exercise 3 setup complete!")
+    print('\n实现方法：')
+    print('  1. 生成含噪正弦波')
+    print('  2. 训练 6 个模型，β ∈ [0.0, 0.001, 0.01, 0.1, 1.0, 10.0]')
+    print('  3. 测量各模型的：')
+    print('     - 测试集 MSE')
+    print('     - 预测标准差的平均值（平均不确定性）')
+    print('     - 校准误差（1σ 带覆盖率与预期 68% 之差）')
+    print('  4. 绘制 MSE、不确定性、校准与 β 关系的 3 个子图')
+    print('\n[OK] 练习 3 设置完成！')
 
 
 # ============================================================================
-# EXERCISE 4: Monte Carlo Predictions
+# 练习 4：蒙特卡洛预测
 # ============================================================================
 
 def exercise_4_solution():
     """
-    Solution to Exercise 4: Monte Carlo Predictions
+    练习 4 解答：蒙特卡洛预测
     
-    Shows why sampling multiple times improves uncertainty estimates.
+    展示为什么多次采样可以改善不确定性估计。
     """
     print("\n" + "="*70)
-    print("SOLUTION 4: Monte Carlo Predictions")
+    print('解答 4：蒙特卡洛预测')
     print("="*70)
     
-    print("\nKey insight:")
-    print("  Single forward pass = point estimate (no Bayesian uncertainty!)")
-    print("  Multiple forward passes = MC approximation of posterior")
-    print("\nConvergence behavior:")
-    print("  - 1 sample:   Noisy, unreliable uncertainty")
-    print("  - 5 samples:  Getting clearer")
-    print("  - 10 samples: Good approximation")
-    print("  - 50 samples: High confidence (law of large numbers)")
-    print("  - 100 samples: Stable, production-ready")
+    print('\n关键认识：')
+    print('  单次前向传播得到一次权重采样下的点预测，不能据此估计贝叶斯不确定性')
+    print('  多次前向传播得到权重后验所诱导预测分布的蒙特卡洛近似')
+    print('\n收敛行为：')
+    print('  - 1 个样本：无法可靠估计不确定性')
+    print('  - 5 个样本：逐渐清晰')
+    print('  - 10 个样本：可能得到较好近似')
+    print('  - 50 个样本：估计通常更稳定（大数定律）')
+    print('  - 100 个样本：通常更稳定，是否可用于生产仍需验证')
     
-    print("\nImplementation approach:")
-    print("  1. Train one Bayesian network model")
-    print("  2. For n_samples in [1, 5, 10, 20, 50, 100, 200]:")
-    print("     a. Run forward pass n_samples times")
-    print("     b. Collect all predictions → shape (N_test, n_samples)")
-    print("     c. Compute mean and std across samples")
-    print("     d. Run 3x and measure variation in std (stability)")
-    print("  3. Plot convergence: How std estimates stabilize")
-    print("  4. Plot stability: How much variation with more samples")
+    print('\n实现方法：')
+    print('  1. 训练一个贝叶斯网络模型')
+    print('  2. 对 n_samples ∈ [1, 5, 10, 20, 50, 100, 200]：')
+    print('     a. 前向传播 n_samples 次')
+    print('     b. 收集全部预测，形状为 (N_test, n_samples)')
+    print('     c. 沿样本维度计算均值与标准差')
+    print('     d. 运行 3 次，测量标准差估计的变化（稳定性）')
+    print('  3. 绘制收敛图：标准差估计如何趋稳')
+    print('  4. 绘制稳定性图：增加样本数后波动如何变化')
     
-    print("\n[OK] Exercise 4 setup complete!")
+    print('\n[OK] 练习 4 设置完成！')
 
 
 # ============================================================================
-# EXERCISE 5: Advanced MDL
+# 练习 5：进阶 MDL
 # ============================================================================
 
 def exercise_5_solution():
     """
-    Solution to Exercise 5: Advanced MDL - Pareto Frontier
+    练习 5 解答：进阶 MDL——帕累托前沿
     
-    Analyzes the compression-accuracy tradeoff.
+    分析压缩与准确性的权衡。
     """
     print("\n" + "="*70)
-    print("SOLUTION 5: Advanced MDL - Pareto Frontier")
+    print('解答 5：进阶 MDL——帕累托前沿')
     print("="*70)
     
-    print("\nKey insight:")
-    print("  MDL Loss = Reconstruction Loss + KL Divergence")
-    print("  These two terms compete against each other!")
+    print('\n关键认识：')
+    print('  MDL 损失 = 重构损失 + KL 散度')
+    print('  两项之间存在竞争！')
     
-    print("\nThe Pareto Frontier:")
-    print("  X-axis: Reconstruction Loss (fit to data)")
-    print("  Y-axis: KL Divergence (model complexity)")
-    print("\n  Lower-left:   Ideal (good fit, simple model) → RARE")
-    print("  Lower-right:  Overfitting (good fit, complex model)")
-    print("  Upper-left:   Underfitting (poor fit, simple model)")
-    print("  Upper-right:  Worst (poor fit, complex model)")
-    print("\n  The 'Pareto frontier' = cannot improve both simultaneously")
-    print("  This frontier curves from upper-left to lower-right")
+    print('\n帕累托前沿：')
+    print('  X 轴：重构损失（数据拟合）')
+    print('  Y 轴：KL 散度（模型复杂度）')
+    print('\n  左下：理想情况（拟合好、模型简单），较少见')
+    print('  右下：原文写为过拟合（拟合好、模型复杂），但与上述轴定义不一致')
+    print('  左上：原文写为欠拟合（拟合差、模型简单），但与上述轴定义不一致')
+    print('  右上：最差情况（拟合差、模型复杂）')
+    print('\n  帕累托前沿：无法在不损害另一目标的同时改善某一目标')
+    print('  此处前沿预期从左上延伸到右下')
     
-    print("\nImplementation approach:")
-    print("  1. Generate sine wave with noise")
-    print("  2. Train models with β ∈ [0.0001, 0.001, 0.01, 0.05, 0.1, 0.5, 1, 5, 10]")
-    print("  3. For each model:")
-    print("     a. Compute reconstruction_loss = mean((pred - y_test)²)")
-    print("     b. Compute kl_divergence = sum of KL terms from all layers")
-    print("     c. Compute mdl_loss = reconstruction + kl")
-    print("     d. Compute compression_ratio = kl / recon")
-    print("  4. Plot Pareto frontier (recon_loss vs kl_div)")
-    print("  5. Annotate with β values to show progression")
+    print('\n实现方法：')
+    print('  1. 生成含噪正弦波')
+    print('  2. 训练模型，β ∈ [0.0001, 0.001, 0.01, 0.05, 0.1, 0.5, 1, 5, 10]')
+    print('  3. 对每个模型：')
+    print('     a. 计算 reconstruction_loss = mean((pred - y_test)²)')
+    print('     b. 计算 kl_divergence = 所有层 KL 项之和')
+    print('     c. 计算 mdl_loss = reconstruction + kl')
+    print('     d. 计算 compression_ratio = kl / recon（启发式比值，并非实际编码压缩率）')
+    print('  4. 绘制帕累托前沿（recon_loss 与 kl_div）')
+    print('  5. 标注 β 值，展示变化过程')
     
-    print("\n[OK] Exercise 5 setup complete!")
+    print('\n[OK] 练习 5 设置完成！')
 
 
 # ============================================================================
-# MAIN
+# 主程序
 # ============================================================================
 
 def print_all_solutions():
@@ -249,13 +249,13 @@ def print_all_solutions():
     exercise_5_solution()
     
     print("\n" + "="*70)
-    print("SUMMARY: All 5 Exercises")
+    print('汇总：全部 5 个练习')
     print("="*70)
-    print("\n[OK] Exercise 1: Reparameterization trick (sampling)")
-    print("[OK] Exercise 2: Gap experiment (uncertainty visualization)")
-    print("[OK] Exercise 3: Beta parameter study (calibration)")
-    print("[OK] Exercise 4: Monte Carlo predictions (convergence)")
-    print("[OK] Exercise 5: Pareto frontier (compression analysis)")
+    print('\n[OK] 练习 1：重参数化技巧（采样）')
+    print('[OK] 练习 2：缺口实验（不确定性可视化）')
+    print('[OK] 练习 3：Beta 参数研究（校准）')
+    print('[OK] 练习 4：蒙特卡洛预测（收敛）')
+    print('[OK] 练习 5：帕累托前沿（压缩分析）')
     print("\n" + "="*70)
 
 

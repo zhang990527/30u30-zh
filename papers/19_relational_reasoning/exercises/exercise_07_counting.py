@@ -3,21 +3,21 @@ from implementation import RelationNetwork
 
 def compare_aggregators():
     """
-    TODO: Prove that 'sum' is better for counting than 'mean'.
-    Section 2.1: "The choice of summation [...] allows the model to count."
+    TODO：通过样例检查 sum 比 mean 更适合保留计数信息。
+    第 2.1 节原仓库引文：“选择求和 [...] 使模型可以计数。”
     
-    1. Create a baseline set of 2 'ones' vectors.
-    2. Create a larger set of 8 'ones' vectors.
-    3. Compare output magnitudes using a RelationNetwork with aggregator='mean'.
-    4. Compare output magnitudes using a RelationNetwork with aggregator='sum'.
-    5. Show that 'mean' is size-invariant while 'sum' preserves the count.
+    1. 创建包含 2 个全 1 向量的基准集合。
+    2. 创建包含 8 个全 1 向量的较大集合。
+    3. 比较 aggregator='mean' 的 RelationNetwork 输出幅值。
+    4. 比较 aggregator='sum' 的 RelationNetwork 输出幅值。
+    5. 展示此例中 mean 不随集合大小变化，而 sum 保留计数信息。
     """
-    # YOUR CODE HERE
+    # 在此填写代码
     pass
 
 if __name__ == "__main__":
     print("-" * 50)
-    print("Exercise 7: Cardinality Bias (Sum vs Mean)")
+    print('练习 7：基数偏置（求和与均值）')
     print("-" * 50)
     compare_aggregators()
-    print("Exercise 7: [COMPLETE]")
+    print('练习 7：[COMPLETE]')

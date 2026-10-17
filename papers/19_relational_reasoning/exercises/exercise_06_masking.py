@@ -2,48 +2,48 @@ import torch
 
 def masked_aggregation(g_out: torch.Tensor) -> torch.Tensor:
     """
-    TODO: Implement masked aggregation to ignore self-relations.
+    TODO：实现带掩码的聚合，忽略自身关系。
     
-    In some relational tasks, we only care about relations between *different* objects
-    (i != j). This function should mask out the diagonal elements of the relation matrix
-    before summing.
+    某些关系任务只关注不同对象之间的关系
+    （i != j）。本函数应在求和之前
+    屏蔽关系矩阵的对角线元素。
     
-    Input:
-        g_out: Tensor of shape (batch, N, N, hidden_dim) representing g(o_i, o_j)
+    输入：
+        g_out：形状为 (batch, N, N, hidden_dim) 的张量，表示 g(o_i, o_j)
         
-    Output:
-        aggregated: Tensor of shape (batch, hidden_dim) = sum_{i != j} g(o_i, o_j)
+    输出：
+        aggregated：形状为 (batch, hidden_dim) 的张量 = sum_{i != j} g(o_i, o_j)
         
-    Constraints:
-        - Use torch.eye to create a diagonal mask.
-        - No for-loops.
+    约束：
+        - 使用 torch.eye 创建对角线掩码。
+        - 不使用 for 循环。
     """
-    # YOUR CODE HERE
+    # 在此填写代码
     pass
 
 def test_masking():
     batch, N, dim = 2, 3, 4
-    # Create a tensor where diagonal elements are distinct
+    # 创建对角线元素不同的张量
     # g_out[b, i, j]
     g_out = torch.ones(batch, N, N, dim)
     
-    # Set diagonal to 100 to make it obvious if included
+    # 将对角线设为 100，便于发现是否误计入
     for i in range(N):
         g_out[:, i, i, :] = 100.0
         
-    # Expected sum per object pair (excluding diagonal)
-    # Total pairs = N*N = 9. Diagonal = 3. Off-diagonal = 6.
-    # Sum over N,N should be 6 * 1.0 = 6.0 per feature
+    # 排除对角线后，按对象对计算预期总和
+    # 总对象对 = N*N = 9，对角线 = 3，非对角线 = 6。
+    # 沿 N,N 求和后，每个特征应为 6 * 1.0 = 6.0
     
     res = masked_aggregation(g_out)
     
     expected_value = (N * N - N) * 1.0
     
     if torch.allclose(res, torch.tensor(float(expected_value))):
-        print("Exercise 6 (Part B): Masking [PASS]")
+        print('练习 6（B 部分）：掩码 [PASS]')
     else:
-        print(f"Exercise 6 (Part B): [FAIL] Expected {expected_value}, got {res[0,0].item()}")
-        print("Did you subtract/mask the diagonal (values=100)?")
+        print(f"练习 6（B 部分）：[FAIL] 预期 {expected_value}，实际得到 {res[0,0].item()}")
+        print('是否已减去或屏蔽对角线（数值为 100）？')
 
 if __name__ == "__main__":
     test_masking()

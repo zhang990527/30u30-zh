@@ -1,16 +1,17 @@
-# Day 6 Exercises
+<a id="day-6-exercises"></a>
+# 第 6 天练习
 
-Exercises for Aaronson's "The First Law of Complexodynamics" (2011).
+Aaronson《复杂动力学第一定律》（The First Law of Complexodynamics，2011）的配套练习。
 
-All exercises use the coffee-mixing simulation as the running example.
-They build up the tools to measure and compare complexity empirically.
+所有练习都以咖啡混合模拟为贯穿示例，逐步构建工具，
+通过实验测量并比较复杂性。
 
-| # | File | Topic | Prereqs |
+| # | 文件 | 主题 | 前置练习 |
 |---|------|-------|---------|
-| 1 | `exercise_01_gzip_complexity.py` | KC approximation via gzip | None |
-| 2 | `exercise_02_coffee_mixing.py` | Build the coffee mixing simulation | Exercise 1 |
-| 3 | `exercise_03_multiscale.py` | Coarse-graining at multiple scales | Exercises 1-2 |
-| 4 | `exercise_04_two_part_codes.py` | Sophistication proxy via two-part codes | Exercises 1-2 |
-| 5 | `exercise_05_measures_comparison.py` | Compare all measures, find the hump | Exercises 1-4 |
+| 1 | `exercise_01_gzip_complexity.py` | 用 gzip 近似 KC | 无 |
+| 2 | `exercise_02_coffee_mixing.py` | 构建咖啡混合模拟 | 练习 1 |
+| 3 | `exercise_03_multiscale.py` | 多尺度粗粒化 | 练习 1-2 |
+| 4 | `exercise_04_two_part_codes.py` | 用两段式编码构建精致复杂度代理量 | 练习 1-2 |
+| 5 | `exercise_05_measures_comparison.py` | 比较全部度量，寻找隆起 | 练习 1-4 |
 
-Solutions are in `solutions/`. Try to get stuck first.
+参考解答在 `solutions/`。建议先独立尝试，遇到困难后再查看。

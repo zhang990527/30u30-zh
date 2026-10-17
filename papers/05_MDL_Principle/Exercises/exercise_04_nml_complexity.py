@@ -1,29 +1,29 @@
 """
-Exercise 4: NML (Normalized Maximum Likelihood) Complexity
+练习 4：NML（归一化最大似然）复杂度
 ==========================================================
 
-NML is the "gold standard" of MDL, but harder to compute.
+NML 是 MDL 的重要理论构造，但通常更难计算。
 
-The key idea: Penalize models based on how many different 
-datasets they could POTENTIALLY explain well.
+核心思想：根据模型可能很好解释的
+不同数据集范围，对模型进行惩罚。
 
-The Restaurant Analogy:
+餐厅类比：
 -----------------------
-- Simple model (degree 1): Like a restaurant with a tiny menu
-  → Can only make a few things, but does them well
+- 简单模型（1 次）：像菜单很小的餐厅
+  → 只能做少数菜品，但做得很好
   
-- Complex model (degree 9): Like a restaurant with 500 dishes
-  → Can make almost anything, but that's suspicious!
+- 复杂模型（9 次）：像有 500 道菜的餐厅
+  → 几乎什么都能做，这也意味着更强灵活性
   
-When a huge-menu restaurant happens to have your exact dish,
-it's less impressive than a tiny-menu restaurant having it.
+大菜单餐厅恰好有你要的菜，
+相比小菜单餐厅也能提供这道菜，就没那么特别。
 
-NML Complexity = log(# of dishes the restaurant can make well)
+NML 复杂度类比为 log（餐厅能做好的菜品数量）
 
-Mathematical form:
+数学形式：
     COMP(M) = log Σ_z max_θ P(z | θ, M)
     
-Where we sum over ALL possible datasets z.
+求和遍历全部可能数据集 z。
 """
 
 import numpy as np
@@ -37,42 +37,42 @@ def estimate_nml_complexity_polynomial(
     n_samples: int = 1000
 ) -> float:
     """
-    Estimate NML complexity for polynomial models using Monte Carlo.
+    使用蒙特卡洛近似多项式模型的 NML 参数复杂度。
     
-    The NML complexity measures how many different datasets the model
-    can explain well. Higher complexity = more flexible = needs more penalty.
+    参数复杂度反映模型能很好解释多少不同数据集。
+    灵活性越高，通常需要越强惩罚；这里不等于完整随机复杂度。
     
-    Algorithm:
-    1. Sample many random datasets (y values)
-    2. For each, fit the polynomial (get max likelihood)
-    3. Average the max-likelihood values
-    4. Take log → complexity
+    算法：
+    1. 采样许多随机数据集（y 值）
+    2. 对每组拟合多项式，获得最大似然
+    3. 对最大似然取平均
+    4. 取对数，得到复杂度近似（严格积分还需采样分布／体积校正）
     
-    Args:
-        x: Input values (fixed design points)
-        degree: Polynomial degree
-        y_range: Range of possible y values for sampling
-        n_samples: Number of Monte Carlo samples
+    参数：
+        x：输入值，即固定设计点
+        degree：多项式次数
+        y_range：用于采样的可能 y 值范围
+        n_samples：蒙特卡洛样本数
         
-    Returns:
-        Estimated NML complexity in bits
+    返回：
+        估计的 NML 参数复杂度，单位为比特
         
-    Example:
+    示例：
         >>> x = np.linspace(0, 10, 50)
-        >>> comp_1 = estimate_nml_complexity_polynomial(x, 1)  # Low
-        >>> comp_5 = estimate_nml_complexity_polynomial(x, 5)  # Higher
-        >>> assert comp_5 > comp_1, "Higher degree = higher complexity"
+        >>> comp_1 = estimate_nml_complexity_polynomial(x, 1)  # 较低
+        >>> comp_5 = estimate_nml_complexity_polynomial(x, 5)  # 预期较高
+        >>> assert comp_5 > comp_1, "更高次数应有更高复杂度"
     """
-    # TODO: Implement NML complexity estimation
-    # Steps:
-    #   1. For each of n_samples iterations:
-    #      a. Sample random y values from y_range
-    #      b. Fit polynomial to (x, y_random)
-    #      c. Compute maximum log-likelihood
-    #   2. Use logsumexp trick to compute log of average
-    #   3. Convert to bits (divide by log(2))
+    # TODO：实现 NML 复杂度估计
+    # 步骤：
+    #   1. 重复 n_samples 次，每次：
+    #      a. 从 y_range 采样随机 y 值
+    #      b. 用 (x, y_random) 拟合多项式
+    #      c. 计算最大对数似然
+    #   2. 用 logsumexp 技巧计算平均值的对数
+    #   3. 除以 log(2)，转换为比特
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def compute_nml_mdl(
@@ -82,36 +82,36 @@ def compute_nml_mdl(
     y_range: Tuple[float, float] = None
 ) -> Tuple[float, float, float]:
     """
-    Compute NML-based MDL score.
+    计算 NML 近似 MDL 得分。
     
     NML MDL = -log P(y | θ̂, M) + COMP(M)
-            = Fit term + Complexity term
+            = 拟合项 + 复杂度项
     
-    Unlike two-part code, NML doesn't require specifying precision.
-    The complexity penalty emerges naturally from information theory.
+    NML 不像两段式编码那样显式指定参数精度。
+    复杂度惩罚来自信息论构造；连续数据仍需明确测量与模型范围。
     
-    Args:
-        x: Input values
-        y: Target values
-        degree: Polynomial degree
-        y_range: Range for complexity estimation (auto if None)
+    参数：
+        x：输入值
+        y：目标值
+        degree：多项式次数
+        y_range：复杂度估计范围，None 时自动确定
         
-    Returns:
-        Tuple of (total_nml, fit_term, complexity_term)
+    返回：
+        元组：(total_nml, fit_term, complexity_term)
         
-    Example:
+    示例：
         >>> x = np.linspace(0, 10, 50)
         >>> y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.0
         >>> total, fit, comp = compute_nml_mdl(x, y, 2)
-        >>> print(f"NML = {fit:.1f} (fit) + {comp:.1f} (complexity) = {total:.1f}")
+        >>> print(f"NML = {fit:.1f}（拟合）+ {comp:.1f}（复杂度）= {total:.1f}")
     """
-    # TODO: Implement NML MDL
-    # Steps:
-    #   1. Fit polynomial and compute negative log-likelihood
-    #   2. Estimate NML complexity
-    #   3. Return sum and components
+    # TODO：实现 NML MDL
+    # 步骤：
+    #   1. 拟合多项式并计算负对数似然
+    #   2. 估计 NML 复杂度
+    #   3. 返回总和与各项
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def compare_nml_vs_two_part(
@@ -120,56 +120,56 @@ def compare_nml_vs_two_part(
     max_degree: int = 10
 ) -> Dict[str, int]:
     """
-    Compare NML and Two-Part Code model selection.
+    比较 NML 近似与两段式编码的模型选择。
     
-    They often agree, but NML is more principled (no precision parameter).
+    两者可能一致；严格 NML 不需显式参数精度，但本实现存在近似限制。
     
-    Args:
-        x: Input values
-        y: Target values
-        max_degree: Maximum degree to try
+    参数：
+        x：输入值
+        y：目标值
+        max_degree：尝试的最高次数
         
-    Returns:
-        Dictionary with 'nml_best' and 'two_part_best' degrees
+    返回：
+        包含 nml_best 和 two_part_best 次数的字典
     """
-    # TODO: Implement comparison
+    # TODO：实现比较
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def visualize_complexity_vs_degree(x: np.ndarray, max_degree: int = 10):
     """
-    Show how NML complexity grows with model flexibility.
+    展示 NML 复杂度近似如何随模型灵活性变化。
     
-    This visualization demonstrates the key insight:
-    More flexible models have higher complexity → more penalty.
+    此图展示的核心思想是：
+    模型越灵活，参数复杂度通常越高，惩罚越强。
     """
-    # TODO: Compute and print complexity for each degree
-    # (Visualization code is optional if matplotlib not available)
+    # TODO：计算并打印各次数的复杂度
+    # 若未安装 matplotlib，可视化代码为可选项
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 # =============================================================================
-# HELPER FUNCTIONS
+# 辅助函数
 # =============================================================================
 
 def logsumexp(log_values: np.ndarray) -> float:
     """
-    Compute log(sum(exp(values))) in a numerically stable way.
+    以数值稳定方式计算 log(sum(exp(values)))。
     
-    This is essential for NML computation to avoid overflow.
+    这是避免 NML 计算溢出的重要工具。
     
-    Args:
-        log_values: Array of log values
+    参数：
+        log_values：对数值数组
         
-    Returns:
+    返回：
         log(sum(exp(log_values)))
     """
-    # TODO: Implement numerically stable logsumexp
-    # Hint: log(Σ exp(xi)) = max(xi) + log(Σ exp(xi - max))
+    # TODO：实现数值稳定的 logsumexp
+    # 提示：log(Σ exp(xi)) = max(xi) + log(Σ exp(xi - max))
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def gaussian_log_likelihood(
@@ -178,23 +178,23 @@ def gaussian_log_likelihood(
     sigma: float = None
 ) -> float:
     """
-    Compute Gaussian log-likelihood.
+    计算高斯对数似然。
     
-    Args:
-        y: Actual values
-        predictions: Model predictions
-        sigma: Standard deviation (estimated from residuals if None)
+    参数：
+        y：实际值
+        predictions：模型预测
+        sigma：标准差，None 时根据残差估计
         
-    Returns:
-        Log-likelihood (not in bits, in nats)
+    返回：
+        对数似然，单位为奈特，而非比特
     """
-    # TODO: Implement Gaussian log-likelihood
+    # TODO：实现高斯对数似然
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 # =============================================================================
-# TEST YOUR IMPLEMENTATION
+# 测试实现
 # =============================================================================
 
 def test_implementation():
@@ -207,7 +207,7 @@ def test_implementation():
     
     x = np.linspace(0, 10, 50)
     
-    # Test 1: NML complexity increases with degree
+    # 测试 1：NML 复杂度随次数增加
     print("\n1. Testing NML complexity vs degree...")
     try:
         complexities = {}
@@ -216,29 +216,29 @@ def test_implementation():
             complexities[deg] = comp
             print(f"   Degree {deg}: COMP = {comp:.2f} bits")
         
-        # Complexity should generally increase with degree
+        # 复杂度一般应随次数增加；蒙特卡洛估计可能波动
         assert complexities[5] > complexities[1], "Higher degree should have higher complexity"
         print("   [ok] PASSED - Complexity increases with flexibility")
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 2: logsumexp
+    # 测试 2：logsumexp
     print("\n2. Testing logsumexp()...")
     try:
-        values = np.array([1000, 1001, 1002])  # Would overflow with naive exp
+        values = np.array([1000, 1001, 1002])  # 直接使用 exp 会溢出
         result = logsumexp(values)
         
-        # Should be approximately 1002 + log(1 + e^-1 + e^-2) ≈ 1002.41
+        # 应约为 1002 + log(1 + e^-1 + e^-2) ≈ 1002.41
         assert 1002 < result < 1003, f"Expected ~1002.4, got {result}"
         print(f"   logsumexp([1000, 1001, 1002]) = {result:.2f}")
         print("   [ok] PASSED")
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 3: NML MDL score
+    # 测试 3：NML MDL 得分
     print("\n3. Testing compute_nml_mdl()...")
     try:
-        y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.5  # True degree 2
+        y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.5  # 真实次数为 2
         
         nml_1 = compute_nml_mdl(x, y, 1)
         nml_2 = compute_nml_mdl(x, y, 2)
@@ -255,7 +255,7 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 4: Compare NML vs Two-Part
+    # 测试 4：NML 与两段式编码比较
     print("\n4. Testing compare_nml_vs_two_part()...")
     try:
         y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.5
@@ -272,7 +272,7 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 5: Complexity visualization
+    # 测试 5：复杂度可视化
     print("\n5. Testing visualize_complexity_vs_degree()...")
     try:
         visualize_complexity_vs_degree(x, max_degree=5)

@@ -1,33 +1,33 @@
 """
-Exercise 5: MDL vs AIC vs BIC - The Ultimate Showdown
+练习 5：MDL、AIC 与 BIC 的综合比较
 ======================================================
 
-Three model selection criteria, one goal: Find the true model!
+三种模型选择准则，比较其识别真实模型的表现；目标依准则而异。
 
-MDL (Minimum Description Length):
+MDL（最小描述长度）：
     Score = L(Model) + L(Data|Model)
-    → Information-theoretic penalty
-    → No arbitrary constants
+    → 基于信息论的惩罚
+    → 惩罚由编码定义，但编码选择仍有约定
 
-AIC (Akaike Information Criterion):
+AIC（赤池信息准则）：
     Score = 2k - 2ln(L)
-    → Penalty = 2 per parameter
-    → Derived from prediction risk
+    → 每个参数惩罚 2
+    → 来自预测风险估计
 
-BIC (Bayesian Information Criterion):
+BIC（贝叶斯信息准则）：
     Score = k·ln(n) - 2ln(L)
-    → Penalty = ln(n) per parameter
-    → Derived from Bayesian model selection
+    → 每个参数惩罚 ln(n)
+    → 来自贝叶斯模型选择近似
 
-The Key Question:
+关键问题：
 -----------------
-When do these methods agree? When do they disagree?
-And which one should you trust?
+这些方法何时一致、何时分歧？
+应该依据什么选择方法？
 
-Spoiler: It depends on your goals!
-- AIC: Best for prediction
-- BIC: Best for finding "true" model
-- MDL: Best for compression/understanding
+答案取决于目标与适用条件！
+- AIC：侧重预测风险，不保证所有预测任务都最佳
+- BIC：在适当条件下具有真模型选择一致性
+- MDL：侧重编码压缩，不等于语义理解保证
 """
 
 import numpy as np
@@ -36,80 +36,80 @@ from typing import Dict, Tuple, List
 
 def compute_aic(x: np.ndarray, y: np.ndarray, degree: int) -> float:
     """
-    Compute AIC (Akaike Information Criterion).
+    计算 AIC（赤池信息准则）。
     
     AIC = 2k - 2ln(L)
     
-    where k = number of parameters, L = maximum likelihood
+    其中 k 为参数数量，L 为最大似然
     
-    Lower is better!
+    越低越好！
     
-    Args:
-        x: Input values
-        y: Target values
-        degree: Polynomial degree
+    参数：
+        x：输入值
+        y：目标值
+        degree：多项式次数
         
-    Returns:
-        AIC score (lower = better)
+    返回：
+        AIC 得分，越低越好
         
-    Example:
+    示例：
         >>> x = np.linspace(0, 10, 50)
         >>> y = 2*x + 1 + np.random.randn(50) * 0.5
-        >>> aic_1 = compute_aic(x, y, 1)  # Should be low (good fit)
-        >>> aic_5 = compute_aic(x, y, 5)  # Should be higher (overfit)
+        >>> aic_1 = compute_aic(x, y, 1)  # 预期较低，拟合好
+        >>> aic_5 = compute_aic(x, y, 5)  # 可能较高，存在过拟合
     """
-    # TODO: Implement AIC
-    # Steps:
-    #   1. k = degree + 2 (polynomial coefficients + variance)
-    #   2. Fit polynomial
-    #   3. Compute ML estimate of sigma: sqrt(RSS/n)
-    #   4. Compute log-likelihood: -n/2 * (log(2π σ²) + 1)
-    #   5. Return 2k - 2*log_likelihood
-    
-    pass  # Your code here
+    # TODO：实现 AIC
+    # 步骤：
+    #   1. k = degree + 2，即多项式系数与方差
+    #   2. 拟合多项式
+    #   3. 计算 sigma 的最大似然估计：sqrt(RSS/n)
+    #   4. 计算对数似然：-n/2 * (log(2π σ²) + 1)
+    #   5. 返回 2k - 2*log_likelihood
+
+    pass  # 在此编写代码
 
 
 def compute_bic(x: np.ndarray, y: np.ndarray, degree: int) -> float:
     """
-    Compute BIC (Bayesian Information Criterion).
+    计算 BIC（贝叶斯信息准则）。
     
     BIC = k·ln(n) - 2ln(L)
     
-    BIC has a stronger penalty than AIC for large samples.
+    样本较大时，BIC 的参数惩罚强于 AIC。
     
-    Args:
-        x: Input values
-        y: Target values
-        degree: Polynomial degree
+    参数：
+        x：输入值
+        y：目标值
+        degree：多项式次数
         
-    Returns:
-        BIC score (lower = better)
+    返回：
+        BIC 得分，越低越好
     """
-    # TODO: Implement BIC
-    # Same as AIC, but penalty is k * log(n) instead of 2k
+    # TODO：实现 BIC
+    # 与 AIC 类似，但惩罚是 k * log(n)，而非 2k
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def compute_mdl(x: np.ndarray, y: np.ndarray, degree: int,
                 precision: int = 32) -> float:
     """
-    Compute two-part MDL score.
+    计算两段式 MDL 得分。
     
     MDL = L(Model) + L(Data|Model)
     
-    Args:
-        x: Input values
-        y: Target values
-        degree: Polynomial degree
-        precision: Bits per coefficient
+    参数：
+        x：输入值
+        y：目标值
+        degree：多项式次数
+        precision：每个系数的比特数
         
-    Returns:
-        MDL score in bits (lower = better)
+    返回：
+        MDL 得分，单位为比特，越低越好
     """
-    # TODO: Implement MDL (copy from exercise 1 or implement fresh)
+    # TODO：实现 MDL，可复制练习 1 或重新实现
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def select_with_all_criteria(
@@ -118,24 +118,24 @@ def select_with_all_criteria(
     max_degree: int = 10
 ) -> Dict[str, Dict]:
     """
-    Run all three model selection criteria and compare.
+    运行并比较三种模型选择准则。
     
-    Args:
-        x: Input values
-        y: Target values
-        max_degree: Maximum degree to consider
+    参数：
+        x：输入值
+        y：目标值
+        max_degree：考虑的最高次数
         
-    Returns:
-        Dictionary with results for each method:
+    返回：
+        包含各方法结果的字典：
         {
             'mdl': {'scores': {...}, 'best': int},
             'aic': {'scores': {...}, 'best': int},
             'bic': {'scores': {...}, 'best': int}
         }
     """
-    # TODO: Compute all scores and find best for each
+    # TODO：计算所有得分，并为各准则找出最佳次数
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def monte_carlo_comparison(
@@ -145,31 +145,31 @@ def monte_carlo_comparison(
     n_trials: int = 100
 ) -> Dict[str, float]:
     """
-    Compare accuracy of MDL, AIC, and BIC over many trials.
+    通过多次试验比较 MDL、AIC、BIC 的真实次数选中率。
     
-    This is the definitive test: Which method most often
-    finds the TRUE underlying model?
+    该实验检查在指定生成机制下，哪种方法更常
+    找到真实模型；不能证明方法在所有任务上最佳。
     
-    Args:
-        true_degree: The actual polynomial degree
-        n_samples: Data points per trial
-        noise_std: Noise level
-        n_trials: Number of experiments
+    参数：
+        true_degree：实际多项式次数
+        n_samples：每次试验的数据点数
+        noise_std：噪声水平
+        n_trials：实验次数
         
-    Returns:
-        Dictionary with accuracy for each method:
+    返回：
+        包含各方法选中率的字典：
         {'mdl_accuracy': 0.85, 'aic_accuracy': 0.72, 'bic_accuracy': 0.88}
     """
-    # TODO: Implement Monte Carlo comparison
-    # Steps:
-    #   1. For each trial:
-    #      a. Generate random polynomial of true_degree
-    #      b. Add noise
-    #      c. Apply each criterion
-    #      d. Check which found the true degree
-    #   2. Compute accuracy for each
-    
-    pass  # Your code here
+    # TODO：实现蒙特卡洛比较
+    # 步骤：
+    #   1. 对每次试验：
+    #      a. 生成 true_degree 次随机多项式
+    #      b. 添加噪声
+    #      c. 应用各准则
+    #      d. 检查是否找到真实次数
+    #   2. 计算各准则的选中率
+
+    pass  # 在此编写代码
 
 
 def analyze_sample_size_effect(
@@ -179,19 +179,19 @@ def analyze_sample_size_effect(
     n_trials: int = 50
 ) -> Dict[str, List[float]]:
     """
-    Analyze how sample size affects each criterion's accuracy.
+    分析样本数如何影响各准则的选中率。
     
-    Key insight:
-    - AIC tends to overfit with large samples
-    - BIC gets more accurate with large samples
-    - MDL should be relatively stable
+    关键认识：
+    - AIC 在真有限维模型条件下可能持续选择多余参数
+    - BIC 在适当条件下随样本数增加更易选择真实模型
+    - MDL 的表现需结合编码与样本数实测，不保证总是稳定
     
-    Returns:
-        Dictionary mapping method -> list of accuracies for each sample size
+    返回：
+        方法到各样本数下选中率列表的映射
     """
-    # TODO: Implement sample size analysis
+    # TODO：实现样本数分析
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def analyze_noise_level_effect(
@@ -201,17 +201,17 @@ def analyze_noise_level_effect(
     n_trials: int = 50
 ) -> Dict[str, List[float]]:
     """
-    Analyze how noise level affects each criterion's accuracy.
+    分析噪声水平如何影响各准则的选中率。
     
-    Key insight: All methods struggle with high noise,
-    but some are more robust than others.
+    关键认识：所有方法都可能受高噪声影响，
+    稳健性因具体条件而异。
     
-    Returns:
-        Dictionary mapping method -> list of accuracies for each noise level
+    返回：
+        方法到各噪声水平下选中率列表的映射
     """
-    # TODO: Implement noise level analysis
+    # TODO：实现噪声水平分析
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def when_do_they_disagree(
@@ -220,20 +220,20 @@ def when_do_they_disagree(
     max_degree: int = 10
 ) -> Dict[str, any]:
     """
-    Find cases where the methods disagree and analyze why.
+    寻找方法分歧的情形并分析原因。
     
-    Returns analysis of the disagreement, including:
-    - Which methods picked which degree
-    - The score differences
-    - Possible explanation
+    返回分歧分析，包括：
+    - 各方法选择的次数
+    - 得分差异
+    - 可能解释
     """
-    # TODO: Implement disagreement analysis
+    # TODO：实现分歧分析
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 # =============================================================================
-# HELPER FUNCTIONS
+# 辅助函数
 # =============================================================================
 
 def generate_polynomial_data(
@@ -244,17 +244,17 @@ def generate_polynomial_data(
     seed: int = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Generate synthetic polynomial data.
+    生成合成多项式数据。
     
-    Returns:
-        Tuple of (x, y_noisy, true_coefficients)
+    返回：
+        元组：(x, y_noisy, true_coefficients)
     """
     if seed is not None:
         np.random.seed(seed)
     
     x = np.linspace(x_range[0], x_range[1], n_samples)
     
-    # Random coefficients
+    # 随机系数
     true_coeffs = np.random.randn(degree + 1) * 2
     poly = np.poly1d(true_coeffs)
     
@@ -265,7 +265,7 @@ def generate_polynomial_data(
 
 
 # =============================================================================
-# TEST YOUR IMPLEMENTATION
+# 测试实现
 # =============================================================================
 
 def test_implementation():
@@ -276,7 +276,7 @@ def test_implementation():
     
     np.random.seed(42)
     
-    # Generate test data
+    # 生成测试数据
     true_degree = 2
     x, y, true_coeffs = generate_polynomial_data(
         degree=true_degree,
@@ -287,7 +287,7 @@ def test_implementation():
     
     print(f"\nTest data: n=50, true degree={true_degree}")
     
-    # Test 1: Individual criteria
+    # 测试 1：各个准则
     print("\n1. Testing individual criteria...")
     try:
         aic_2 = compute_aic(x, y, 2)
@@ -301,7 +301,7 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 2: Full selection
+    # 测试 2：完整选择流程
     print("\n2. Testing select_with_all_criteria()...")
     try:
         results = select_with_all_criteria(x, y, max_degree=8)
@@ -311,7 +311,7 @@ def test_implementation():
         print(f"   BIC selects: degree {results['bic']['best']}")
         print(f"   True degree: {true_degree}")
         
-        # Count how many got it right
+        # 统计选对的准则数量
         correct = sum([
             results['mdl']['best'] == true_degree,
             results['aic']['best'] == true_degree,
@@ -322,7 +322,7 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 3: Monte Carlo
+    # 测试 3：蒙特卡洛试验
     print("\n3. Testing monte_carlo_comparison()...")
     try:
         mc_results = monte_carlo_comparison(
@@ -336,7 +336,7 @@ def test_implementation():
         print(f"   AIC accuracy: {mc_results['aic_accuracy']*100:.1f}%")
         print(f"   BIC accuracy: {mc_results['bic_accuracy']*100:.1f}%")
         
-        # Find winner
+        # 找出获胜方法
         winner = max(['mdl', 'aic', 'bic'],
                      key=lambda m: mc_results[f'{m}_accuracy'])
         print(f"   Winner: {winner.upper()}")
@@ -344,7 +344,7 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 4: Sample size effect
+    # 测试 4：样本数影响
     print("\n4. Testing analyze_sample_size_effect()...")
     try:
         size_results = analyze_sample_size_effect(
@@ -360,7 +360,7 @@ def test_implementation():
     except Exception as e:
         print(f"   [NOTE] Skipped: {e}")
     
-    # Test 5: Disagreement analysis
+    # 测试 5：分歧分析
     print("\n5. Testing when_do_they_disagree()...")
     try:
         disagreement = when_do_they_disagree(x, y, max_degree=8)

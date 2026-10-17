@@ -1,16 +1,16 @@
 """
-setup.py - Diagnostic & Verification Suite for Day 19
-Standardized for Day 19 of 30u30
+setup.py：第 19 天诊断与验证程序
+按 30u30 第 19 天的格式组织
 
-This script performs advanced programmatic verification of the 
-Relation Network's architectural properties.
+本脚本通过程序检查关系网络的
+架构性质。
 
-Verifications:
-1. Permutation Invariance (Standard).
-2. Cardinality Sensitivity: Verifying that 'sum' detects set size changes 
-   while 'mean' washes them out.
-3. Coordinate Preservation: Verifying that (x, y) injection doesn't 
-   break tensor shapes.
+检查项目：
+1. 排列不变性（标准检查）。
+2. 基数敏感性：验证 sum 能区分集合大小变化，
+   而 mean 会抹去此例中的大小信息。
+3. 坐标保留：验证注入 (x, y)
+   不会破坏预期张量形状。
 """
 
 import sys
@@ -18,7 +18,7 @@ import torch
 from implementation import RelationNetwork, add_coordinates
 
 def verify_permutation_invariance() -> bool:
-    print("Verifying Relational Inductive Bias (Permutation Invariance)...")
+    print('正在验证关系归纳偏置（排列不变性）……')
     model = RelationNetwork(object_dim=8, output_dim=4)
     model.eval()
     
@@ -33,32 +33,32 @@ def verify_permutation_invariance() -> bool:
         
     diff = torch.abs(out_orig - out_shuffled).max().item()
     if diff < 1e-5:
-        print(f"  [PASS] Output invariant to shuffle (diff: {diff:.2e})")
+        print(f"  [PASS] 打乱顺序后输出不变（差值：{diff:.2e})")
         return True
     return False
 
 def verify_cardinality_bias() -> bool:
     """
-    Verifies that 'sum' is sensitive to the number of objects, which 
-    is essential for counting tasks as mentioned in Section 2.1.
+    验证 sum 对对象数敏感，这对计数任务很重要，
+    如第 2.1 节所述。
     """
-    print("\nVerifying Cardinality Bias (Sum vs Mean)...")
+    print('\n正在验证基数偏置（求和与均值）……')
     
-    # All objects are identical (ones)
+    # 所有对象相同（全 1）
     objs_5 = torch.ones(1, 5, 8)
     objs_10 = torch.ones(1, 10, 8)
     
-    # 1. Test Mean Aggregator (Size-Invariant)
+    # 1. 测试均值聚合器（此例中不随集合大小变化）
     model_mean = RelationNetwork(object_dim=8, aggregator='mean')
     model_mean.eval()
     with torch.no_grad():
         out_mean_5 = model_mean(objs_5)
         out_mean_10 = model_mean(objs_10)
     
-    # Mean of identical objects should be nearly identical regardless of count
+    # 相同对象的均值不应随数量变化而明显改变
     mean_diff = torch.abs(out_mean_5 - out_mean_10).max().item()
     
-    # 2. Test Sum Aggregator (Size-Sensitive)
+    # 2. 测试求和聚合器（对集合大小敏感）
     model_sum = RelationNetwork(object_dim=8, aggregator='sum')
     model_sum.eval()
     with torch.no_grad():
@@ -67,28 +67,28 @@ def verify_cardinality_bias() -> bool:
         
     sum_diff = torch.abs(out_sum_5 - out_sum_10).max().item()
     
-    print(f"  [INFO] Mean Aggregator Diff (N=5 vs N=10): {mean_diff:.2e}")
-    print(f"  [INFO] Sum Aggregator Diff  (N=5 vs N=10): {sum_diff:.2e}")
+    print(f"  [INFO] 均值聚合器差值（N=5 与 N=10）：{mean_diff:.2e}")
+    print(f"  [INFO] 求和聚合器差值（N=5 与 N=10）：{sum_diff:.2e}")
     
     if sum_diff > mean_diff * 10:
-        print("  [PASS] Sum aggregator successfully preserves set-size information.")
+        print('  [PASS] 求和聚合器成功保留了集合大小信息。')
         return True
     return False
 
 def verify_coordinates() -> bool:
-    print("\nVerifying Coordinate Injection...")
+    print('\n正在验证坐标注入……')
     objs = torch.randn(2, 5, 8)
     objs_coords = add_coordinates(objs)
     
     if objs_coords.shape == (2, 5, 10):
-        print("  [PASS] Successfully appended (x, y) coordinates.")
+        print('  [PASS] 已成功拼接 (x, y) 坐标。')
         return True
     return False
 
 if __name__ == "__main__":
     print("=" * 50)
-    print("Day 19: Relational Reasoning Masterclass")
-    print("Diagnostic & Verification Suite")
+    print('第 19 天：关系推理')
+    print('诊断与验证程序')
     print("=" * 50)
     print()
     
@@ -99,13 +99,13 @@ if __name__ == "__main__":
     
     print("\n" + "-" * 50)
     if success:
-        print("  [LOGICAL SMOKE TEST] PASSED")
-        print("  The architecture is confirmed to be:")
-        print("  1. Permutation Invariant (Order-agnostic)")
-        print("  2. Cardinality Aware (Sum vs Mean bias handles counting)")
-        print("  3. Spatial Ready (Coordinate preservation active)")
+        print('  [LOGICAL SMOKE TEST] 通过')
+        print('  此次样例检查支持以下架构性质：')
+        print('  1. 排列不变性（不依赖顺序）')
+        print('  2. 基数感知（求和与均值的偏置影响计数）')
+        print('  3. 空间信息就绪（坐标保留检查通过）')
         print("-" * 50)
     else:
-        print("  [LOGICAL SMOKE TEST] FAILED")
+        print('  [LOGICAL SMOKE TEST] 失败')
         print("-" * 50)
         sys.exit(1)

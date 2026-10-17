@@ -1,6 +1,4 @@
-"""
-Solution 5: Compressor Comparison (Figure 5)
-"""
+"""解答 5：比较压缩器（图 5）"""
 
 import sys
 import os
@@ -18,7 +16,7 @@ from implementation import (
 
 
 def compress_with_all(data: bytes) -> dict:
-    """Compress data with multiple algorithms."""
+    """使用多种算法压缩数据。"""
     return {
         'gzip': len(gzip.compress(data, compresslevel=9)),
         'bz2': len(bz2.compress(data, compresslevel=9)),
@@ -28,7 +26,7 @@ def compress_with_all(data: bytes) -> dict:
 
 
 def run_compressor_comparison(grid_size=50, total_steps=50000, num_snapshots=60):
-    """Run the automaton and collect complexity estimates from each compressor."""
+    """运行自动机，收集各压缩器的复杂度估计值。"""
     ca = CoffeeAutomaton(grid_size, 'interacting', seed=42)
     grain_size = max(2, grid_size // 10)
     steps_per = max(1, total_steps // num_snapshots)
@@ -36,7 +34,7 @@ def run_compressor_comparison(grid_size=50, total_steps=50000, num_snapshots=60)
     times = []
     results = {'gzip': [], 'bz2': [], 'lzma': [], 'zlib': []}
 
-    # Initial measurement
+    # 初始测量
     grid = ca.get_binary_grid()
     coarse = coarse_grain(grid, grain_size)
     discrete = threshold_array(coarse, 7)
@@ -64,7 +62,7 @@ def run_compressor_comparison(grid_size=50, total_steps=50000, num_snapshots=60)
 
 
 def plot_comparison(times, results):
-    """Plot complexity curves for all compressors."""
+    """为所有压缩器绘制复杂度曲线。"""
     import matplotlib.pyplot as plt
 
     colors = {'gzip': 'blue', 'bz2': 'red', 'lzma': 'green', 'zlib': 'orange'}
@@ -74,26 +72,26 @@ def plot_comparison(times, results):
         plt.plot(times, sizes, color=colors.get(name, 'black'),
                  label=name, linewidth=1.5)
 
-    plt.xlabel('Time step')
-    plt.ylabel('Compressed size (bytes)')
-    plt.title('Complexity with Different Compressors (cf. Figure 5)')
+    plt.xlabel('时间步')
+    plt.ylabel('压缩大小（字节）')
+    plt.title('不同压缩器的复杂度（参见图 5）')
     plt.legend()
     plt.tight_layout()
     plt.show()
 
 
 if __name__ == '__main__':
-    print("Compressor Comparison (Figure 5)")
+    print("压缩器比较（图 5）")
     print("=" * 50)
 
     times, compressor_results = run_compressor_comparison()
 
-    print("\nPeak complexity by compressor:")
+    print("\n各压缩器的复杂度峰值：")
     for name, sizes in compressor_results.items():
         peak = max(sizes)
         peak_t = times[sizes.index(peak)]
-        print(f"  {name:>6}: {peak:>6} bytes at t={peak_t}")
+        print(f"  {name:>6}：{peak:>6} 字节，位于 t={peak_t}")
 
-    print("\nAll compressors should show the same qualitative rise-and-fall.")
+    print("\n所有压缩器都应呈现定性一致的先升后降模式。")
 
     plot_comparison(times, compressor_results)

@@ -1,106 +1,125 @@
-# Paper Notes: Relational Reasoning
+# 论文笔记：关系推理
 
-> Notes on Santoro et al. (2017)
-
----
-
-## ELI5 (Explain Like I'm 5)
-
-### [Our Addition: The LEGO Analogy]
-
-Imagine you have a box of LEGOs. Most AI models are like someone who looks at the whole box and tries to guess what's inside (CNN) or someone who looks at one block at a time (RNN). 
-
-The **Relation Network** is like someone who picks up *every possible pair* of blocks, looks at how they connect, and writes a note about that pair. After looking at every pair, they sum up all their notes to understand the whole structure. This "pairwise" thinking is what allows the model to understand things like "which block is furthest from the red one?" or "are there two blocks of the same size?"
-
-> **Note:** This analogy is ours.
+> Santoro 等（2017）的论文笔记。原论文题名为 *A simple neural network module for relational reasoning*，本项目译作《用于关系推理的简单神经网络模块》。
 
 ---
 
-## What the Paper Actually Covers
+## 通俗解释（ELI5）
 
-Santoro et al. (2017) address a fundamental limitation in deep learning: the difficulty of relational reasoning. While standard architectures thrive on structured data (grids for CNNs, sequences for RNNs), they lack a strong inductive bias for reasoning about the relationships between entities in an unstructured set.
+### 本仓库补充：乐高类比
 
-The paper introduces the **Relation Network (RN)**, a neural module constrained to pairwise interactions. They test this module across three distinct domains:
-1.  **Visual QA (CLEVR)**: Reasoning about spatial relationships, colors, and shapes.
-2.  **Text-based QA (bAbI)**: Deductive reasoning across sentences.
-3.  **Physical Reasoning**: Predicting the movement of balls connected by invisible springs/constraints.
+想象你有一盒乐高积木。许多 AI 模型像是看着整盒积木猜里面有什么的人（CNN），或者一次只看一块积木的人（RNN）。
+
+**关系网络**则把*每一种可能的积木对*都拿出来，观察二者如何连接，并记下这一对的信息。看完所有组合后，把所有记录汇总，理解整体结构。这种“成对”思考使模型能回答“哪块积木离红色积木最远？”“有没有两块大小相同的积木？”等问题。
+
+> **说明：**这个类比来自本仓库，不是论文作者的表述。
 
 ---
 
-## The Core Idea
+## 论文实际覆盖的内容
 
-The RN is a composite function designed to be plug-and-play. It takes a set of objects $O = \{o_1, o_2, ..., o_n\}$ and computes:
+Santoro 等人（2017）针对深度学习中的一个根本困难：关系推理。标准架构适合特定结构数据，例如 CNN 的网格、RNN 的序列，却没有很强的归纳偏置来推理无序集合中实体之间的关系。
+
+论文提出**关系网络（Relation Network，RN）**，将神经模块限制为成对交互，并在三个领域测试：
+
+1. **视觉问答（CLEVR）：**推理空间关系、颜色与形状。
+2. **文本问答（bAbI）：**跨句子的演绎推理。
+3. **物理推理：**预测由不可见弹簧或约束连接的小球运动。
+
+---
+
+## 核心思想
+
+RN 是可即插即用的复合函数。它接收对象集合 $O = \{o_1, o_2, ..., o_n\}$ 并计算：
 
 $$RN(O) = f_{\phi} \left( \sum_{i,j} g_{\theta}(o_i, o_j, q) \right)$$
 
-### 1. Object Definition
-The "objects" vary by task (Section 2):
--   **CNN Features**: For images, each cell in a $k \times k$ feature map is an object.
--   **NLP**: Each LSTM state or word embedding is an object.
+### 1. 对象定义
 
-### 2. The Relation Function ($g_{\theta}$)
-$g_{\theta}$ is an MLP shared across all pairs $(i, j)$. Its role is to infer whether a relation exists between two objects and what that relation is.
+“对象”随任务变化（第 2 节）：
 
-### 3. The Global Function ($f_{\phi}$)
-After summing the relation outputs, $f_{\phi}$ (another MLP) aggregates the information to produce a final answer.
+- **CNN 特征：**对图像而言，$k \times k$ 特征图中的每个网格单元是一个对象。
+- **自然语言处理：**每个 LSTM 状态或词嵌入可以作为对象，具体取决于输入建模方式。
 
-### [Important Detail] Spatial Awareness
-For visual tasks like CLEVR, the authors found that objects extracted from CNN feature maps lack position information. To fix this, they append absolute $(x, y)$ coordinates to each object's feature vector (Section 3.1).
+### 2. 关系函数（$g_{\theta}$）
 
----
+$g_{\theta}$ 是所有对象对 $(i, j)$ 共享的 MLP，用于推断两个对象之间是否存在关系以及关系是什么。
 
-## The Experiments
+### 3. 全局函数（$f_{\phi}$）
 
-### 1. Visual QA: CLEVR (Section 5.1)
-The authors trained the RN on the CLEVR dataset, which requires multi-step reasoning (e.g., "What shape is the object that is left of the green sphere?").
+将关系输出求和后，用另一个 MLP，即 $f_{\phi}$，综合信息产生最终答案。
 
--   **Result**: The RN achieved **95.5% accuracy**, surpassing human performance (92.6%) and the previous best model (68.5%).
--   **Table 1 Evidence**: The RN significantly outperformed standard stacked attention models (SA) and CNN+MLP baselines.
+### 关键细节：空间感知
 
-### 2. Text-based QA: bAbI (Section 5.4)
-The RN was applied to the bAbI text reasoning suite.
--   **Result**: It solved **18/20 tasks**.
--   **Failure Cases**: It struggled with "Two supporting facts" and "Three supporting facts", suggesting limitations in multi-hop chaining compared to memory networks.
-
-### 3. Physical Reasoning (Section 5.5)
-The model observed balls moving on a table, some connected by invisible springs.
--   **Goal**: Predict future movement or infer connections.
--   **Result**: The RN successfully inferred the hidden physical graph structure, predicting connections with **93% accuracy** in the test set.
+对于 CLEVR 等视觉任务，作者发现从 CNN 特征图提取的对象缺少显式位置信息，因此在每个对象特征向量后拼接绝对 $(x, y)$ 坐标（第 3.1 节）。
 
 ---
 
-## Generalization (Section 4 & 5)
+## 实验
 
-A key claim is that RNs generalize to different numbers of objects. In the Supplementary Material (Section F), the authors show that a model trained on sets of 6 objects could generalize to sets of 12 objects, thanks to the permutation-invariant summation aggregator.
+### 1. 视觉问答：CLEVR（第 5.1 节）
+
+作者在 CLEVR 数据集上训练 RN。该数据集要求多步推理，例如“绿色球体左边的对象是什么形状？”
+
+- **结果：**RN 准确率为 **95.5%**，高于人类的 92.6%；原仓库还列出此前模型的 68.5%。
+- **表 1 的证据：**RN 显著优于标准堆叠注意力模型（SA）和 CNN+MLP 基线。
+
+### 2. 文本问答：bAbI（第 5.4 节）
+
+将 RN 用于 bAbI 文本推理任务集。
+
+- **结果：**解决 **18/20 项任务**。
+- **失败案例：**原仓库将未解决任务写作“两个支持事实”和“三个支持事实”，并认为这表明其多跳链式推理相对记忆网络仍有限。
+
+> 待核验：这些失败任务名称与统计需要对照原论文结果表确认，本次未成功获取正文，不能当作已核实事实。
+
+### 3. 物理推理（第 5.5 节）
+
+模型观察桌面上运动的小球，其中一些通过不可见弹簧连接。
+
+- **目标：**预测未来运动或推断连接。
+- **结果：**原仓库报告，RN 成功推断隐藏物理图结构，测试集连接预测准确率为 **93%**。
+
+> 核验状态：本节保留原仓库实验数值和章节引用，未将其标为已独立核验的结果。
 
 ---
 
-## What the Paper Doesn't Cover
+## 泛化（第 4、5 节）
 
--   **Computational Cost**: The $O(N^2)$ complexity is mentioned but not deeply analyzed as a bottleneck for large sets (e.g., thousands of objects).
--   **Hierarchical Reasoning**: The RN is "flat"—it considers all pairs equally. It does not explicitly model hierarchies of objects.
+一个重要主张是，RN 可以泛化到不同对象数量。原仓库引用补充材料 F 节，称在 6 个对象集合上训练的模型，可以泛化到 12 个对象集合，并将此与排列不变的求和聚合器联系起来。
+
+> 译注：排列不变性支持集合处理，但它本身不保证跨对象数量的泛化准确率；上述实验设置与材料编号仍待原始来源核验。
 
 ---
 
-## [Our Addition: Retrospective]
+## 论文未覆盖的内容
 
-| Feature | Original RN (2017) | Modern Transformers (Visual/NLP) |
+- **计算成本：**提到 $O(N^2)$ 复杂度，但没有深入分析其对数千对象等大集合的瓶颈。
+- **层次推理：**RN 是“扁平”的，对所有对象对应用同样的处理，并不显式建模对象层次。
+
+---
+
+## 本仓库补充：回顾
+
+| 特征 | 原始 RN（2017） | 现代 Transformer（视觉／自然语言） |
 |:---|:---|:---|
-| **Mechanism** | Additive Pairwise ($ \sum g_{\theta} $) | Multi-Head Self-Attention |
-| **Logic** | Fixed Pairwise bottleneck | Dynamic Weighting (Attention) |
-| **Complexity** | $O(N^2)$ | $O(N^2)$ |
-| **Inductive Bias** | Explicitly Pairs | Learned structure via Attention |
+| **机制** | 加性的成对聚合（$ \sum g_{\theta} $） | 多头自注意力 |
+| **逻辑** | 固定的成对交互瓶颈 | 动态权重（注意力） |
+| **复杂度** | $O(N^2)$ | $O(N^2)$ |
+| **归纳偏置** | 显式对象对 | 通过注意力学习结构 |
 
-While the RN was a breakthrough in demonstrating the value of relational bottlenecks, it is effectively a precursor to the Transformer's self-attention mechanism, which also operates on sets of pairs but with data-dependent weighting (attention scores) rather than a fixed sum.
+RN 展示了关系瓶颈的价值。原仓库将它视为 Transformer 自注意力的先驱：二者都考虑对象对，但自注意力以数据相关的分数加权，而非固定求和。
 
----
-
-## Questions Worth Thinking About
-
-1.  Why does the `sum` operation allow the model to count objects, whereas `mean` or `max` might lose this information?
-2.  The paper uses a full all-to-all comparison ($N^2$). Can you think of ways to prune this to $O(N)$ or $O(N \log N)$? (Hint: Sparse graphs or nearest neighbors).
-3.  Why is coordinate injection $((x, y)$ features) so critical for CNN-based objects but not always for graph-based inputs?
+> 译注：这是结构层面的回顾性比较，不构成已核实的历史因果关系。RN 的 $g_{\theta}$ 也依赖输入，“固定求和”只指最终聚合形式。
 
 ---
 
-**Next:** [Day 20 - Relational Recurrent Neural Networks](../20_relational_rnn/)
+## 值得思考的问题
+
+1. 为什么 `sum` 允许模型对对象计数，而 `mean` 或 `max` 可能丢失这一信息？
+2. 论文进行全连接式比较（$N^2$）。能否将其剪枝为 $O(N)$ 或 $O(N \log N)$？提示：稀疏图或最近邻。
+3. 为什么为 CNN 对象注入坐标（$(x, y)$ 特征）很重要，而图输入不总是如此？
+
+---
+
+**下一章：**[第 20 天：关系循环神经网络](../20_Relational_RNNs/)

@@ -1,16 +1,16 @@
-# Day 8: AlexNet - Exercises
+# 第 8 天：AlexNet——练习
 
-Build your understanding of revolutionary deep learning architecture that won ImageNet 2012!
+深入理解赢得 ImageNet 2012 的革命性深度学习架构！
 
 ---
 
-## Exercise 1: GPU Impact Simulator ⭐⭐⭐
+## 练习 1：GPU 影响模拟器 ⭐⭐⭐
 
-Understand why AlexNet's GPU acceleration was revolutionary.
+理解 AlexNet 的 GPU 加速为何具有革命性。
 
-**Problem**: AlexNet couldn't fit in a single GPU's 3GB memory, so it was split across 2 GPUs. Analyze how GPU parallelization improves training speed.
+**题目：** AlexNet 无法放入单块 GPU 的 3GB 显存，因此拆分到 2 块 GPU。分析 GPU 并行如何提高训练速度。
 
-**Starting Code**:
+**起始代码：**
 ```python
 import torch
 import torch.nn as nn
@@ -73,32 +73,32 @@ results = benchmark_gpu_vs_cpu()
 # Plot comparison
 ```
 
-**Expected Behavior**:
-- GPU should be 10-50x faster than CPU for large batches
-- Speedup increases with batch size (better GPU utilization)
-- At batch size 256, GPU training should be ~30-50x faster
+**预期行为：**
+- 大批次下 GPU 应比 CPU 快 10-50 倍
+- 加速比随批大小增加而提高（GPU 利用率更高）
+- 批大小为 256 时，GPU 训练应快约 30-50 倍
 
-**Hints**:
-1. Move model and data to device using `.to(device)`
-2. Warm up GPU before timing to get accurate measurements
-3. Use `torch.cuda.synchronize()` to ensure GPU operations complete
-4. Measure total time for 10 iterations (forward + backward)
-5. Compare GPU vs CPU throughput (images/second)
+**提示：**
+1. 用 `.to(device)` 将模型和数据移到目标设备
+2. 计时前预热 GPU，以获得准确测量
+3. 用 `torch.cuda.synchronize()` 确保 GPU 操作完成
+4. 测量 10 次迭代的总时间（前向 + 反向传播）
+5. 比较 GPU 与 CPU 的吞吐量（图像／秒）
 
-**Grading Rubric**:
-- ⭐⭐⭐ (7/10): Correctly times GPU vs CPU, shows speedup
-- ⭐⭐⭐⭐ (9/10): Also includes memory usage analysis
-- ⭐⭐⭐⭐⭐ (10/10): Analyzes scaling efficiency and practical implications
+**评分标准：**
+- ⭐⭐⭐（7/10）：正确测量 GPU 与 CPU 耗时，展示加速比
+- ⭐⭐⭐⭐（9/10）：同时分析内存使用量
+- ⭐⭐⭐⭐⭐（10/10）：分析扩展效率及实践意义
 
 ---
 
-## Exercise 2: ReLU vs Sigmoid ⭐⭐⭐⭐
+## 练习 2：ReLU 与 Sigmoid ⭐⭐⭐⭐
 
-AlexNet's key innovation: ReLU activation instead of sigmoid/tanh.
+AlexNet 的关键创新：使用 ReLU 激活代替 sigmoid／tanh。
 
-**Problem**: Compare how different activations affect training dynamics. Measure convergence speed, vanishing gradients, and representational power.
+**题目：** 比较不同激活函数如何影响训练动态，测量收敛速度、梯度消失和表示能力。
 
-**Starting Code**:
+**起始代码：**
 ```python
 import torch
 import torch.nn as nn
@@ -171,31 +171,31 @@ results = compare_activations()
 # Visualize results
 ```
 
-**Expected Findings**:
-- ReLU: Fast convergence, large gradients, stable training
-- Sigmoid/Tanh: Slow convergence, vanishing gradients, training plateaus
-- ReLU is 3-5x faster to convergence on MNIST
+**预期发现：**
+- ReLU：收敛快、梯度大、训练稳定
+- Sigmoid／Tanh：收敛慢、梯度消失、训练停滞
+- 在 MNIST 上，ReLU 的收敛速度快 3-5 倍
 
-**Hints**:
-1. Use `model.fc1.weight.grad` to access gradients
-2. Calculate gradient magnitude as `grad.norm().item()`
-3. Track gradients at beginning of training when they're most informative
-4. Plot loss curves with log scale to see convergence patterns
+**提示：**
+1. 用 `model.fc1.weight.grad` 访问梯度
+2. 用 `grad.norm().item()` 计算梯度大小
+3. 在训练初期追踪梯度，此时最有参考价值
+4. 用对数刻度绘制损失曲线，观察收敛模式
 
-**Grading Rubric**:
-- ⭐⭐⭐⭐ (8/10): Correctly compares activation functions with loss curves
-- ⭐⭐⭐⭐ (9/10): Includes gradient magnitude analysis showing vanishing gradients
-- ⭐⭐⭐⭐⭐ (10/10): Also analyzes dead ReLU problem and proposes solutions
+**评分标准：**
+- ⭐⭐⭐⭐（8/10）：用损失曲线正确比较激活函数
+- ⭐⭐⭐⭐（9/10）：分析梯度大小，展示梯度消失
+- ⭐⭐⭐⭐⭐（10/10）：同时分析 ReLU 死亡问题并提出解决方法
 
 ---
 
-## Exercise 3: Learning Rate Scheduling ⭐⭐⭐⭐
+## 练习 3：学习率调度 ⭐⭐⭐⭐
 
-AlexNet trained with manual learning rate annealing - crucial for convergence.
+AlexNet 采用手动学习率退火训练，这对收敛至关重要。
 
-**Problem**: Implement and test different learning rate schedules. Find which is fastest to convergence.
+**题目：** 实现并测试不同学习率调度，找出收敛最快的方案。
 
-**Starting Code**:
+**起始代码：**
 ```python
 import torch.optim.lr_scheduler as lr_scheduler
 
@@ -228,33 +228,33 @@ comparison = LRScheduleComparison()
 results = comparison.compare_schedules()
 ```
 
-**Expected Results**:
-- Constant LR: Training plateaus around epoch 20
-- Step decay: Improves, converges by epoch 40
-- Exponential: Smooth improvement, converges by epoch 35
-- Cosine annealing: Best convergence, reaches target by epoch 30
-- Warmup + Cosine: Fastest initial progress + stable training
+**预期结果：**
+- 恒定学习率：训练约在第 20 轮停滞
+- 阶梯衰减：有所改善，至第 40 轮收敛
+- 指数衰减：平稳改善，至第 35 轮收敛
+- 余弦退火：收敛最好，至第 30 轮达到目标
+- 预热 + 余弦：初期进展最快，训练稳定
 
-**Hints**:
-1. Call `scheduler.step()` after each epoch
-2. Warmup phase: manually adjust optimizer's learning rate for first N epochs
-3. Use `optimizer.param_groups[0]['lr']` to set custom LR
-4. Plot LR schedule vs epoch to visualize all curves
+**提示：**
+1. 每轮结束后调用 `scheduler.step()`
+2. 预热阶段：前 N 轮手动调整优化器学习率
+3. 用 `optimizer.param_groups[0]['lr']` 设置自定义学习率
+4. 绘制学习率随轮次变化的曲线，可视化所有方案
 
-**Grading Rubric**:
-- ⭐⭐⭐⭐ (8/10): Implements 3+ schedules with proper comparison
-- ⭐⭐⭐⭐ (9/10): Includes warmup scheduling and analysis
-- ⭐⭐⭐⭐⭐ (10/10): Discovers that warmup+cosine is optimal for this task
+**评分标准：**
+- ⭐⭐⭐⭐（8/10）：实现 3+ 种调度并合理比较
+- ⭐⭐⭐⭐（9/10）：包含预热调度及分析
+- ⭐⭐⭐⭐⭐（10/10）：发现预热 + 余弦对本任务最优
 
 ---
 
-## Exercise 4: Data Augmentation Importance ⭐⭐⭐⭐
+## 练习 4：数据增强的重要性 ⭐⭐⭐⭐
 
-AlexNet used aggressive data augmentation to regularize training.
+AlexNet 用较强数据增强来正则化训练。
 
-**Problem**: Train models with different augmentation levels. Measure impact on overfitting and generalization.
+**题目：** 使用不同强度的数据增强训练模型，测量对过拟合和泛化的影响。
 
-**Starting Code**:
+**起始代码：**
 ```python
 from torchvision import transforms
 
@@ -305,32 +305,32 @@ def measure_augmentation_impact():
 results = measure_augmentation_impact()
 ```
 
-**Expected Results**:
-- No augmentation: Best training loss, worst test accuracy (high gap = overfitting)
-- Basic: Reduced overfitting, better generalization
-- Strong: Similar to basic, performance plateaus
-- AlexNet-style: Best test accuracy, narrowest train/test gap
+**预期结果：**
+- 无增强：训练损失最好，测试准确率最差（差距大 = 过拟合）
+- 基础增强：减少过拟合，泛化更好
+- 强增强：与基础增强相似，性能趋于平稳
+- AlexNet 风格：测试准确率最好，训练／测试差距最小
 
-**Hints**:
-1. Use same model architecture and hyperparameters for fair comparison
-2. Plot train loss vs validation loss to visualize overfitting
-3. Calculate "generalization gap" = test_loss - train_loss
-4. AlexNet used multi-crop evaluation at test time for better accuracy
+**提示：**
+1. 使用相同架构和超参数，确保公平比较
+2. 绘制训练损失与验证损失，观察过拟合
+3. 计算“泛化差距” = test_loss - train_loss
+4. AlexNet 在测试时使用多裁剪评估，以提高准确率
 
-**Grading Rubric**:
-- ⭐⭐⭐⭐ (8/10): Tests 3+ augmentation strategies with proper metrics
-- ⭐⭐⭐⭐ (9/10): Implements AlexNet-style augmentations (crops, color jitter)
-- ⭐⭐⭐⭐⭐ (10/10): Demonstrates that augmentation is essential for modern deep learning
+**评分标准：**
+- ⭐⭐⭐⭐（8/10）：使用合适指标测试 3+ 种增强策略
+- ⭐⭐⭐⭐（9/10）：实现 AlexNet 风格增强（裁剪、颜色扰动）
+- ⭐⭐⭐⭐⭐（10/10）：展示数据增强对现代深度学习的重要性
 
 ---
 
-## Exercise 5: Batch Normalization Retrospective ⭐⭐⭐⭐⭐
+## 练习 5：回看批归一化 ⭐⭐⭐⭐⭐
 
-AlexNet predates batch norm (invented 2015), compare what we can do now.
+AlexNet 早于批归一化（2015 年提出），比较如今可以做出的改进。
 
-**Problem**: Reimplement AlexNet with batch normalization. Measure training stability and convergence speed improvements.
+**题目：** 用批归一化重新实现 AlexNet，测量训练稳定性和收敛速度的改善。
 
-**Starting Code**:
+**起始代码：**
 ```python
 class AlexNetWithoutBN(nn.Module):
     def __init__(self):
@@ -378,26 +378,26 @@ results = compare_with_without_bn()
 # BN should show ~30-50% faster training!
 ```
 
-**Expected Results**:
-- Without BN: Unstable training, requires careful learning rate tuning
-- With BN: Stable training, converges 2-5x faster, higher final accuracy
-- BN reduces internal covariate shift, enabling faster learning rates
+**预期结果：**
+- 不使用 BN：训练不稳定，需要仔细调整学习率
+- 使用 BN：训练稳定，收敛快 2-5 倍，最终准确率更高
+- BN 减少内部协变量偏移，允许使用更高学习率
 
-**Hints**:
-1. Batch norm is typically applied before activation
-2. Use same hyperparameters (learning rate, batch size) for both
-3. Track gradient norm to see internal covariate shift
-4. BN momentum parameter (default 0.1) affects running statistics
+**提示：**
+1. 批归一化通常放在激活之前
+2. 两者使用相同超参数（学习率、批大小）
+3. 追踪梯度范数，观察内部协变量偏移
+4. BN 的 momentum 参数（默认 0.1）影响运行统计量
 
-**Grading Rubric**:
-- ⭐⭐⭐⭐ (9/10): Correctly implements both versions, shows BN improves convergence
-- ⭐⭐⭐⭐⭐ (10/10): Also analyzes gradient flow and explains why BN helps
+**评分标准：**
+- ⭐⭐⭐⭐（9/10）：正确实现两版本，展示 BN 改善收敛
+- ⭐⭐⭐⭐⭐（10/10）：同时分析梯度流，解释 BN 为何有效
 
 ---
 
-## Bonus Challenge: Multi-GPU Training 🚀
+## 附加挑战：多 GPU 训练 🚀
 
-Implement data parallelism across multiple GPUs (or simulate with CPU).
+实现多 GPU 数据并行，或用 CPU 模拟。
 
 ```python
 # TODO: Use nn.DataParallel to split batch across GPUs
@@ -408,26 +408,26 @@ Implement data parallelism across multiple GPUs (or simulate with CPU).
 # This mirrors the original AlexNet paper's approach!
 ```
 
-**Key Insight**: The original AlexNet was split across 2 GPUs because a single GPU (3GB memory) couldn't fit the entire network. Modern GPUs with 8GB+ VRAM don't need this, but distributed training is still important for large-scale models!
+**关键见解：** 原始 AlexNet 拆分到 2 块 GPU，因为单块 GPU 的 3GB 显存无法容纳整个网络。现代 8GB+ 显存的 GPU 不再需要这样做，但分布式训练对大规模模型仍然重要！
 
 ---
 
-## Summary
+## 总结
 
-**Concepts Mastered**:
-- ✅ GPU acceleration impact on deep learning
-- ✅ ReLU advantages over sigmoid/tanh
-- ✅ Learning rate scheduling for convergence
-- ✅ Data augmentation for regularization
-- ✅ Batch normalization improvements
-- ✅ Multi-GPU parallelization
+**掌握的概念：**
+- ✅ GPU 加速对深度学习的影响
+- ✅ ReLU 相对于 sigmoid／tanh 的优势
+- ✅ 用学习率调度促进收敛
+- ✅ 用数据增强实现正则化
+- ✅ 批归一化带来的改善
+- ✅ 多 GPU 并行
 
-**Aha! Moments**:
-1. GPU acceleration made deep learning practical
-2. ReLU solved vanishing gradient problem
-3. Learning rate scheduling beats constant LR by 2-3x
-4. Data augmentation is regularization in action
-5. Batch norm is the "battery included" for stable training
-6. AlexNet would be trained completely differently today!
+**恍然大悟的时刻：**
+1. GPU 加速使深度学习走向实用
+2. ReLU 解决梯度消失问题
+3. 学习率调度比恒定学习率快 2-3 倍
+4. 数据增强是正则化的具体实践
+5. 批归一化为稳定训练提供开箱即用的支持
+6. 今天训练 AlexNet 的方式会完全不同！
 
-These practical insights transfer directly to modern architectures! 🔥
+这些实践见解可以直接迁移到现代架构！🔥

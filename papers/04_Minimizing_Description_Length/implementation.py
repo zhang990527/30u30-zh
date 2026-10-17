@@ -1,24 +1,24 @@
 """
-MDL (Minimum Description Length) / Bayesian Neural Network Implementation
+最小描述长度（Minimum Description Length，MDL）／贝叶斯神经网络实现
 =========================================================================
 
-A complete, educational implementation of a "Noisy Weight" Neural Network.
+含噪权重神经网络的完整教学实现。
 
-This is fundamentally different from the Standard RNN (Day 1) or LSTM (Day 2).
-Instead of learning a single fixed value for every weight (e.g., w = 0.5), 
-we learn a PROBABILITY DISTRIBUTION for every weight (e.g., w ~ Gaussian(0.5, 0.1)).
+这与普通 RNN（第 1 天）或 LSTM（第 2 天）有根本区别。
+不为每个权重学习单个固定值（例如 w = 0.5），
+而是为每个权重学习概率分布（例如 w ~ Gaussian(0.5, 0.1)）。
 
-We have:
-- Learnable Means (mu)
-- Learnable Variances (sigma) via the parameter 'rho'
-- The "Reparameterization Trick" to allow backpropagation through randomness
-- A Loss function that combines Error (NLL) + Complexity (KL Divergence)
+实现包含：
+- 可学习均值（mu）
+- 通过参数 rho 学习标准差 sigma（原文误称 sigma 为方差）
+- 用重参数化技巧使梯度能够通过随机采样
+- 组合误差（NLL）与复杂度（KL 散度）的损失函数
 
-This implements the core idea of Hinton & Van Camp (1993):
-"Simpler weights (more noise/uncertainty) = Better Compression = Better Generalization"
+实现 Hinton 与 van Camp（1993）的核心思想：
+“更简单的权重（更多噪声／不确定性）对应更好的压缩，可能改善泛化”；并非无条件保证
 
-Author: 30u30 Project
-License: MIT
+作者：30u30 项目
+许可证：MIT
 """
 
 import numpy as np
@@ -27,16 +27,16 @@ import pickle
 
 def softplus(x):
     """
-    Softplus activation: log(1 + exp(x)).
+    Softplus 激活函数：log(1 + exp(x))。
     
-    Used to transform the raw parameter 'rho' into a positive standard deviation 'sigma'.
-    We need sigma > 0, and softplus is a smooth approximation of ReLU that stays positive.
+    用于将无约束参数 rho 转换为正标准差 sigma。
+    要求 sigma > 0；softplus 是保持正值的 ReLU 平滑近似。
     
-    Args:
-        x: Input array (rho)
+    参数：
+        x：输入数组（rho）
         
-    Returns:
-        Array of positive values (sigma)
+    返回：
+        正值数组（sigma）
     """
     return np.log1p(np.exp(-np.abs(x))) + np.maximum(x, 0)
 
@@ -53,57 +53,57 @@ def relu(x):
 
 class BayesianLinear:
     """
-    A single Dense Layer where weights are probability distributions.
+    以概率分布表示权重的单个全连接层。
     
-    Instead of w, we have:
-    - w_mu: The mean of the weight
-    - w_rho: Controls the variance (sigma = softplus(w_rho))
+    不直接使用 w，而是使用：
+    - w_mu：权重均值
+    - w_rho：控制离散程度（sigma = softplus(w_rho)，sigma 是标准差）
     
-    Forward pass:
-    1. Calculate sigma from rho
-    2. Sample noise (epsilon) ~ N(0, 1)
-    3. Construct weight: w = mu + sigma * epsilon
-    4. Compute output: y = x @ w + b
+    前向传播：
+    1. 由 rho 计算 sigma
+    2. 采样噪声 (epsilon) ~ N(0, 1)
+    3. 构造权重：w = mu + sigma * epsilon
+    4. 计算输出：y = x @ w + b
     """
     
     def __init__(self, input_size, output_size, init_scale=0.1):
         self.input_size = input_size
         self.output_size = output_size
         
-        # Initialize Means (mu) randomly (like standard weights)
-        # Using He initialization style
+        # 随机初始化均值 mu，类似普通权重
+        # 采用 He 初始化形式
         scale = np.sqrt(2.0 / input_size)
         self.w_mu = np.random.randn(input_size, output_size) * scale
         self.b_mu = np.zeros(output_size)
         
-        # Initialize Rho (Uncertainty control)
-        # We start with a small negative value (e.g., -3) so that 
-        # sigma = softplus(-3) is small (~0.05). 
-        # We want the model to start slightly uncertain, but not purely random.
+        # 初始化 Rho（不确定性控制参数）
+        # 从较小的负值（例如 -3）开始，使
+        # sigma = softplus(-3) 较小（约 0.05）。
+        # 希望初始模型带有少量不确定性，而非完全随机。
         self.w_rho = np.ones((input_size, output_size)) * -3.0
         self.b_rho = np.ones(output_size) * -3.0
         
-        # Gradients storage
+        # 存储梯度
         self.grads = {}
         
-        # Cache for backprop
+        # 反向传播缓存
         self.cache = None
 
     def sample_weights(self):
         """
-        Sample actual weights from the learned distributions.
-        This is the "Bits Back" / Reparameterization Step.
+        从学习得到的分布中采样实际权重。
+        这是重参数化采样步骤；原文也称其为“比特回收”步骤，但采样不等于实际编码过程。
         """
-        # 1. Convert rho to sigma (standard deviation)
+        # 1. 将 rho 转换为 sigma（标准差）
         # sigma = log(1 + exp(rho))
         self.w_sigma = softplus(self.w_rho)
         self.b_sigma = softplus(self.b_rho)
         
-        # 2. Sample noise (epsilon) from standard normal N(0,1)
+        # 2. 从标准正态分布 N(0,1) 采样噪声 epsilon
         self.w_epsilon = np.random.randn(self.input_size, self.output_size)
         self.b_epsilon = np.random.randn(self.output_size)
         
-        # 3. Construct the noisy weights
+        # 3. 构造含噪权重
         # w = mu + sigma * epsilon
         self.w_sample = self.w_mu + self.w_sigma * self.w_epsilon
         self.b_sample = self.b_mu + self.b_sigma * self.b_epsilon
@@ -112,35 +112,35 @@ class BayesianLinear:
 
     def forward(self, x):
         """
-        Forward pass using sampled weights.
+        使用采样权重进行前向传播。
         """
-        # Sample weights for this specific forward pass
+        # 为本次前向传播采样权重
         w, b = self.sample_weights()
         
-        # Linear transformation: y = xW + b
+        # 线性变换：y = xW + b
         out = x @ w + b
         
-        # Cache for backward pass
+        # 缓存反向传播所需数据
         self.cache = (x, w, b)
         return out
 
     def kl_divergence(self):
         """
-        Compute the Complexity Cost (KL Divergence) for this layer.
+        计算本层的复杂度代价（KL 散度）。
         
-        We calculate KL( q(w) || p(w) )
-        - q(w): The learned posterior N(mu, sigma)
-        - p(w): The prior N(0, 1) (Standard Gaussian)
+        计算 KL( q(w) || p(w) )
+        - q(w)：学习得到的近似后验 N(mu, sigma)，这里 sigma 指标准差
+        - p(w)：先验 N(0, 1)，即标准高斯分布
         
-        Formula for KL between N(mu, sigma) and N(0, 1):
+        N(mu, sigma) 与 N(0, 1) 之间的 KL 公式（sigma 为标准差）：
         KL = 0.5 * sum( sigma^2 + mu^2 - 1 - log(sigma^2) )
         """
-        # KL for weights
+        # 权重的 KL
         kl_w = 0.5 * np.sum(
             self.w_sigma**2 + self.w_mu**2 - 1 - 2*np.log(self.w_sigma + 1e-8)
         )
         
-        # KL for biases
+        # 偏置的 KL
         kl_b = 0.5 * np.sum(
             self.b_sigma**2 + self.b_mu**2 - 1 - 2*np.log(self.b_sigma + 1e-8)
         )
@@ -149,49 +149,49 @@ class BayesianLinear:
 
     def backward(self, d_out):
         """
-        Compute gradients for mu and rho.
+        计算 mu 与 rho 的梯度。
         
-        This is tricky! We have two sources of gradients:
-        1. The Data Loss (NLL): flows back through the sampled weights
-        2. The Complexity Loss (KL): flows directly from mu and sigma
+        需注意：梯度有两个来源：
+        1. 数据损失（NLL）：通过采样权重反向传播
+        2. 复杂度损失（KL）：直接作用于 mu 与 sigma
         
-        Args:
-            d_out: Gradient of the Data Loss w.r.t the output of this layer (dL/dy)
+        参数：
+            d_out：数据损失对本层输出的梯度（dL/dy）
         
-        Returns:
-            d_x: Gradient w.r.t input x (to pass to previous layer)
+        返回：
+            d_x：对输入 x 的梯度，用于传给前一层
         """
         x, _, _ = self.cache
         
-        # === 1. Gradients from Data Loss (Error Cost) ===
-        # We derived these via the Chain Rule on the Reparameterization Trick.
+        # === 1. 来自数据损失（误差代价）的梯度 ===
+        # 对重参数化公式使用链式法则推导。
         
-        # Gradient w.r.t sampled weights (Standard Backprop)
+        # 对采样权重的梯度（普通反向传播）
         # dL/dw = x.T @ dL/dy
         d_w_sample = x.T @ d_out
         d_b_sample = np.sum(d_out, axis=0)
         
-        # Gradient w.r.t Mean (mu)
+        # 对均值 mu 的梯度
         # dL/dmu = dL/dw * dw/dmu = dL/dw * 1
         d_nll_w_mu = d_w_sample
         d_nll_b_mu = d_b_sample
         
-        # Gradient w.r.t Rho
+        # 对 Rho 的梯度
         # dL/drho = dL/dw * dw/dsigma * dsigma/drho
         # dw/dsigma = epsilon
         # dsigma/drho = sigmoid(rho)
         d_nll_w_rho = d_w_sample * self.w_epsilon * sigmoid(self.w_rho)
         d_nll_b_rho = d_b_sample * self.b_epsilon * sigmoid(self.b_rho)
         
-        # === 2. Gradients from KL Divergence (Complexity Cost) ===
+        # === 2. 来自 KL 散度（复杂度代价）的梯度 ===
         # KL = 0.5 * (sigma^2 + mu^2 - 1 - log(sigma^2))
         
-        # Gradient w.r.t Mean (mu)
+        # 对均值 mu 的梯度
         # dKL/dmu = mu
         d_kl_w_mu = self.w_mu
         d_kl_b_mu = self.b_mu
         
-        # Gradient w.r.t Rho
+        # 对 Rho 的梯度
         # dKL/drho = dKL/dsigma * dsigma/drho
         # dKL/dsigma = sigma - 1/sigma
         d_kl_w_sigma = self.w_sigma - (1.0 / (self.w_sigma + 1e-8))
@@ -200,9 +200,9 @@ class BayesianLinear:
         d_kl_w_rho = d_kl_w_sigma * sigmoid(self.w_rho)
         d_kl_b_rho = d_kl_b_sigma * sigmoid(self.b_rho)
         
-        # === 3. Combine and Store ===
-        # The optimizer usually handles the weighting (beta), but we store raw gradients here.
-        # We will separate NLL and KL gradients so the training loop can weight them.
+        # === 3. 合并与存储 ===
+        # 加权系数 beta 通常由优化器处理，这里存储原始梯度。
+        # 将 NLL 和 KL 梯度分开，供训练循环加权。
         
         self.grads = {
             'nll_w_mu': d_nll_w_mu, 'kl_w_mu': d_kl_w_mu,
@@ -211,15 +211,15 @@ class BayesianLinear:
             'nll_b_rho': d_nll_b_rho, 'kl_b_rho': d_kl_b_rho
         }
         
-        # Gradient w.r.t input x (to pass down)
+        # 对输入 x 的梯度，向前一层传递
         d_x = d_out @ self.w_sample.T
         return d_x
 
 
 class MDLNetwork:
     """
-    A simple 2-Layer Bayesian Neural Network.
-    Structure: Input -> BayesianLinear -> ReLU -> BayesianLinear -> Output
+    简单的两层贝叶斯神经网络。
+    结构：输入 -> BayesianLinear -> ReLU -> BayesianLinear -> 输出
     """
     
     def __init__(self, input_size, hidden_size, output_size):
@@ -227,15 +227,15 @@ class MDLNetwork:
         self.hidden_size = hidden_size
         self.output_size = output_size
         
-        # Create layers
+        # 创建层
         self.layer1 = BayesianLinear(input_size, hidden_size)
         self.layer2 = BayesianLinear(hidden_size, output_size)
         
     def forward(self, x):
         """
-        Forward pass.
-        Note: Because weights are sampled, calling this twice on same x
-        will produce slightly different results! This is the "Uncertainty".
+        前向传播。
+        注意：由于会采样权重，对同一 x 调用两次
+        将产生略有不同的结果，这体现了不确定性。
         """
         self.h = relu(self.layer1.forward(x))
         out = self.layer2.forward(self.h)
@@ -247,47 +247,47 @@ class MDLNetwork:
     
     def backward(self, d_loss):
         """
-        Backward pass.
-        Args:
-            d_loss: Gradient of the Data Loss (MSE/NLL) w.r.t network output
+        反向传播。
+        参数：
+            d_loss：数据损失（MSE/NLL）对网络输出的梯度
         """
-        # Backprop through layer 2
+        # 通过第 2 层反向传播
         d_h = self.layer2.backward(d_loss)
         
-        # Backprop through ReLU
+        # 通过 ReLU 反向传播
         d_h[self.h <= 0] = 0
         
-        # Backprop through layer 1
+        # 通过第 1 层反向传播
         self.layer1.backward(d_h)
         
     def update_weights(self, learning_rate, kl_weight):
         """
-        Update parameters using SGD.
+        使用随机梯度下降（SGD）更新参数。
         
-        Total Gradient = Data_Grad + (kl_weight * KL_Grad)
+        总梯度 = Data_Grad + (kl_weight * KL_Grad)
         """
         for layer in [self.layer1, self.layer2]:
-            # Update Mu (Means)
+            # 更新 Mu（均值）
             layer.w_mu -= learning_rate * (layer.grads['nll_w_mu'] + kl_weight * layer.grads['kl_w_mu'])
             layer.b_mu -= learning_rate * (layer.grads['nll_b_mu'] + kl_weight * layer.grads['kl_b_mu'])
             
-            # Update Rho (Variances)
+            # 更新 Rho（控制标准差的参数，原文误称为方差）
             layer.w_rho -= learning_rate * (layer.grads['nll_w_rho'] + kl_weight * layer.grads['kl_w_rho'])
             layer.b_rho -= learning_rate * (layer.grads['nll_b_rho'] + kl_weight * layer.grads['kl_b_rho'])
 
     def predict_with_uncertainty(self, x, n_samples=100):
         """
-        Run the model N times to get a distribution of predictions.
+        运行模型 N 次，得到预测分布的采样近似。
         
-        Returns:
-            mean_pred: The average prediction
-            std_pred: The standard deviation (Uncertainty)
+        返回：
+            mean_pred：预测均值
+            std_pred：预测标准差（不确定性）
         """
         preds = []
         for _ in range(n_samples):
             preds.append(self.forward(x))
             
-        preds = np.array(preds) # Shape: (n_samples, batch_size, output_size)
+        preds = np.array(preds) # 形状：(n_samples, batch_size, output_size)
         
         mean_pred = np.mean(preds, axis=0)
         std_pred = np.std(preds, axis=0)
@@ -305,7 +305,7 @@ class MDLNetwork:
         }
         with open(filepath, 'wb') as f:
             pickle.dump(params, f)
-        print(f"Model saved to {filepath}")
+        print(f"模型已保存至 {filepath}")
 
     @classmethod
     def load(cls, filepath):
@@ -320,17 +320,17 @@ class MDLNetwork:
         model.layer2.w_mu, model.layer2.w_rho = p['l2_w_mu'], p['l2_w_rho']
         model.layer2.b_mu, model.layer2.b_rho = p['l2_b_mu'], p['l2_b_rho']
         
-        print(f"Model loaded from {filepath}")
+        print(f"模型已从以下路径加载：{filepath}")
         return model
 
 
 if __name__ == "__main__":
-    print("MDL / Bayesian Network Implementation")
+    print('MDL／贝叶斯网络实现')
     print("=" * 60)
-    print("\nThis file contains the BayesianLinear and MDLNetwork classes.")
-    print("It implements 'Noisy Weights' using the reparameterization trick.")
-    print("\nKey Components:")
-    print("  - BayesianLinear: A layer where weights are N(mu, sigma)")
-    print("  - sample_weights(): Adds noise for the 'Bits Back' step")
-    print("  - kl_divergence(): Calculates the complexity cost")
-    print("\nRun 'train_mdl.py' to see it learn!")
+    print('\n本文件包含 BayesianLinear 与 MDLNetwork 类。')
+    print('使用重参数化技巧实现含噪权重。')
+    print('\n关键组件：')
+    print('  - BayesianLinear：权重服从 N(mu, sigma) 的层，sigma 为标准差')
+    print('  - sample_weights()：添加噪声，执行重参数化采样（不等同于实际比特回收编码）')
+    print('  - kl_divergence()：计算复杂度代价')
+    print('\n原提示使用 train_mdl.py；本目录实际训练入口为 train_minimal.py。')

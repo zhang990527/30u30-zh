@@ -1,18 +1,15 @@
-"""
-Coffee Automaton — Implementation of Aaronson, Carroll, Ouellette (2014)
-Paper: arXiv:1405.6903
+"""咖啡元胞自动机——Aaronson、Carroll、Ouellette（2014）的实现
+论文：arXiv:1405.6903
 
-Implements the two models from the paper:
-  - Interacting model (Section 3.1): binary grid, random adjacent swaps
-  - Non-interacting model (Section 3.2): independent cream particle random walks
+实现论文中的两种模型：
+  - 有相互作用模型（第 3.1 节）：二值网格，随机交换相邻格点
+  - 无相互作用模型（第 3.2 节）：奶油粒子独立随机游走
 
-And the two measurement approaches:
-  - Coarse-graining with 3-bucket thresholding (Section 5)
-  - Adjusted coarse-graining with 7-bucket + row-majority (Section 6)
+以及两种测量方法：
+  - 采用 3 分箱阈值化的粗粒化（第 5 节）
+  - 采用 7 分箱与行众数调整的粗粒化（第 6 节）
 
-Complexity and entropy are estimated via gzip compressed size,
-as a proxy for Kolmogorov complexity.
-"""
+用 gzip 压缩大小估计复杂度和熵，作为柯尔莫哥洛夫复杂度的代理量。"""
 
 import gzip
 import numpy as np
@@ -20,40 +17,35 @@ from typing import Optional, Tuple, List, Dict
 
 
 # ---------------------------------------------------------------------------
-# Utility: gzip-based Kolmogorov complexity proxy
+# 工具：基于 gzip 的柯尔莫哥洛夫复杂度代理量
 # ---------------------------------------------------------------------------
 
 def gzip_size(data: bytes, level: int = 9) -> int:
-    """
-    Compressed size in bytes — our proxy for K(x).
-    The paper uses gzip throughout (Section 4), and shows different compressors
-    give qualitatively similar curves (Figure 5).
-    """
+    """压缩大小，以字节为单位，作为 K(x) 的代理量。
+论文全程使用 gzip（第 4 节），并展示不同压缩器
+产生的曲线在定性上相似（图 5）。"""
     return len(gzip.compress(data, compresslevel=level))
 
 
 def grid_to_bytes(grid: np.ndarray) -> bytes:
-    """Convert a numpy grid to bytes for compression."""
+    """将 NumPy 网格转为字节以便压缩。"""
     return grid.astype(np.uint8).tobytes()
 
 
 # ---------------------------------------------------------------------------
-# Coarse-graining (Sections 5 and 6)
+# 粗粒化（第 5、6 节）
 # ---------------------------------------------------------------------------
 
 def coarse_grain(grid: np.ndarray, grain_size: int) -> np.ndarray:
-    """
-    Coarse-grain the grid by averaging over grain_size x grain_size blocks.
+    """对 grain_size x grain_size 块求平均，实现网格粗粒化。
 
-    From Section 5.1: "we construct a new array in which the value of each cell
-    is the average of the values of the nearby cells in the fine-grained array.
-    We define 'nearby' cells as those within a g x g square centered at the
-    cell in question."
+第 5.1 节：“我们构造一个新数组，其中每个格点的值是细粒度数组中
+附近格点值的平均数。我们将‘附近’定义为以该格点为中心的
+一个 g x g 方块内的格点。”
 
-    Returns a float array with values in [0, 1].
-    """
+返回值位于 [0, 1] 的浮点数组。"""
     n = grid.shape[0]
-    # Number of coarse cells
+    # 粗粒化格点的数量
     cn = n // grain_size
     if cn == 0:
         cn = 1
@@ -70,71 +62,61 @@ def coarse_grain(grid: np.ndarray, grain_size: int) -> np.ndarray:
 
 
 def threshold_array(coarse: np.ndarray, num_buckets: int = 3) -> np.ndarray:
-    """
-    Threshold floating-point coarse-grained array into discrete buckets.
+    """将浮点粗粒化数组按阈值离散分箱。
 
-    Section 5.1: 3 buckets — "areas which are mostly coffee (values close to 0),
-    mostly cream (values close to 1), or mixed (values close to 0.5)."
+第 5.1 节：3 个分箱——“以咖啡为主的区域（接近 0）、
+以奶油为主的区域（接近 1）、混合区域（接近 0.5）”。
 
-    Section 6.1: 7 buckets — finer resolution to reduce border artifacts.
+第 6.1 节：7 个分箱，采用更细分辨率以减少边界伪影。
 
-    Returns uint8 array with values in [0, num_buckets-1].
-    """
-    # Map [0, 1] to [0, num_buckets-1] and round
+返回值位于 [0, num_buckets-1] 的 uint8 数组。"""
+    # 将 [0, 1] 映射到 [0, num_buckets-1] 并取整
     scaled = coarse * (num_buckets - 1)
     return np.clip(np.round(scaled), 0, num_buckets - 1).astype(np.uint8)
 
 
 def row_majority_adjust(thresholded: np.ndarray) -> np.ndarray:
-    """
-    Adjusted coarse-graining from Section 6.1.
+    """第 6.1 节调整后的粗粒化。
 
-    "If a cell is within one threshold value of the majority value in its row,
-    it is adjusted to the majority value."
+“若某格点的值与该行众数相差不超过一个阈值间隔，
+就将其调整为众数。”
 
-    This removes border pixel artifacts that caused fake complexity
-    in the non-interacting model.
-    """
+这能消除在无相互作用模型中造成虚假复杂度的边界像素伪影。"""
     adjusted = thresholded.copy()
     for i in range(adjusted.shape[0]):
         row = adjusted[i]
-        # Find majority value in this row
+        # 查找该行的众数
         values, counts = np.unique(row, return_counts=True)
         majority = values[np.argmax(counts)]
-        # Snap cells within 1 bucket of majority
+        # 将与众数相差不超过 1 个分箱的格点归并到众数
         mask = np.abs(row.astype(np.int16) - int(majority)) <= 1
         adjusted[i, mask] = majority
     return adjusted
 
 
 # ---------------------------------------------------------------------------
-# Complexity and entropy measurement
+# 复杂度与熵的测量
 # ---------------------------------------------------------------------------
 
 def measure_entropy(grid: np.ndarray) -> int:
-    """
-    Entropy estimate: gzip compressed size of the fine-grained state.
+    """熵估计：细粒度状态的 gzip 压缩大小。
 
-    Section 4: "the estimated entropy of the automaton state is the compressed
-    file size of the fine-grained array."
-    """
+第 4 节：“自动机状态的熵估计值是细粒度数组的压缩文件大小。”"""
     return gzip_size(grid_to_bytes(grid))
 
 
 def measure_complexity(grid: np.ndarray, grain_size: int = 10,
                        num_buckets: int = 7, adjust: bool = True) -> int:
-    """
-    Apparent complexity estimate: gzip compressed size of coarse-grained state.
+    """表观复杂度估计：粗粒化状态的 gzip 压缩大小。
 
-    Section 4: "The estimated complexity of the state, K(S), is the file size
-    of the thresholded, coarse-grained array after compression."
+第 4 节：“状态复杂度的估计 K(S)，是经过阈值化和粗粒化的
+数组压缩后的文件大小。”
 
-    Args:
-        grid: The fine-grained binary grid (N x N, uint8)
-        grain_size: Size of coarse-graining blocks (g in the paper)
-        num_buckets: Number of threshold buckets (3 for Section 5, 7 for Section 6)
-        adjust: Whether to apply row-majority adjustment (Section 6)
-    """
+参数：
+    grid：细粒度二值网格（N x N，uint8）
+    grain_size：粗粒化块的边长（论文中的 g）
+    num_buckets：阈值分箱数（第 5 节为 3，第 6 节为 7）
+    adjust：是否应用行众数调整（第 6 节）"""
     coarse = coarse_grain(grid, grain_size)
     discrete = threshold_array(coarse, num_buckets)
     if adjust:
@@ -143,56 +125,52 @@ def measure_complexity(grid: np.ndarray, grain_size: int = 10,
 
 
 # ---------------------------------------------------------------------------
-# The Coffee Automaton (Section 3)
+# 咖啡元胞自动机（第 3 节）
 # ---------------------------------------------------------------------------
 
 class CoffeeAutomaton:
-    """
-    The coffee automaton from Section 3 of the paper.
+    """论文第 3 节中的咖啡元胞自动机。
 
-    A 2D grid of binary values: 1 = cream, 0 = coffee.
-    Initial state: top half = cream (1), bottom half = coffee (0).
+二维二值网格：1 = 奶油，0 = 咖啡。
+初始状态：上半部 = 奶油（1），下半部 = 咖啡（0）。
 
-    Two models:
-    - 'interacting' (Section 3.1): One adjacent-different-pair swap per step.
-      "only one particle may occupy each cell."
-    - 'non_interacting' (Section 3.2): Each cream particle random-walks
-      independently. Multiple can occupy one cell.
-    """
+两种模型：
+- 'interacting'（第 3.1 节）：每步交换一对相邻且不同的格点。
+  “每个格点只能容纳一个粒子。”
+- 'non_interacting'（第 3.2 节）：各奶油粒子独立随机游走。
+  多个粒子可以占据同一格点。"""
 
     def __init__(self, grid_size: int = 100, model: str = 'interacting',
                  seed: Optional[int] = None):
-        """
-        Args:
-            grid_size: Side length of the square grid (N in paper)
-            model: 'interacting' or 'non_interacting'
-            seed: Random seed for reproducibility
-        """
+        """参数：
+    grid_size：正方形网格的边长（论文中的 N）
+    model：'interacting' 或 'non_interacting'
+    seed：随机种子，用于复现"""
         self.n = grid_size
         self.model = model
         self.rng = np.random.default_rng(seed)
         self.time = 0
 
         if model == 'interacting':
-            # Binary grid: top half = 1 (cream), bottom half = 0 (coffee)
-            # Section 3: "The automaton begins in a state in which the top half
-            # of the cells are filled with ones, and the bottom half is filled
-            # with zeros."
+            # 二值网格：上半部 = 1（奶油），下半部 = 0（咖啡）
+            # 第 3 节：“自动机的初始状态是
+            # 上半部格点填充 1，
+            # 下半部格点填充 0。”
             self.grid = np.zeros((grid_size, grid_size), dtype=np.uint8)
             self.grid[:grid_size // 2, :] = 1
         elif model == 'non_interacting':
-            # For non-interacting, track cream particle positions.
-            # Count grid: how many cream particles at each cell.
-            # Initially, one per cell in top half.
+            # 对于无相互作用模型，追踪奶油粒子的位置。
+            # 计数网格：每个格点的奶油粒子数。
+            # 初始时上半部每格一个粒子。
             self.grid = np.zeros((grid_size, grid_size), dtype=np.uint16)
             self.grid[:grid_size // 2, :] = 1
-            # Also store individual particle positions for random walks
+            # 同时保存单个粒子的位置，用于随机游走
             self._init_particles()
         else:
-            raise ValueError(f"model must be 'interacting' or 'non_interacting', got '{model}'")
+            raise ValueError(f"model 必须为 'interacting' 或 'non_interacting'，收到 '{model}'")
 
     def _init_particles(self):
-        """Initialize particle position list for non-interacting model."""
+        """初始化无相互作用模型的粒子位置列表。"""
         self.particles = []
         for r in range(self.n // 2):
             for c in range(self.n):
@@ -200,18 +178,14 @@ class CoffeeAutomaton:
         self.particles = np.array(self.particles, dtype=np.int32)
 
     def step(self, num_steps: int = 1):
-        """
-        Advance the automaton by num_steps.
+        """将自动机推进 num_steps 步。
 
-        For the interacting model, we do batch swaps for efficiency:
-        select many random adjacent pairs, filter to those that differ,
-        and swap them. This is faster than one-swap-per-step while
-        preserving the qualitative dynamics.
+对于有相互作用模型，使用批量交换提高效率：
+选择许多随机相邻格点对，筛选出值不同的格点对后交换。
+这比每步一次交换更快，同时保留定性动力学行为。
 
-        The paper does one swap per step (Section 3.1), but that's
-        extremely slow for large grids. Batch swapping speeds things
-        up without changing the equilibrium behavior.
-        """
+论文每步交换一次（第 3.1 节），对于大网格极慢。
+批量交换可以加速，而不改变平衡行为。"""
         if self.model == 'interacting':
             self._step_interacting(num_steps)
         else:
@@ -219,36 +193,33 @@ class CoffeeAutomaton:
         self.time += num_steps
 
     def _step_interacting(self, num_steps: int):
-        """
-        Interacting model: random adjacent swaps.
+        """有相互作用模型：随机交换相邻格点。
 
-        Section 3.1: "at each time step, one pair of horizontally or
-        vertically adjacent, differing particles is selected, and the
-        particles' positions are swapped."
+第 3.1 节：“每个时间步选择一对水平或垂直相邻、
+类型不同的粒子，交换它们的位置。”
 
-        We batch multiple non-conflicting swaps per call for speed.
-        """
+每次调用批量执行多次不冲突的交换以提高速度。"""
         n = self.n
         grid = self.grid
 
-        # How many candidate swaps per batch —
-        # roughly n*n/4 so each pixel gets ~1 chance per batch
+        # 每批候选交换的数量——
+        # 约为 n*n/4，使每个像素每批约有 1 次机会
         batch_size = max(1, (n * n) // 4)
 
         for _ in range(num_steps):
-            # Pick random cells
+            # 随机选择格点
             rows = self.rng.integers(0, n, size=batch_size)
             cols = self.rng.integers(0, n, size=batch_size)
 
-            # Pick random direction: 0=up, 1=down, 2=left, 3=right
+            # 随机选择方向：0=上，1=下，2=左，3=右
             dirs = self.rng.integers(0, 4, size=batch_size)
 
-            # Compute neighbor coordinates
+            # 计算相邻格点坐标
             dr = np.array([[-1, 0], [1, 0], [0, -1], [0, 1]])
             nr = rows + dr[dirs, 0]
             nc = cols + dr[dirs, 1]
 
-            # Filter: within bounds
+            # 筛选：坐标在边界内
             valid = (nr >= 0) & (nr < n) & (nc >= 0) & (nc < n)
 
             rows = rows[valid]
@@ -256,88 +227,80 @@ class CoffeeAutomaton:
             nr = nr[valid]
             nc = nc[valid]
 
-            # Filter: different values (only swap if they differ)
+            # 筛选：数值不同（仅在不同的情况下交换）
             diff = grid[rows, cols] != grid[nr, nc]
             rows = rows[diff]
             cols = cols[diff]
             nr = nr[diff]
             nc = nc[diff]
 
-            # Swap
+            # 交换
             if len(rows) > 0:
                 temp = grid[rows, cols].copy()
                 grid[rows, cols] = grid[nr, nc]
                 grid[nr, nc] = temp
 
     def _step_non_interacting(self, num_steps: int):
-        """
-        Non-interacting model: each cream particle random-walks.
+        """无相互作用模型：每个奶油粒子随机游走。
 
-        Section 3.2: "at each time step, each cream particle in the system
-        moves one step in a randomly chosen direction."
-        """
+第 3.2 节：“每个时间步，系统中的每个奶油粒子
+沿随机选定的方向移动一步。”"""
         n = self.n
         directions = np.array([[-1, 0], [1, 0], [0, -1], [0, 1]])
 
         for _ in range(num_steps):
-            # Clear the count grid and rebuild
+            # 清空计数网格并重建
             self.grid[:] = 0
 
-            # Move each particle in a random direction
+            # 沿随机方向移动每个粒子
             choices = self.rng.integers(0, 4, size=len(self.particles))
             moves = directions[choices]
             self.particles += moves
 
-            # Periodic boundary conditions
-            # Section 9 (Appendix) assumes periodic boundaries
+            # 周期边界条件
+            # 附录第 9 节假定周期边界
             self.particles[:, 0] %= n
             self.particles[:, 1] %= n
 
-            # Rebuild count grid
+            # 重建计数网格
             for p in self.particles:
                 self.grid[p[0], p[1]] += 1
 
     def get_binary_grid(self) -> np.ndarray:
-        """
-        Get the state as a binary grid for measurement.
+        """将状态转为二值网格以便测量。
 
-        For the interacting model, this is just self.grid.
-        For the non-interacting model, convert counts to binary:
-        1 if any cream particle present, 0 otherwise.
-        """
+有相互作用模型直接返回 self.grid。
+无相互作用模型将计数转为二值：
+存在任意奶油粒子则为 1，否则为 0。"""
         if self.model == 'interacting':
             return self.grid
         else:
             return (self.grid > 0).astype(np.uint8)
 
     def entropy(self) -> int:
-        """Entropy estimate: gzip(fine-grained state). See Section 4."""
+        """熵估计：gzip（细粒度状态），参见第 4 节。"""
         return measure_entropy(self.get_binary_grid())
 
     def complexity(self, grain_size: Optional[int] = None,
                    num_buckets: int = 7, adjust: bool = True) -> int:
-        """
-        Apparent complexity estimate: gzip(coarse-grained state).
-        See Sections 5 and 6.
+        """表观复杂度估计：gzip（粗粒化状态）。
+参见第 5、6 节。
 
-        Args:
-            grain_size: g in the paper. Default: n // 10
-            num_buckets: 3 (Section 5) or 7 (Section 6)
-            adjust: Apply row-majority adjustment (Section 6)
-        """
+参数：
+    grain_size：论文中的 g。默认 n // 10
+    num_buckets：3（第 5 节）或 7（第 6 节）
+    adjust：应用行众数调整（第 6 节）"""
         if grain_size is None:
             grain_size = max(2, self.n // 10)
         return measure_complexity(self.get_binary_grid(), grain_size,
                                   num_buckets, adjust)
 
     def fraction_mixed(self) -> float:
-        """
-        Fraction of cells that are "wrong" (cream in bottom half or
-        coffee in top half). A simple monotonic proxy for entropy.
-        """
+        """处于“错误”位置的格点比例：下半部的奶油，或上半部的咖啡。
+这是熵的简单单调代理量。"""
         grid = self.get_binary_grid()
         n = self.n
-        # Cream in bottom half + coffee in top half
+        # 下半部的奶油 + 上半部的咖啡
         wrong = (np.sum(grid[n // 2:, :] == 1) +
                  np.sum(grid[:n // 2, :] == 0))
         total = n * n
@@ -345,7 +308,7 @@ class CoffeeAutomaton:
 
 
 # ---------------------------------------------------------------------------
-# Simulation runner
+# 模拟运行器
 # ---------------------------------------------------------------------------
 
 def run_simulation(grid_size: int = 50, total_steps: int = 100000,
@@ -353,26 +316,24 @@ def run_simulation(grid_size: int = 50, total_steps: int = 100000,
                    grain_size: Optional[int] = None, num_buckets: int = 7,
                    adjust: bool = True, seed: Optional[int] = 42
                    ) -> Dict[str, np.ndarray]:
-    """
-    Run the coffee automaton and collect measurements over time.
+    """运行咖啡元胞自动机，收集随时间变化的测量结果。
 
-    Returns a dict with keys:
-        'times': array of time steps
-        'entropy': array of entropy estimates
-        'complexity': array of complexity estimates
-        'fraction_mixed': array of mixing fractions
-        'grids': list of grid snapshots (if grid_size <= 100)
+返回字典，键为：
+    'times'：时间步数组
+    'entropy'：熵估计数组
+    'complexity'：复杂度估计数组
+    'fraction_mixed'：混合比例数组
+    'grids'：网格快照列表（当 grid_size <= 100 时）
 
-    Args:
-        grid_size: N (side length)
-        total_steps: Total number of steps
-        num_snapshots: Number of measurement points
-        model: 'interacting' or 'non_interacting'
-        grain_size: Coarse-graining block size (default: n//10)
-        num_buckets: 3 or 7 (Section 5 vs Section 6)
-        adjust: Row-majority adjustment (Section 6)
-        seed: Random seed
-    """
+参数：
+    grid_size：N（边长）
+    total_steps：总步数
+    num_snapshots：测量点数量
+    model：'interacting' 或 'non_interacting'
+    grain_size：粗粒化块边长（默认 n//10）
+    num_buckets：3 或 7（第 5 节与第 6 节）
+    adjust：行众数调整（第 6 节）
+    seed：随机种子"""
     ca = CoffeeAutomaton(grid_size, model, seed)
 
     if grain_size is None:
@@ -387,7 +348,7 @@ def run_simulation(grid_size: int = 50, total_steps: int = 100000,
     fractions = []
     grids = []
 
-    # Measure initial state
+    # 测量初始状态
     times.append(0)
     entropies.append(ca.entropy())
     complexities.append(ca.complexity(grain_size, num_buckets, adjust))
@@ -419,15 +380,13 @@ def run_simulation(grid_size: int = 50, total_steps: int = 100000,
 def compare_models(grid_size: int = 50, total_steps: int = 100000,
                    num_snapshots: int = 100, seed: int = 42
                    ) -> Tuple[Dict, Dict]:
-    """
-    Run both interacting and non-interacting models and return results.
-    Useful for replicating the paper's comparison (Figures 2 and 10).
-    """
-    print(f"Running interacting model ({grid_size}x{grid_size}, {total_steps} steps)...")
+    """运行有相互作用和无相互作用两种模型，返回结果。
+用于复现论文中的比较（图 2、10）。"""
+    print(f"正在运行有相互作用模型（{grid_size}x{grid_size}，{total_steps} 步）……")
     interacting = run_simulation(grid_size, total_steps, num_snapshots,
                                  'interacting', seed=seed)
 
-    print(f"Running non-interacting model ({grid_size}x{grid_size}, {total_steps} steps)...")
+    print(f"正在运行无相互作用模型（{grid_size}x{grid_size}，{total_steps} 步）……")
     non_interacting = run_simulation(grid_size, total_steps, num_snapshots,
                                      'non_interacting', seed=seed)
 
@@ -437,16 +396,14 @@ def compare_models(grid_size: int = 50, total_steps: int = 100000,
 def scaling_experiment(sizes: List[int] = None, steps_per_pixel: int = 40,
                        num_snapshots: int = 100, seed: int = 42
                        ) -> Dict[str, np.ndarray]:
-    """
-    Replicate the scaling experiment from Figures 6-8.
-    Measure max entropy, max complexity, and time to max complexity
-    as a function of grid size.
+    """复现图 6-8 的标度实验。
+测量最大熵、最大复杂度、达到最大复杂度的时间
+如何随网格大小变化。
 
-    The paper found:
-    - Max entropy ~ n^2
-    - Max complexity ~ n
-    - Time to max complexity ~ n^2
-    """
+论文发现：
+- 最大熵 ~ n^2
+- 最大复杂度 ~ n
+- 达到最大复杂度的时间 ~ n^2"""
     if sizes is None:
         sizes = [10, 20, 30, 50, 70]
 
@@ -456,7 +413,7 @@ def scaling_experiment(sizes: List[int] = None, steps_per_pixel: int = 40,
 
     for n in sizes:
         total_steps = steps_per_pixel * n * n
-        print(f"  Grid size {n}x{n}, {total_steps} steps...")
+        print(f"  网格大小 {n}x{n}，{total_steps} 步……")
         results = run_simulation(n, total_steps, num_snapshots, 'interacting',
                                  seed=seed)
         max_entropies.append(np.max(results['entropy']))
@@ -473,29 +430,29 @@ def scaling_experiment(sizes: List[int] = None, steps_per_pixel: int = 40,
 
 
 # ---------------------------------------------------------------------------
-# Main: quick demo
+# 主程序：快速演示
 # ---------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    print("Coffee Automaton (Aaronson, Carroll, Ouellette 2014)")
+    print("咖啡元胞自动机（Aaronson、Carroll、Ouellette，2014）")
     print("=" * 55)
 
-    # Quick interacting simulation
-    print("\nRunning interacting model (50x50, 50000 steps)...")
+    # 快速运行有相互作用模拟
+    print("\n正在运行有相互作用模型（50x50，50000 步）……")
     results = run_simulation(grid_size=50, total_steps=50000, num_snapshots=50)
 
     peak_idx = np.argmax(results['complexity'])
-    print(f"\nResults:")
-    print(f"  Peak complexity at t = {results['times'][peak_idx]}")
-    print(f"  Peak complexity value = {results['complexity'][peak_idx]} bytes")
-    print(f"  Final entropy = {results['entropy'][-1]} bytes")
-    print(f"  Final complexity = {results['complexity'][-1]} bytes")
-    print(f"  Fraction mixed at end = {results['fraction_mixed'][-1]:.3f}")
+    print(f"\n结果：")
+    print(f"  复杂度峰值位于 t = {results['times'][peak_idx]}")
+    print(f"  复杂度峰值 = {results['complexity'][peak_idx]} 字节")
+    print(f"  最终熵 = {results['entropy'][-1]} 字节")
+    print(f"  最终复杂度 = {results['complexity'][-1]} 字节")
+    print(f"  最终混合比例 = {results['fraction_mixed'][-1]:.3f}")
 
-    # Verify: complexity should rise then fall
+    # 验证：复杂度应先升后降
     first_half = results['complexity'][:len(results['complexity']) // 2]
     second_half = results['complexity'][len(results['complexity']) // 2:]
     if np.mean(first_half) > np.mean(second_half) * 0.8:
-        print("\n  Complexity shows rise-then-fall pattern [OK]")
+        print("\n  复杂度呈先升后降模式 [OK]")
     else:
-        print("\n  [NOTE] May need more steps to see full pattern")
+        print("\n  [提示] 可能需要更多步数才能看到完整模式")

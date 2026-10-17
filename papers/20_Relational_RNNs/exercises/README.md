@@ -1,57 +1,61 @@
-# Exercises: Day 20 - Relational RNNs
+# 第 20 天练习：关系 RNN
 
-Temporal reasoning with structured memory.
-
----
-
-## Overview
-
-| Exercise | Topic | Difficulty | Time |
-|----------|-------|------------|------|
-| 1 | **Dot Product Attention** | Easy (2/5) | 20 min |
-| 2 | **LSTM Gating** | Medium (3/5) | 30 min |
-| 3 | **RMC Step** | Medium (3/5) | 40 min |
-| 4 | **N-th Farthest Task** | Easy (2/5) | 20 min |
-| 5 | **Training Loop** | Hard (4/5) | 60 min |
+使用结构化记忆进行时间推理。
 
 ---
 
-## Exercise 1: Dot Product Attention
+## 概览
 
-Implement the core mechanism that allows memory slots to talk to each other. You will write the `scaled_dot_product_attention` function manually.
-
-## Exercise 2: LSTM Gating
-
-The RMC uses LSTM-style gating to update its memory. Implement the forget, input, and candidate gates to blend old memory with new attended information.
-
-## Exercise 3: RMC Step
-
-Combine attention and gating to build a single step of the Relational Memory Core.
-
-## Exercise 4: N-th Farthest Task
-
-Create the data generator for the benchmark task. Can you generate sequences and correctly identify the target vector?
-
-## Exercise 5: Training Loop
-
-Put it all together. Train your RMC on the N-th Farthest task and watch the loss go down.
+| 练习 | 主题 | 难度 | 用时 |
+|------|------|------|------|
+| 1 | **点积注意力** | 入门（2/5） | 20 分钟 |
+| 2 | **LSTM 式门控** | 中等（3/5） | 30 分钟 |
+| 3 | **RMC 单步更新** | 中等（3/5） | 40 分钟 |
+| 4 | **距离任务** | 入门（2/5） | 20 分钟 |
+| 5 | **训练循环** | 较难（4/5） | 60 分钟 |
 
 ---
 
-## How to Use
+## 练习 1：点积注意力
 
-1.  Read the exercise file — each has detailed instructions.
-2.  Find the TODO sections — these are what you implement.
-3.  Run the file — it contains a test function.
-4.  Check solutions — compare with `solutions/solution_0X.py`.
+实现让记忆槽位相互交流的核心机制。手工编写 `scaled_dot_product_attention` 函数。
 
-## Tips
+## 练习 2：LSTM 式门控
 
--   **Shapes**: Watch your tensor shapes! `(batch, slots, heads, dim)` can get confusing.
--   **Gating**: Remember `sigmoid` for gates (0 to 1) and `tanh` for candidate state (-1 to 1).
--   **Initialization**: If loss doesn't decrease, check your initialization.
+RMC 用类似 LSTM 的门控更新记忆。实现遗忘门、输入门与候选状态，将旧记忆与注意力处理后的新信息混合。
 
-## Common Issues
+## 练习 3：RMC 单步更新
 
--   **Dimension mismatch**: Ensure your query/key/value projections align with `num_heads`.
--   **Exploding Gradients**: The RMC is recurrent. If gradients explode, try clipping them.
+结合注意力与门控，构建关系记忆核心的单步更新。
+
+## 练习 4：第 N 远任务
+
+创建基准任务的数据生成器。你能生成序列并正确识别目标向量吗？
+
+> 译注：原仓库不同文件对此任务的参照点及“第 N 远”的描述有差异，请核对实际标签计算；不要把本章简化任务直接当作原论文的数据协议。
+
+## 练习 5：训练循环
+
+组合所有部分，在本章距离任务上训练 RMC，观察损失是否下降。
+
+---
+
+## 使用方法
+
+1. 阅读练习文件的详细说明。
+2. 找到并完成 TODO。
+3. 运行文件中的测试函数。
+4. 对照 `solutions/solution_0X.py`。
+
+> 原有练习状态：5 个练习文件包含语法无效的未完成表达式；完成 TODO 之前会发生 `SyntaxError`。本地化保留这些练习占位符，没有修改算法或代做练习。
+
+## 提示
+
+- **形状：**仔细检查张量形状；`(batch, slots, heads, dim)` 容易混淆。
+- **门控：**门使用 `sigmoid`（0 到 1），候选状态使用 `tanh`（-1 到 1）。
+- **初始化：**损失不下降时，检查初始化。
+
+## 常见问题
+
+- **维度不匹配：**确认查询／键／值投影与 `num_heads` 对齐。
+- **梯度爆炸：**RMC 采用循环结构，必要时尝试梯度裁剪。

@@ -1,50 +1,50 @@
-# Day 4 Extra Exercises: Bayesian Networks
+# 第 4 天补充练习：贝叶斯网络
 
-These exercises build on the MDL implementation. All are our additions for practice.
+这些练习基于 MDL 实现，全部由本项目为实践而补充。
 
-## Exercise 1: The "Reparameterization" Trick (Math -> Code)
-**Goal:** Implement the Gaussian sampling manually.
-The core of this paper is $w = \mu + \sigma \cdot \epsilon$.
-1. Create a function `sample_gaussian(mu, rho)`.
-2. It must convert `rho` to `sigma` using Softplus: $\log(1 + e^\rho)$.
-3. It must sample $\epsilon \sim N(0, 1)$.
-4. It must return the sampled weight.
-5. **Verify:** If you run it 1000 times with fixed mu/rho, does the mean/std match the expected values?
+## 练习 1：重参数化技巧（数学 -> 代码）
+**目标：** 手动实现高斯采样。
+本实现的核心采样式是 $w = \mu + \sigma \cdot \epsilon$。原仓库称其为“论文核心”，但这里的现代重参数化实现并非来自 1993 年论文。
+1. 创建函数 `sample_gaussian(mu, rho)`。
+2. 使用 Softplus 将 `rho` 转换为 `sigma`：$\log(1 + e^\rho)$。
+3. 采样 $\epsilon \sim N(0, 1)$。
+4. 返回采样得到的权重。
+5. **验证：** 固定 mu/rho 运行 1000 次，均值与标准差是否符合预期？
 
-## Exercise 2: The "Gap" Experiment (The Hello World)
-**Goal:** Prove the model knows what it doesn't know.
-1. Generate data: $y = x^3$ for $x \in [-4, -2]$ AND $x \in [2, 4]$. (Leave a gap in $[-2, 2]$).
-2. Train your `MDLNetwork` on this.
-3. **Task:** Plot the predictions.
-    * Does the model connect the two sides with a confident line? (Bad)
-    * Or does the uncertainty bubble explode in the middle? (Good)
+## 练习 2：缺口实验（入门示例）
+**目标：** 检查模型能否反映自身不知道的区域。
+1. 生成数据：$x \in [-4, -2]$ 和 $x \in [2, 4]$ 时，$y = x^3$。在 $[-2, 2]$ 留出缺口。
+2. 用这些数据训练 `MDLNetwork`。
+3. **任务：** 绘制预测。
+    * 模型是否用一条确定的曲线连接两边？（原练习认为这不理想。）
+    * 中间的不确定性带是否明显变宽？（这是期待观察的现象，并非保证。）
 
-## Exercise 3: Breaking the Model (The Beta Parameter)
-**Goal:** Understand `kl_weight` (Beta).
-Train the model from Ex 2 three times with different betas:
-1.  `kl_weight = 0.0` (Standard MLE). What happens to uncertainty?
-2.  `kl_weight = 100.0` (Prior Dominated). What happens to the prediction?
-3.  `kl_weight = 0.1` (Balanced).
-**Deliverable:** A plot showing all three behaviors.
+## 练习 3：让模型失效（Beta 参数）
+**目标：** 理解 `kl_weight`（Beta）。
+用不同 beta 将练习 2 的模型训练三次：
+1. `kl_weight = 0.0`（普通最大似然估计，MLE）：不确定性会怎样？
+2. `kl_weight = 100.0`（先验主导）：预测会怎样？
+3. `kl_weight = 0.1`（折中）。
+**交付：** 一张展示三种行为的图。
 
-## Exercise 4: Monte Carlo Predictions
-**Goal:** Understand why we sample multiple times.
-1. Train a model.
-2. Pick a test point $x_{test}$.
-3. Predict ONCE. Record value.
-4. Predict 100 times. Record mean value.
-5. **Question:** Which one is smoother? Why does the single prediction look "jagged" when you plot a curve?
+## 练习 4：蒙特卡洛预测
+**目标：** 理解为什么需要多次采样。
+1. 训练模型。
+2. 选择测试点 $x_{test}$。
+3. 预测一次并记录结果。
+4. 预测 100 次并记录均值。
+5. **问题：** 沿一系列测试点绘制曲线时，哪种结果更平滑？为什么单次预测曲线可能显得“锯齿状”？
 
-## Exercise 5: The "Free Lunch" (Pruning)
-**Goal:** Compress the network.
-1. Train a model until convergence.
-2. Look at the `sigma` (uncertainty) of the weights in Layer 1.
-3. **Task:**
-    * Find all weights where $\text{SNR} = |\mu| / \sigma < 0.1$.
-    * Hard-set those weights to 0.0.
-    * Run the model again. Does the error increase?
-    * Calculate how many parameters you just "deleted" for free.
+## 练习 5：“免费午餐”（剪枝）
+**目标：** 压缩网络。
+1. 训练模型直至收敛。
+2. 查看第 1 层权重的 `sigma`（不确定性）。
+3. **任务：**
+    * 找到所有满足 $\text{SNR} = |\mu| / \sigma < 0.1$ 的权重。
+    * 将这些权重直接设为 0.0。
+    * 再运行模型，误差是否增加？
+    * 计算“免费删除”的参数数量。请用实际误差验证，不预设剪枝必然无损。
 
 ---
 
-**Need Help?** Check `solutions.py` for the answers.
+**需要帮助？** 查看 `solutions.py` 中的解答。

@@ -1,27 +1,27 @@
-# Data Directory - Day 8: AlexNet
+# 数据目录——第 8 天：AlexNet
 
-This directory stores datasets and model checkpoints for AlexNet training.
+此目录保存 AlexNet 训练的数据集和模型检查点。
 
-## Contents
+## 内容
 
-### Datasets
-Place your datasets here:
+### 数据集
+将数据集放在这里：
 
-- `imagenet/` - ImageNet dataset (download from http://www.image-net.org/)
-- `cifar10/` - CIFAR-10 dataset (auto-downloaded by torchvision)
-- `custom/` - Your custom image classification datasets
+- `imagenet/`——ImageNet 数据集（从 http://www.image-net.org/ 下载）
+- `cifar10/`——CIFAR-10 数据集（由 torchvision 自动下载）
+- `custom/`——自定义图像分类数据集
 
-### Model Checkpoints
-- `checkpoints/` - Saved model weights
-- `pretrained/` - Pre-trained model weights
+### 模型检查点
+- `checkpoints/`——已保存的模型权重
+- `pretrained/`——预训练模型权重
 
-### Logs
-- `tensorboard/` - TensorBoard log files
-- `wandb/` - Weights & Biases logs
+### 日志
+- `tensorboard/`——TensorBoard 日志文件
+- `wandb/`——Weights & Biases 日志
 
-## Downloading Datasets
+## 下载数据集
 
-### CIFAR-10 (Automatic)
+### CIFAR-10（自动）
 ```python
 from torchvision import datasets
 
@@ -32,11 +32,11 @@ trainset = datasets.CIFAR10(
 )
 ```
 
-### ImageNet (Manual)
-1. Register at http://www.image-net.org/
-2. Download ILSVRC2012 dataset
-3. Extract to `data/imagenet/`
-4. Structure:
+### ImageNet（手动）
+1. 在 http://www.image-net.org/ 注册
+2. 下载 ILSVRC2012 数据集
+3. 解压到 `data/imagenet/`
+4. 目录结构：
    ```
    imagenet/
    ├── train/
@@ -49,8 +49,8 @@ trainset = datasets.CIFAR10(
        └── ...
    ```
 
-## Notes
+## 说明
 
-- CIFAR-10: ~170 MB
-- ImageNet: ~150 GB
-- Model checkpoints: ~200 MB per model
+- CIFAR-10：约 170 MB
+- ImageNet：约 150 GB
+- 模型检查点：每个模型约 200 MB

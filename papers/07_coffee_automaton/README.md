@@ -1,39 +1,44 @@
-# Day 7: Quantifying the Rise and Fall of Complexity in Closed Systems: The Coffee Automaton
+<a id="day-7-quantifying-the-rise-and-fall-of-complexity-in-closed-systems-the-coffee-automaton"></a>
+# 第 7 天：量化封闭系统中复杂性的兴衰：咖啡元胞自动机（Quantifying the Rise and Fall of Complexity in Closed Systems: The Coffee Automaton）
 
-> Scott Aaronson, Sean M. Carroll, Lauren Ouellette (2014) — [Paper](https://arxiv.org/abs/1405.6903)
+> Scott Aaronson、Sean M. Carroll、Lauren Ouellette（2014）— [论文](https://arxiv.org/abs/1405.6903)
 
-**Time:** 3-4 hours
-**Prerequisites:** Days 4-6 helpful (Kolmogorov complexity, MDL, complexodynamics)
-**Code:** Python + NumPy + gzip + Matplotlib
+**用时：** 3-4 小时
+**先修知识：** 第 4-6 天的内容有帮助（柯尔莫哥洛夫复杂度、最小描述长度 MDL、复杂性动力学）
+**代码：** Python + NumPy + gzip + Matplotlib
 
----
-
-## What This Paper Is Actually About
-
-This paper is the empirical follow-up to Day 6. Aaronson's blog post asked: can we define a complexity measure that goes up then back down while entropy goes monotonically up? This paper *runs the experiment*.
-
-Lauren Ouellette (then an MIT undergrad — the one Aaronson mentioned in the Day 6 blog post as "a wonderful MIT undergrad...recently started a research project with me") implemented a two-dimensional coffee-mixing cellular automaton in Python, measured its "apparent complexity" over time using gzip compression of coarse-grained bitmaps, and showed: yes, complexity rises and falls while entropy only increases.
-
-The paper does three things:
-
-1. **Reviews four complexity measures** — apparent complexity, sophistication, logical depth, and light-cone complexity — and explains why they chose apparent complexity for the experiment (the others are uncomputable or can't be efficiently approximated).
-
-2. **Defines a concrete model** — the "coffee automaton," an N x N binary grid where cream pixels (1) and coffee pixels (0) mix by random adjacent swaps.
-
-3. **Runs the experiment** — measures both entropy (gzip of fine-grained state) and apparent complexity (gzip of coarse-grained state) over time, for both an "interacting" model (particles can't overlap — the main one) and a "non-interacting" model (cream particles random-walk independently).
-
-The key empirical result (Figures 2, 10): for the interacting model, complexity rises then falls. For the non-interacting model, complexity stays flat (once thresholding artifacts are removed). This difference matters — it says that *interactions* are what create macroscopic complexity.
-
-The paper also proves analytically (Appendix, Section 9) that the non-interacting model's apparent complexity never becomes large, using Chernoff bounds on the expected cream distribution.
+> **本地化核对注：** 本章是教学实现，不能直接视为原论文实验的严格复现。`coarse_grain` 使用互不重叠的块并降采样，而引用的说明描述以格点为中心的局部窗口；`_step_interacting` 没有显式排除批量交换中重复或重叠的格点，因此原说明中“不冲突”“不改变平衡行为”的断言未经本实现验证；无相互作用模型虽保存粒子计数，测量时却由 `get_binary_grid()` 转为是否占用的二值网格。压缩大小包含格式开销，单条有限随机轨迹也未必严格单调，不能把“接近零”理解为实际压缩文件为零字节。以上为原有实现与说明的核对问题，本次未修改算法。原论文正文未成功访问，论文细节仍需原文复核。
 
 ---
 
-## The Core Idea
+<a id="what-this-paper-is-actually-about"></a>
+## 这篇论文究竟研究什么
 
-The central hypothesis from Day 6, now tested experimentally:
+这篇论文是第 6 天内容的实证后续。Aaronson 在博客中问道：能否定义一种复杂性度量，使它先上升再下降，而熵始终单调上升？这篇论文*实际做了实验*。
+
+Lauren Ouellette 当时是 MIT 本科生；Aaronson 在第 6 天的博客中称她为“一位出色的 MIT 本科生……最近开始和我合作开展一个研究项目”。她用 Python 实现了一个模拟咖啡混合的二维元胞自动机，用 gzip 压缩粗粒化位图，随时间测量其“表观复杂度”（apparent complexity）。结果表明：复杂度确实先升后降，而熵只会上升。
+
+论文做了三件事：
+
+1. **回顾四种复杂性度量**——表观复杂度、精致度（sophistication）、逻辑深度（logical depth）和光锥复杂度（light-cone complexity），并解释实验为何选择表观复杂度：其余度量不可计算，或无法高效近似。
+
+2. **定义具体模型**——“咖啡元胞自动机”：在 N x N 的二值网格中，通过随机交换相邻位置，让奶油像素（1）与咖啡像素（0）混合。
+
+3. **开展实验**——分别对“有相互作用”模型（粒子不能重叠，是主要模型）和“无相互作用”模型（奶油粒子独立进行随机游走），随时间测量熵（细粒度状态的 gzip 压缩大小）和表观复杂度（粗粒化状态的 gzip 压缩大小）。
+
+关键实证结果（图 2、10）：有相互作用模型的复杂度先升后降；无相互作用模型的复杂度在消除阈值化伪影后保持平坦。这个差异很重要：它表明*相互作用*产生了宏观复杂性。
+
+论文还在附录第 9 节中，利用奶油分布期望值的 Chernoff 界作出解析证明：无相互作用模型的表观复杂度始终不会很大。
+
+---
+
+<a id="the-core-idea"></a>
+## 核心思想
+
+第 6 天提出的核心假设，现在接受实验检验：
 
 ```
-                    Apparent Complexity
+                    表观复杂度
                           ^
                          /|\
                         / | \
@@ -42,209 +47,233 @@ The central hypothesis from Day 6, now tested experimentally:
             ---------/    |    \---------
            /              |              \
      ─────                |                ─────
-     t=0             t_peak              t→ infinity
+     t=0             t_peak              t→ 无穷
 
-     Entropy: ─────────────────────────────/────
-                  (monotonically increasing)
+     熵: ─────────────────────────────/────
+                  （单调增加）
 ```
 
-"Apparent complexity" = the Kolmogorov complexity of a smoothed (coarse-grained) version of the state. In practice: blur the bitmap by averaging over local squares, threshold into discrete buckets, and compress with gzip. The compressed size is the complexity estimate.
+“表观复杂度”= 对状态进行平滑（粗粒化）后所得结果的柯尔莫哥洛夫复杂度（Kolmogorov complexity，KC）。实际操作是：在局部方形区域内取平均，使位图变模糊，再按阈值离散分箱，用 gzip 压缩；压缩大小就是复杂度估计值。
 
-**Why coarse-graining works**: A totally ordered state (all coffee on bottom, all cream on top) compresses well at any scale. A totally random state (uniform mixture) compresses well at the coarse-grained level because averaging turns local randomness into a uniform gray. But in between — when you have tendrils and boundaries — the coarse-grained representation has genuine, incompressible structure.
+**粗粒化为何有效：** 完全有序的状态（咖啡全在下方、奶油全在上方）在任何尺度都容易压缩。完全随机的状态（均匀混合）在粗粒化尺度上也容易压缩，因为取平均会将局部随机性变成均匀的灰色。而在两者之间，出现细长分支和边界时，粗粒化表示具有真实、不可压缩的结构。
 
 ---
 
-## What the Authors Actually Showed
+<a id="what-the-authors-actually-showed"></a>
+## 作者实际展示了什么
 
-### The Coffee Automaton Model (Section 3)
+<a id="the-coffee-automaton-model-section-3"></a>
+### 咖啡元胞自动机模型（第 3 节）
 
-Two models on an N x N binary grid:
+N x N 二值网格上的两种模型：
 
-**Interacting model** (Section 3.1): The main model. At each time step, pick a random pair of horizontally or vertically adjacent pixels that are different colors, and swap them. Particles can't overlap — one per cell.
+**有相互作用模型**（第 3.1 节）：主要模型。每个时间步随机选择一对水平或垂直相邻、颜色不同的像素并交换。粒子不能重叠，每个格点只能容纳一个粒子。
 
-**Non-interacting model** (Section 3.2): Each cream particle independently random-walks to a neighbor at each step. Multiple particles can occupy the same cell. Only cream particles are tracked; coffee is just the background.
+**无相互作用模型**（第 3.2 节）：每个时间步，各奶油粒子独立随机游走至相邻格点。多个粒子可以占据同一格点。只追踪奶油粒子，咖啡仅作为背景。
 
-Initial state for both: top half = cream (1), bottom half = coffee (0).
+两者初始状态均为：上半部 = 奶油（1），下半部 = 咖啡（0）。
 
 ```python
-# The interacting model in pseudocode (from Section 3.1):
-# At each time step:
-#   1. Pick a random adjacent pair (horizontally or vertically)
-#   2. If they differ, swap them
-#   3. That's it. One swap per step.
+<a id="the-interacting-model-in-pseudocode-from-section-31"></a>
+# 有相互作用模型的伪代码（来自第 3.1 节）：
+<a id="at-each-time-step"></a>
+# 每个时间步：
+<a id="1-pick-a-random-adjacent-pair-horizontally-or-vertically"></a>
+#   1. 随机选择一对相邻格点（水平方向或垂直方向）
+<a id="2-if-they-differ-swap-them"></a>
+#   2. 若两者不同，则交换
+<a id="3-thats-it-one-swap-per-step"></a>
+#   3. 仅此而已，每步一次交换。
 ```
 
-The interacting model is more physically realistic — two particles can't occupy the same point. But the non-interacting model is easier to analyze theoretically because each particle is an independent random walk.
+有相互作用模型更符合物理实际：两个粒子不能占据同一个位置。但无相互作用模型更便于理论分析，因为每个粒子都进行独立随机游走。
 
-### Approximating Apparent Complexity (Section 4)
+<a id="approximating-apparent-complexity-section-4"></a>
+### 近似表观复杂度（第 4 节）
 
-The paper tried three approaches to estimate complexity:
+论文尝试了三种复杂度估计方法：
 
-1. **OSCR algorithm** (Evans et al. 2003) — a two-part code that directly estimates K(S) and K(x). "We implemented a version of this algorithm, and we found that our implementation does not perform well in compressing the automaton data. The output of the algorithm is noisy." (Section 4) *Rejected.*
+1. **OSCR 算法**（Evans 等，2003）——一种直接估计 K(S) 和 K(x) 的两段式编码。“我们实现了这个算法的一个版本，发现我们的实现在压缩自动机数据时表现不佳。算法输出噪声很大。”（第 4 节）*未采用。*
 
-2. **Two-part code via coarse-graining** — coarse-grained state as Part 1, diff-to-fine-grained as Part 2. "Our estimate of K(x|S) suffered from artifacts." (Section 4) *Rejected.*
+2. **通过粗粒化进行两段式编码**——第一部分编码粗粒化状态，第二部分编码它与细粒度状态的差异。“我们对 K(x|S) 的估计受到了伪影影响。”（第 4 节）*未采用。*
 
-3. **Direct coarse-graining** — compress the coarse-grained state directly with gzip. This worked. Entropy is estimated by gzip of the fine-grained state; complexity by gzip of the coarse-grained state.
+3. **直接粗粒化**——直接用 gzip 压缩粗粒化状态。这种方法有效。用细粒度状态的 gzip 压缩大小估计熵，用粗粒化状态的 gzip 压缩大小估计复杂度。
 
-The coarse-graining procedure (Section 5.1):
-- Divide the N x N grid into g x g squares (g = grain size)
-- Average the values in each square
-- Threshold the floating-point averages into discrete buckets (3 buckets in Section 5, 7 buckets in Section 6)
-- Compress the thresholded array with gzip
-- The compressed size = estimated apparent complexity
+粗粒化步骤（第 5.1 节）：
+- 将 N x N 网格划分为 g x g 方块（g 为粗粒化块的边长）
+- 对每个方块内的数值求平均
+- 将浮点平均值按阈值离散分箱（第 5 节使用 3 个分箱，第 6 节使用 7 个分箱）
+- 用 gzip 压缩阈值化后的数组
+- 压缩大小 = 表观复杂度估计值
 
-### Coarse-Graining Experiment (Section 5)
+<a id="coarse-graining-experiment-section-5"></a>
+### 粗粒化实验（第 5 节）
 
-Method: 3-bucket thresholding (areas that are mostly coffee, mostly cream, or mixed).
+方法：3 分箱阈值化，分别代表以咖啡为主、以奶油为主或两者混合的区域。
 
-Results (Figure 2):
-- **Interacting model**: Complexity rises then falls. Entropy increases monotonically. The complexity peak occurs at the time when there are interesting macroscopic structures (tendrils of cream reaching into coffee and vice versa).
-- **Non-interacting model**: Also showed rising-then-falling complexity, BUT this turns out to be an artifact of the thresholding (border pixels fluctuating between bucket values).
+结果（图 2）：
+- **有相互作用模型：** 复杂度先升后降，熵单调增加。复杂度峰值出现在有趣的宏观结构形成时，即奶油的细长分支伸入咖啡，反之亦然。
+- **无相互作用模型：** 同样出现了复杂度先升后降的现象，但后来发现这源于阈值化伪影：边界像素在不同分箱值之间波动。
 
-Scaling behavior (Figures 6-8):
-- Max entropy scales as n^2 (quadratic — proportional to number of particles)
-- Max complexity scales as n (linear — proportional to side length)
-- Time to max complexity scales as n^2 (quadratic — proportional to particle count)
+标度行为（图 6-8）：
+- 最大熵按 n^2 增长（二次关系，与粒子数成正比）
+- 最大复杂度按 n 增长（线性关系，与边长成正比）
+- 达到最大复杂度的时间按 n^2 增长（二次关系，与粒子数成正比）
 
-The linear scaling of max complexity is notable: complexity develops "along a single dimension of the automaton" (the horizontal boundary between coffee and cream).
+最大复杂度的线性标度值得注意：复杂性“沿自动机的一个维度发展”，即咖啡与奶油之间的水平边界。
 
-### Adjusted Coarse-Graining (Section 6)
+<a id="adjusted-coarse-graining-section-6"></a>
+### 调整后的粗粒化（第 6 节）
 
-To address thresholding artifacts, the authors:
-- Used 7 buckets instead of 3
-- Applied a row-majority adjustment: if a cell is within one threshold of the majority value in its row, snap it to the majority value
+为处理阈值化伪影，作者：
+- 将 3 个分箱改为 7 个分箱
+- 应用行众数调整：若某格点的值与该行众数相差不超过一个阈值间隔，就将其归并到众数
 
-Results (Figure 10):
-- **Interacting model**: Still shows the rise-and-fall pattern. The complexity curve is preserved.
-- **Non-interacting model**: Complexity flattened to near zero. The previous rise-and-fall was entirely a thresholding artifact.
+结果（图 10）：
+- **有相互作用模型：** 仍然呈现先升后降的模式，复杂度曲线得以保留。
+- **无相互作用模型：** 复杂度变得平坦且接近零。此前的先升后降完全是阈值化伪影。
 
-This is the paper's most important empirical finding: **complexity requires interaction**. Non-interacting particles produce no macroscopic structure because each is an independent random walk. The expected distribution can be predicted from the initial conditions plus time, so the coarse-grained state has low KC at all times.
+这是论文最重要的实证发现：**复杂性需要相互作用**。无相互作用粒子不产生宏观结构，因为每个粒子都在独立随机游走。仅凭初始条件和时间即可预测分布的期望值，因此粗粒化状态在所有时刻的 KC 都很低。
 
-### Analytical Result (Section 9, Appendix)
+<a id="analytical-result-section-9-appendix"></a>
+### 解析结果（附录第 9 节）
 
-For the non-interacting model with periodic boundary conditions, the authors prove:
+对于采用周期边界条件的无相互作用模型，作者证明：
 
-The expected number of cream particles at position (x,y) satisfies:
+位置 (x,y) 处奶油粒子数量的期望满足：
 
 $$E[a_{t+1}(x,y)] = \frac{E[a_t(x-1,y)] + E[a_t(x+1,y)] + E[a_t(x,y-1)] + E[a_t(x,y+1)]}{4}$$
 
-Using Chernoff bounds, they show that in any L x L square B, the actual count stays close to the expected count with high probability, provided the grain size L >> G * sqrt(3 * ln(2n^2)). This means the coarse-grained image can be reconstructed from n and t alone, so its KC is at most O(log n + log t).
+利用 Chernoff 界，他们说明：只要粗粒化块的边长 L >> G * sqrt(3 * ln(2n^2))，任意 L x L 方形区域 B 内的实际粒子数就会以高概率接近期望。这意味着仅凭 n 和 t 即可重建粗粒化图像，因此其 KC 至多为 O(log n + log t)。
 
-### What They Chose NOT to Measure (Section 2)
+<a id="what-they-chose-not-to-measure-section-2"></a>
+### 作者选择不测量什么（第 2 节）
 
-This matters pedagogy-wise:
+这对教学理解很重要：
 
-- **Sophistication**: "sophistication as defined above seems irrelevant to the coffee cup or other physical systems: it simply never becomes large for such systems!" (Section 2.2). With overwhelming probability, the output of a short probabilistic program has low sophistication.
-- **Logical depth**: "generating what many people would regard as a visually complex pattern...simply need not take a long time!" (Section 2.3). Also "even less clear how to estimate it in practice."
-- **Light-cone complexity**: Interesting but requires knowing the entire causal history, not just the current state.
+- **精致度：** “上述定义的精致度似乎与咖啡杯或其他物理系统无关：在这类系统中，它根本不会变大！”（第 2.2 节）一个短概率程序的输出以压倒性概率具有低精致度。
+- **逻辑深度：** “生成人们通常认为在视觉上复杂的图案……根本不一定需要很长时间！”（第 2.3 节）此外，“更不清楚如何在实践中估计它”。
+- **光锥复杂度：** 很有趣，但需要知道完整的因果历史，只有当前状态还不够。
 
-They chose **apparent complexity** for a simple reason: "we did not know of any efficient way to approximate sophistication or logical depth." (Section 2.5)
-
----
-
-## Implementation Notes
-
-### Key Decisions
-
-**The swap rule matters**: One swap per step in the interacting model meant the original paper needed tens of millions of steps for a 100x100 grid. Our implementation uses batch swaps (multiple non-conflicting swaps per step) to speed this up while preserving the qualitative behavior. The paper's source code was written in Python by Lauren Ouellette.
-
-**gzip level consistency**: Use the same compression level throughout. The paper showed (Figure 5) that different compressors (gzip, bzip2, etc.) produce qualitatively similar curves. We use `gzip.compress(data, compresslevel=9)`.
-
-**Grain size selection**: The paper doesn't specify exactly how they chose g. Too small and the coarse-graining doesn't smooth out noise. Too large and it erases all structure. A reasonable default is g = n/10 (for a 100x100 grid, g = 10).
-
-**Border pixel artifacts**: The whole point of Section 6 was to fix these. The 3-bucket version showed fake complexity in the non-interacting model. The 7-bucket + majority adjustment fixed it. Our implementation includes both versions.
-
-### Things That Will Bite You
-
-1. **gzip of binary data, not strings**: Convert the numpy array to bytes before compressing. `grid.tobytes()` or saving as a bitmap format.
-
-2. **Thresholding**: After averaging a g x g block, you get floats. Threshold into discrete buckets BEFORE compressing. The paper uses 3 buckets (Section 5) and 7 buckets (Section 6).
-
-3. **Entropy is NOT Shannon entropy here**: The paper uses "entropy" to mean gzip-compressed size of the fine-grained state, not the standard information-theoretic formula. This is a KC proxy.
-
-4. **Non-interacting ≠ non-existent particles**: In the non-interacting model, cream particles overlap. This means you need a count grid (uint16 or higher), not a binary grid.
-
-5. **Scale of time steps**: For an N x N interacting grid, expect O(N^4) single-swap steps to reach equilibrium. With batch swaps, this comes down substantially, but it's still slow for large grids.
+选择**表观复杂度**的原因很简单：“我们不知道任何能够高效近似精致度或逻辑深度的方法。”（第 2.5 节）
 
 ---
 
-## What to Build
+<a id="implementation-notes"></a>
+## 实现说明
 
-### Quick Start
+<a id="key-decisions"></a>
+### 关键决定
+
+**交换规则很重要：** 原论文的有相互作用模型每步交换一次，因此 100x100 网格需要数千万步。本实现采用批量交换（每步执行多次不冲突的交换）来加速，同时保留定性行为。论文源代码由 Lauren Ouellette 用 Python 编写。
+
+**gzip 压缩级别应一致：** 全程使用相同压缩级别。论文图 5 表明，不同压缩器（gzip、bzip2 等）会产生定性相似的曲线。这里使用 `gzip.compress(data, compresslevel=9)`。
+
+**粗粒化尺度的选择：** 论文没有详细说明如何选择 g。过小则无法平滑噪声，过大则会抹去全部结构。合理默认值为 g = n/10；对于 100x100 网格，g = 10。
+
+**边界像素伪影：** 第 6 节的目的就是解决它。3 分箱版本在无相互作用模型中产生虚假复杂度，7 分箱加众数调整消除了这个现象。本实现包含两种版本。
+
+<a id="things-that-will-bite-you"></a>
+### 容易踩的坑
+
+1. **gzip 压缩二进制数据，而不是字符串：** 压缩前将 NumPy 数组转为字节。使用 `grid.tobytes()`，或保存为位图格式。
+
+2. **阈值化：** 对 g x g 块取平均得到浮点数，必须先离散分箱再压缩。论文第 5 节使用 3 个分箱，第 6 节使用 7 个分箱。
+
+3. **这里的熵不是香农熵：** 论文以细粒度状态的 gzip 压缩大小表示“熵”，并非标准信息论公式，而是 KC 的代理量。
+
+4. **无相互作用不代表没有粒子：** 该模型的奶油粒子可以重叠，因此需要计数网格（uint16 或更高精度），而非二值网格。
+
+5. **时间步的尺度：** N x N 有相互作用网格预计需要 O(N^4) 个单次交换步才能达到平衡。批量交换能显著减少步数，但大网格仍然较慢。
+
+---
+
+<a id="what-to-build"></a>
+## 要构建什么
+
+<a id="quick-start"></a>
+### 快速开始
 
 ```bash
 python train_minimal.py --grid-size 50 --steps 100000 --model interacting
 ```
 
-This runs the coffee automaton, measures entropy and apparent complexity at each snapshot, and plots the rise-and-fall curve.
+此命令运行咖啡元胞自动机，在每个快照处测量熵和表观复杂度，并绘制先升后降的曲线。
 
-More options:
+更多选项：
 ```bash
-# Compare interacting vs non-interacting
+<a id="compare-interacting-vs-non-interacting"></a>
+# 比较有相互作用与无相互作用模型
 python train_minimal.py --grid-size 50 --steps 100000 --compare-models
 
-# Run the adjusted coarse-graining (Section 6)
+<a id="run-the-adjusted-coarse-graining-section-6"></a>
+# 运行调整后的粗粒化（第 6 节）
 python train_minimal.py --grid-size 50 --steps 100000 --adjusted
 
-# Scaling experiment: how does max complexity scale with grid size?
+<a id="scaling-experiment-how-does-max-complexity-scale-with-grid-size"></a>
+# 标度实验：最大复杂度如何随网格大小变化？
 python train_minimal.py --scaling --sizes 20 30 50 70 100
 ```
 
-### Exercises
+<a id="exercises"></a>
+### 练习
 
-Exercises are in `exercises/`. Each one is self-contained.
+练习位于 `exercises/`，每个练习都是独立的。
 
-| # | Task | What You'll Get Out of It |
+| # | 任务 | 学习收获 |
 |---|------|--------------------------|
-| 1 | Coarse-graining implementation (`exercise_01_coarse_graining.py`) | Build the paper's core measurement tool from scratch |
-| 2 | Interacting vs non-interacting (`exercise_02_model_comparison.py`) | See why interaction matters for complexity |
-| 3 | Scaling analysis (`exercise_03_scaling.py`) | Replicate Figures 6-8: max complexity ~ n, max entropy ~ n^2 |
-| 4 | Adjusted coarse-graining (`exercise_04_adjusted_graining.py`) | Implement Section 6's artifact-removal technique |
-| 5 | Compressor comparison (`exercise_05_compressor_comparison.py`) | Replicate Figure 5: different compressors, same qualitative curve |
+| 1 | 实现粗粒化（`exercise_01_coarse_graining.py`） | 从零构建论文的核心测量工具 |
+| 2 | 有相互作用与无相互作用（`exercise_02_model_comparison.py`） | 理解相互作用为何影响复杂性 |
+| 3 | 标度分析（`exercise_03_scaling.py`） | 复现图 6-8：最大复杂度 ~ n，最大熵 ~ n^2 |
+| 4 | 调整后的粗粒化（`exercise_04_adjusted_graining.py`） | 实现第 6 节消除伪影的方法 |
+| 5 | 比较压缩器（`exercise_05_compressor_comparison.py`） | 复现图 5：不同压缩器产生相同的定性曲线 |
 
-Solutions are in `exercises/solutions/`. Try to get stuck first.
-
----
-
-## Key Takeaways
-
-1. **Apparent complexity = KC of the coarse-grained state.** Smooth out noise by averaging local regions, threshold, compress with gzip. This is computable, reproducible, and captures the intuitive notion of "interestingness." (Sections 2.1, 4)
-
-2. **Complexity rises then falls; entropy only rises.** For the interacting coffee automaton, gzip(coarse-grained) peaks at intermediate times while gzip(fine-grained) increases monotonically. This is the central empirical result. (Figures 2, 10)
-
-3. **Interactions create complexity; independence does not.** The non-interacting model never develops genuine macroscopic complexity. Each particle's position is an independent random walk, so the expected coarse-grained state can be predicted from initial conditions alone, giving O(log n) KC. (Section 6, Appendix)
-
-4. **Max complexity scales linearly with grid size; max entropy scales quadratically.** Complexity develops along the one-dimensional coffee-cream boundary (so ~ n). Entropy counts all particles (so ~ n^2). Time to peak complexity ~ n^2. (Figures 6-8)
-
-5. **Thresholding artifacts are a real problem.** The naive 3-bucket coarse-graining showed fake complexity in the non-interacting model. The 7-bucket + row-majority adjustment removed it. This is why Section 6 exists and why the adjusted method is more trustworthy. (Section 6)
+参考解答位于 `exercises/solutions/`。先自己尝试，遇到困难后再看。
 
 ---
 
-## Files in This Directory
+<a id="key-takeaways"></a>
+## 要点
 
-| File | What It Is |
+1. **表观复杂度 = 粗粒化状态的 KC。** 对局部区域取平均以平滑噪声，进行阈值化，再用 gzip 压缩。这种方法可计算、可复现，并能捕捉直觉上的“有趣程度”。（第 2.1、4 节）
+
+2. **复杂度先升后降，熵只会上升。** 在有相互作用的咖啡元胞自动机中，gzip（粗粒化状态）在中间时刻达到峰值，gzip（细粒度状态）则单调增加。这是核心实证结果。（图 2、10）
+
+3. **相互作用产生复杂性，独立性则不会。** 无相互作用模型始终不产生真正的宏观复杂性。每个粒子的位置都是独立随机游走，因此仅凭初始条件即可预测粗粒化状态的期望，得到 O(log n) 的 KC。（第 6 节、附录）
+
+4. **最大复杂度与网格边长成线性关系，最大熵成二次关系。** 复杂性沿咖啡与奶油的一维边界发展，因此 ~ n；熵计入所有粒子，因此 ~ n^2。达到复杂度峰值的时间 ~ n^2。（图 6-8）
+
+5. **阈值化伪影确实会造成问题。** 朴素的 3 分箱粗粒化在无相互作用模型中产生虚假复杂度，7 分箱加行众数调整消除了它。这就是第 6 节存在的原因，也是调整后方法更可信的原因。（第 6 节）
+
+---
+
+<a id="files-in-this-directory"></a>
+## 本目录文件
+
+| 文件 | 内容 |
 |------|-----------|
-| `implementation.py` | Coffee automaton (interacting + non-interacting), coarse-graining, gzip KC estimation |
-| `train_minimal.py` | CLI script — run simulations, measure complexity/entropy over time, plot results |
-| `visualization.py` | Entropy vs complexity curves, grid state visualization, scaling plots |
-| `notebook.ipynb` | Interactive walkthrough — build the automaton and measurements step by step |
-| `exercises/` | 5 exercises: coarse-graining, model comparison, scaling, adjusted graining, compressors |
-| `paper_notes.md` | Detailed notes on the paper's arguments and proofs |
-| `CHEATSHEET.md` | Quick reference for the automaton model, measures, and key results |
+| `implementation.py` | 咖啡元胞自动机（有相互作用 + 无相互作用）、粗粒化、用 gzip 估计 KC |
+| `train_minimal.py` | 命令行脚本：运行模拟，随时间测量复杂度与熵，绘制结果 |
+| `visualization.py` | 熵与复杂度曲线、网格状态可视化、标度图 |
+| `notebook.ipynb` | 交互式教程：逐步构建自动机和测量方法 |
+| `exercises/` | 5 个练习：粗粒化、模型比较、标度、调整后的粗粒化、压缩器 |
+| `paper_notes.md` | 论文论证和证明的详细笔记 |
+| `CHEATSHEET.md` | 自动机模型、度量和关键结果的速查表 |
 
 ---
 
-## Further Reading
+<a id="further-reading"></a>
+## 延伸阅读
 
-- [The Paper (arXiv:1405.6903)](https://arxiv.org/abs/1405.6903) — 22 pages, many figures, very readable
-- [Day 6 Blog Post](https://scottaaronson.blog/?p=762) — Aaronson's original blog post proposing complextropy (the theoretical foundation for this paper)
-- [Sophistication (Koppel 1987)](https://doi.org/10.1007/BF01200260) — the complexity-of-the-model concept that motivates apparent complexity
-- [Gacs, Tromp, Vitanyi (2001)](https://doi.org/10.1109/TIT.2001.936000) — algorithmic statistics and structure functions
-- [Logical Depth (Bennett 1995)](https://doi.org/10.1007/978-3-7091-6597-3_8) — the time-based alternative (discussed in Section 2.3 but not used)
-- [Light-Cone Complexity (Shalizi et al. 2004)](https://doi.org/10.1103/PhysRevLett.93.118701) — the mutual information approach (discussed in Section 2.4)
-- [Antunes and Fortnow (2009)](https://doi.org/10.1007/s00224-008-9106-3) — proved equivalence of coarse sophistication and Busy Beaver depth
+- [论文（arXiv:1405.6903）](https://arxiv.org/abs/1405.6903) — 22 页，图示丰富，易于阅读
+- [第 6 天博客文章](https://scottaaronson.blog/?p=762) — Aaronson 首次提出 complextropy 的文章，是本论文的理论基础
+- [精致度（Koppel，1987）](https://doi.org/10.1007/BF01200260) — 以模型复杂度为核心的概念，启发表观复杂度
+- [Gacs、Tromp、Vitanyi（2001）](https://doi.org/10.1109/TIT.2001.936000) — 算法统计与结构函数
+- [逻辑深度（Bennett，1995）](https://doi.org/10.1007/978-3-7091-6597-3_8) — 基于时间的替代方案，第 2.3 节讨论但未采用
+- [光锥复杂度（Shalizi 等，2004）](https://doi.org/10.1103/PhysRevLett.93.118701) — 基于互信息的方法，第 2.4 节讨论
+- [Antunes 与 Fortnow（2009）](https://doi.org/10.1007/s00224-008-9106-3) — 证明粗精致度与忙海狸深度的等价性
 
 ---
 
-**Previous:** [Day 6 — The First Law of Complexodynamics](../06_Complexodynamics/)
-**Next:** [Day 8 — AlexNet](../08_alexnet/)
+**上一章：** [第 6 天——复杂性动力学第一定律](../06_Complexodynamics/)
+**下一章：** [第 8 天——AlexNet](../08_alexnet/)

@@ -1,22 +1,22 @@
 """
-Exercise 1: Build LSTM from Scratch
+练习 1：从零构建 LSTM
 ====================================
 
-Goal: Implement a complete LSTM cell with all 4 gates and backpropagation.
+目标：实现含四组变换及反向传播的完整 LSTM 单元。
 
-Your Task:
-- Fill in the TODOs below to complete the LSTM implementation
-- Test your implementation on a simple sequence
-- Compare with the reference implementation
+你的任务：
+- 完成下方 TODO，补全 LSTM 实现
+- 在简单序列上测试实现
+- 与参考实现比较
 
-Learning Objectives:
-1. Understand how each gate works mathematically
-2. See how cell state and hidden state interact
-3. Learn how gradients flow backward through the LSTM
-4. Appreciate why LSTMs solve vanishing gradients
+学习目标：
+1. 理解各门的数学原理
+2. 观察细胞状态与隐藏状态如何交互
+3. 学习梯度如何穿过 LSTM 反向传递
+4. 理解 LSTM 为什么能够缓解梯度消失
 
-Time: 2-3 hours
-Difficulty: Hard
+用时：2-3 小时
+难度：高
 """
 
 import numpy as np
@@ -24,70 +24,70 @@ import numpy as np
 
 class LSTMFromScratch:
     """
-    A Long Short-Term Memory (LSTM) network implemented from scratch.
+    从零实现的长短期记忆（LSTM）网络。
     
-    Architecture:
-        - Forget gate: f_t = σ(W_f·[h_{t-1}, x_t] + b_f)
-        - Input gate: i_t = σ(W_i·[h_{t-1}, x_t] + b_i)
-        - Cell candidate: C̃_t = tanh(W_C·[h_{t-1}, x_t] + b_C)
-        - Output gate: o_t = σ(W_o·[h_{t-1}, x_t] + b_o)
-        - Cell state: C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
-        - Hidden state: h_t = o_t ⊙ tanh(C_t)
+    架构：
+        - 遗忘门：f_t = σ(W_f·[h_{t-1}, x_t] + b_f)
+        - 输入门：i_t = σ(W_i·[h_{t-1}, x_t] + b_i)
+        - 候选细胞状态：C̃_t = tanh(W_C·[h_{t-1}, x_t] + b_C)
+        - 输出门：o_t = σ(W_o·[h_{t-1}, x_t] + b_o)
+        - 细胞状态：C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
+        - 隐藏状态：h_t = o_t ⊙ tanh(C_t)
     """
     
     def __init__(self, input_size, hidden_size, output_size):
         """
-        Initialize LSTM with random weights.
+        使用随机权重初始化 LSTM。
         
-        Args:
-            input_size: Size of input vectors
-            hidden_size: Number of LSTM units
-            output_size: Size of output vectors
+        参数：
+            input_size：输入向量维度
+            hidden_size：LSTM 单元数
+            output_size：输出向量维度
         """
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
         
-        # TODO 1: Initialize weight matrices for forget gate
-        # Hint: Shape should be (hidden_size, hidden_size + input_size)
-        # Use Xavier initialization: np.random.randn() * 0.01
-        self.Wf = None  # TODO: Initialize
-        self.bf = None  # TODO: Initialize to np.ones(hidden_size) - why ones?
+        # TODO 1：初始化遗忘门权重矩阵
+        # 提示：形状应为 (hidden_size, hidden_size + input_size)
+        # 原文称为 Xavier 初始化：np.random.randn() * 0.01；此固定缩放并非标准 Xavier 公式
+        self.Wf = None  # TODO：初始化
+        self.bf = None  # TODO：初始化为 np.ones(hidden_size)，思考为什么用全 1
         
-        # TODO 2: Initialize weight matrices for input gate
-        self.Wi = None  # TODO: Initialize
-        self.bi = None  # TODO: Initialize to np.zeros(hidden_size)
+        # TODO 2：初始化输入门权重矩阵
+        self.Wi = None  # TODO：初始化
+        self.bi = None  # TODO：初始化为 np.zeros(hidden_size)
         
-        # TODO 3: Initialize weight matrices for cell candidate
-        self.Wc = None  # TODO: Initialize
-        self.bc = None  # TODO: Initialize to np.zeros(hidden_size)
+        # TODO 3：初始化候选细胞状态权重矩阵
+        self.Wc = None  # TODO：初始化
+        self.bc = None  # TODO：初始化为 np.zeros(hidden_size)
         
-        # TODO 4: Initialize weight matrices for output gate
-        self.Wo = None  # TODO: Initialize
-        self.bo = None  # TODO: Initialize to np.zeros(hidden_size)
+        # TODO 4：初始化输出门权重矩阵
+        self.Wo = None  # TODO：初始化
+        self.bo = None  # TODO：初始化为 np.zeros(hidden_size)
         
-        # TODO 5: Initialize output layer weights
-        self.Wy = None  # TODO: Shape (output_size, hidden_size)
-        self.by = None  # TODO: Shape (output_size,)
+        # TODO 5：初始化输出层权重
+        self.Wy = None  # TODO：形状 (output_size, hidden_size)
+        self.by = None  # TODO：形状 (output_size,)
         
     def sigmoid(self, x):
-        """Sigmoid activation: σ(x) = 1 / (1 + e^(-x))"""
+        """sigmoid 激活函数：σ(x) = 1 / (1 + e^(-x))"""
         return 1 / (1 + np.exp(-np.clip(x, -500, 500)))
     
     def forward(self, inputs, targets, h_prev, C_prev):
         """
-        Forward pass through LSTM for a sequence.
+        对序列执行 LSTM 前向传播。
         
-        Args:
-            inputs: List of input indices (length T)
-            targets: List of target indices (length T)
-            h_prev: Previous hidden state (hidden_size,)
-            C_prev: Previous cell state (hidden_size,)
+        参数：
+            inputs：输入索引列表（长度 T）
+            targets：目标索引列表（长度 T）
+            h_prev：上一隐藏状态（hidden_size,）
+            C_prev：上一细胞状态（hidden_size,）
             
-        Returns:
-            loss: Cross-entropy loss over the sequence
+        返回：
+            loss：序列的交叉熵损失
         """
-        # Storage for intermediate values (needed for backward pass)
+        # 存储反向传播所需的中间值
         self.inputs_cache = []
         self.h_states = [h_prev]
         self.C_states = [C_prev]
@@ -100,72 +100,72 @@ class LSTMFromScratch:
         loss = 0.0
         
         for t, (input_idx, target_idx) in enumerate(zip(inputs, targets)):
-            # Create one-hot encoded input
+            # 创建独热编码输入
             x = np.zeros(self.input_size)
             x[input_idx] = 1.0
             self.inputs_cache.append(x)
             
-            # TODO 6: Concatenate previous hidden state and current input
-            # Shape: (hidden_size + input_size,)
-            concat = None  # TODO: Implement
+            # TODO 6：拼接上一隐藏状态与当前输入
+            # 形状：(hidden_size + input_size,)
+            concat = None  # TODO：实现
             
-            # TODO 7: Compute forget gate
+            # TODO 7：计算遗忘门
             # f_t = sigmoid(W_f · concat + b_f)
-            f_t = None  # TODO: Implement
+            f_t = None  # TODO：实现
             self.f_gates.append(f_t)
             
-            # TODO 8: Compute input gate
+            # TODO 8：计算输入门
             # i_t = sigmoid(W_i · concat + b_i)
-            i_t = None  # TODO: Implement
+            i_t = None  # TODO：实现
             self.i_gates.append(i_t)
             
-            # TODO 9: Compute cell candidate
+            # TODO 9：计算候选细胞状态
             # C̃_t = tanh(W_C · concat + b_C)
-            C_tilde = None  # TODO: Implement
+            C_tilde = None  # TODO：实现
             self.C_tilde_cache.append(C_tilde)
             
-            # TODO 10: Update cell state
+            # TODO 10：更新细胞状态
             # C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
-            # This is the key equation — the additive update that prevents vanishing gradients.
-            C_t = None  # TODO: Implement
+            # 关键方程：加性更新为缓解梯度消失提供了路径
+            C_t = None  # TODO：实现
             self.C_states.append(C_t)
             
-            # TODO 11: Compute output gate
+            # TODO 11：计算输出门
             # o_t = sigmoid(W_o · concat + b_o)
-            o_t = None  # TODO: Implement
+            o_t = None  # TODO：实现
             self.o_gates.append(o_t)
             
-            # TODO 12: Compute hidden state
+            # TODO 12：计算隐藏状态
             # h_t = o_t ⊙ tanh(C_t)
-            h_t = None  # TODO: Implement
+            h_t = None  # TODO：实现
             self.h_states.append(h_t)
             
-            # TODO 13: Compute output
+            # TODO 13：计算输出
             # y = W_y · h_t + b_y
-            y = None  # TODO: Implement
+            y = None  # TODO：实现
             
-            # TODO 14: Apply softmax to get probabilities
-            # Hint: Use exp and normalize
-            probs = None  # TODO: Implement softmax
+            # TODO 14：应用 softmax 得到概率
+            # 提示：取指数后归一化
+            probs = None  # TODO：实现 softmax
             self.y_probs.append(probs)
             
-            # TODO 15: Compute cross-entropy loss
-            # loss = -log(probability of correct class)
-            loss += None  # TODO: Implement
+            # TODO 15：计算交叉熵损失
+            # loss = -log(正确类别的概率)
+            loss += None  # TODO：实现
             
         return loss
     
     def backward(self):
         """
-        Backward pass (Backpropagation Through Time).
+        反向传播（随时间反向传播）。
         
-        Computes gradients for all parameters.
+        计算所有参数的梯度。
         
-        Returns:
-            dh_next: Gradient w.r.t. next hidden state
-            dC_next: Gradient w.r.t. next cell state
+        返回：
+            dh_next：从下一时间步传回的隐藏状态梯度
+            dC_next：从下一时间步传回的细胞状态梯度
         """
-        # Initialize gradients
+        # 初始化梯度
         dWf = np.zeros_like(self.Wf)
         dbf = np.zeros_like(self.bf)
         dWi = np.zeros_like(self.Wi)
@@ -180,64 +180,64 @@ class LSTMFromScratch:
         dh_next = np.zeros(self.hidden_size)
         dC_next = np.zeros(self.hidden_size)
         
-        # Backward through time
+        # 沿时间反向传播
         for t in reversed(range(len(self.inputs_cache))):
-            # TODO 16: Gradient from output layer
+            # TODO 16：来自输出层的梯度
             dy = self.y_probs[t].copy()
-            dy[targets[t]] -= 1  # Softmax + cross-entropy gradient
+            dy[targets[t]] -= 1  # softmax 与交叉熵结合后的梯度
             
-            # TODO 17: Gradient w.r.t. output weights
-            dWy += None  # TODO: Implement (outer product)
-            dby += None  # TODO: Implement
+            # TODO 17：输出权重的梯度
+            dWy += None  # TODO：实现（外积）
+            dby += None  # TODO：实现
             
-            # TODO 18: Gradient w.r.t. hidden state
-            dh = None  # TODO: From output layer + from next time step
+            # TODO 18：隐藏状态的梯度
+            dh = None  # TODO：来自输出层与下一时间步的梯度之和
             
-            # TODO 19: Gradient w.r.t. output gate
-            # dh = do ⊙ tanh(C_t) + (gradient from next step)
-            # Backprop through: h_t = o_t ⊙ tanh(C_t)
-            do = None  # TODO: Implement
+            # TODO 19：输出门的梯度
+            # dh = do ⊙ tanh(C_t) + （来自下一步的梯度）；原注释的导数符号不严谨，按链式法则核对
+            # 沿 h_t = o_t ⊙ tanh(C_t) 反向传播
+            do = None  # TODO：实现
             dbo += do
             
-            # TODO 20: Gradient w.r.t. cell state
-            # From: h_t = o_t ⊙ tanh(C_t)
-            dC = None  # TODO: Implement (include dC_next from next step)
+            # TODO 20：细胞状态的梯度
+            # 来自：h_t = o_t ⊙ tanh(C_t)
+            dC = None  # TODO：实现（包括下一步传回的 dC_next）
             
-            # TODO 21: Gradient w.r.t. cell candidate
-            # From: C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
-            dC_tilde = None  # TODO: Implement
+            # TODO 21：候选细胞状态的梯度
+            # 来自：C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
+            dC_tilde = None  # TODO：实现
             dbc += dC_tilde
             
-            # TODO 22: Gradient w.r.t. input gate
-            # From: C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
-            di = None  # TODO: Implement
+            # TODO 22：输入门的梯度
+            # 来自：C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
+            di = None  # TODO：实现
             dbi += di
             
-            # TODO 23: Gradient w.r.t. forget gate
-            # From: C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
-            df = None  # TODO: Implement
+            # TODO 23：遗忘门的梯度
+            # 来自：C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
+            df = None  # TODO：实现
             dbf += df
             
-            # TODO 24: Gradient w.r.t. previous cell state
-            # This is the KEY! Notice it's additive (not multiplicative)
-            dC_next = None  # TODO: Implement (gradient flows through forget gate)
+            # TODO 24：上一细胞状态的梯度
+            # 关键在于加性更新路径；其梯度仍要逐元素乘以遗忘门值
+            dC_next = None  # TODO：实现（梯度通过遗忘门传递）
             
-            # TODO 25: Backprop to weight matrices
+            # TODO 25：向权重矩阵反向传播
             concat = np.concatenate([self.h_states[t], self.inputs_cache[t]])
-            dWo += None  # TODO: Implement (outer product)
-            dWc += None  # TODO: Implement
-            dWi += None  # TODO: Implement
-            dWf += None  # TODO: Implement
+            dWo += None  # TODO：实现（外积）
+            dWc += None  # TODO：实现
+            dWi += None  # TODO：实现
+            dWf += None  # TODO：实现
             
-            # TODO 26: Gradient w.r.t. previous hidden state
-            dh_next = None  # TODO: Implement (from all 4 gates)
+            # TODO 26：上一隐藏状态的梯度
+            dh_next = None  # TODO：实现（汇总四组变换的贡献）
         
-        # TODO 27: Apply gradient clipping to prevent explosion
-        # Hint: np.clip(grad, -5, 5)
+        # TODO 27：使用梯度裁剪防止爆炸
+        # 提示：np.clip(grad, -5, 5)
         for dparam in [dWf, dbf, dWi, dbi, dWc, dbc, dWo, dbo, dWy, dby]:
             np.clip(dparam, -5, 5, out=dparam)
         
-        # Store gradients
+        # 存储梯度
         self.dWf, self.dbf = dWf, dbf
         self.dWi, self.dbi = dWi, dbi
         self.dWc, self.dbc = dWc, dbc
@@ -247,24 +247,24 @@ class LSTMFromScratch:
         return dh_next, dC_next
     
     def update_weights(self, learning_rate):
-        """Update weights using gradients."""
-        # TODO 28: Implement weight updates
+        """使用梯度更新权重。"""
+        # TODO 28：实现权重更新
         # w = w - learning_rate * dw
         self.Wf -= None  # TODO
         self.bf -= None  # TODO
-        # ... continue for all parameters
+        # ……继续更新所有参数
 
 
 # ============================================================================
-# Testing Your Implementation
+# 测试你的实现
 # ============================================================================
 
 def test_lstm():
-    """Test your LSTM on a simple sequence."""
-    print("Testing LSTM implementation...")
+    """在简单序列上测试 LSTM。"""
+    print('正在测试 LSTM 实现……')
     print("=" * 60)
     
-    # Simple data: learn to repeat "hello"
+    # 简单数据：学习重复 "hello"
     text = "hellohellohello"
     chars = sorted(list(set(text)))
     char_to_idx = {ch: i for i, ch in enumerate(chars)}
@@ -273,10 +273,10 @@ def test_lstm():
     vocab_size = len(chars)
     hidden_size = 10
     
-    # Create LSTM
+    # 创建 LSTM
     lstm = LSTMFromScratch(vocab_size, hidden_size, vocab_size)
     
-    # Training
+    # 训练
     seq_length = 5
     learning_rate = 0.01
     
@@ -284,40 +284,40 @@ def test_lstm():
     C = np.zeros(hidden_size)
     
     for iteration in range(100):
-        # Get random sequence
+        # 获取随机序列
         start = np.random.randint(0, len(text) - seq_length - 1)
         inputs = [char_to_idx[ch] for ch in text[start:start+seq_length]]
         targets = [char_to_idx[ch] for ch in text[start+1:start+seq_length+1]]
         
-        # Forward
+        # 前向传播
         loss = lstm.forward(inputs, targets, h, C)
         
-        # Backward
+        # 反向传播
         dh, dC = lstm.backward()
         
-        # Update
+        # 更新
         lstm.update_weights(learning_rate)
         
-        # Update states
+        # 更新状态
         h = lstm.h_states[-1].copy()
         C = lstm.C_states[-1].copy()
         
         if iteration % 20 == 0:
-            print(f"Iteration {iteration}: Loss = {loss:.4f}")
+            print(f"迭代 {iteration}：损失 = {loss:.4f}")
     
-    print("\nIf loss is decreasing, your implementation is likely correct!")
-    print("Compare with reference implementation in ../implementation.py")
+    print('\n如果损失下降，说明实现可能正确；仍需核对梯度。')
+    print('请与 ../implementation.py 中的参考实现比较')
 
 
 if __name__ == "__main__":
     print(__doc__)
     print("\n" + "=" * 60)
-    print("Instructions:")
-    print("1. Fill in all TODOs (search for 'TODO')")
-    print("2. Run this file to test your implementation")
-    print("3. Loss should decrease over iterations")
-    print("4. Check ../solutions/solution_01_lstm_implementation.py if stuck")
+    print('说明：')
+    print("1. 补全所有 TODO（搜索 'TODO'）")
+    print('2. 运行本文件，测试你的实现')
+    print('3. 损失应随迭代下降')
+    print('4. 遇到困难时，参阅 ../solutions/solution_01_lstm_implementation.py（原文路径）')
     print("=" * 60 + "\n")
     
-    # Uncomment when ready to test
+    # 准备好测试后取消注释
     # test_lstm()

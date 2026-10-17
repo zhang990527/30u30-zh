@@ -1,22 +1,22 @@
 """
-Day 5: MDL (Minimum Description Length) Principle - Minimal Training Script
+第 5 天：最小描述长度原理——最简训练脚本
 =============================================================================
 
-A complete, runnable demonstration of MDL-based model selection.
-Run this to see MDL find the true polynomial degree in noisy data!
+完整、可运行的基于 MDL 的模型选择演示。
+运行脚本，观察 MDL 能否从含噪数据中识别真实多项式次数！
 
-Usage:
+用法：
     python train_minimal.py
     python train_minimal.py --true-degree 3 --noise 1.5 --samples 100
 
-What this script does:
-1. Generates synthetic polynomial data with known true degree
-2. Applies MDL, AIC, and BIC to select the best model
-3. Shows which method correctly identifies the true structure
-4. Demonstrates the compression achieved
+此脚本的流程：
+1. 生成真实次数已知的合成多项式数据
+2. 应用 MDL、AIC、BIC 选择模型
+3. 展示哪些方法正确识别真实结构
+4. 展示估计的压缩效果
 
-The key insight: MDL finds the model that COMPRESSES data most,
-which usually means it found the TRUE underlying pattern.
+核心思想：MDL 寻找使数据总描述最短的模型，
+这可能帮助识别底层模式，但有限样本下不保证找到真实模型。
 """
 
 import numpy as np
@@ -25,7 +25,7 @@ from typing import Tuple
 
 
 # =============================================================================
-# CORE MDL FUNCTIONS (Minimal version - no dependencies)
+# 核心 MDL 函数（最简版本，无额外依赖）
 # =============================================================================
 
 def universal_code_length(n: int) -> float:
@@ -49,13 +49,13 @@ def universal_code_length(n: int) -> float:
 def two_part_mdl(x: np.ndarray, y: np.ndarray, degree: int,
                   precision: int = 32) -> Tuple[float, float, float]:
     """
-    Compute Two-Part MDL: L(Model) + L(Data|Model)
+    计算两段式 MDL：L(Model) + L(Data|Model)
     
-    Returns: (total, model_cost, data_cost)
+    返回：(total, model_cost, data_cost)
     """
     n = len(x)
     
-    # Fit polynomial
+    # 拟合多项式
     try:
         coeffs = np.polyfit(x, y, degree)
         poly = np.poly1d(coeffs)
@@ -63,16 +63,16 @@ def two_part_mdl(x: np.ndarray, y: np.ndarray, degree: int,
     except:
         return float('inf'), float('inf'), 0.0
     
-    # Model cost: degree + coefficients
+    # 模型代价：次数与系数
     model_cost = universal_code_length(degree + 1) + (degree + 1) * (precision + 1)
     
-    # Data cost: encode residuals with Gaussian model
+    # 数据代价：用高斯模型编码残差
     sigma = np.std(residuals) if np.std(residuals) > 1e-10 else 1e-10
     nll = 0.5 * n * np.log2(2 * np.pi * sigma**2) + \
           np.sum(residuals**2) / (2 * sigma**2 * np.log(2))
     
-    # Add cost to specify sigma
-    sigma_cost = precision + 10  # Simplified
+    # 加入描述 sigma 的代价
+    sigma_cost = precision + 10  # 简化形式
     data_cost = nll + sigma_cost
     
     return model_cost + data_cost, model_cost, data_cost
@@ -107,7 +107,7 @@ def bic(x: np.ndarray, y: np.ndarray, degree: int) -> float:
 
 
 # =============================================================================
-# MAIN TRAINING SCRIPT
+# 训练主脚本
 # =============================================================================
 
 def run_experiment(
@@ -119,29 +119,29 @@ def run_experiment(
     verbose: bool = True
 ):
     """
-    Run the MDL model selection experiment.
-    
-    Args:
-        true_degree: The actual polynomial degree (what we're trying to recover)
-        noise_std: Standard deviation of Gaussian noise
-        n_samples: Number of data points
-        max_degree: Maximum degree to consider
-        seed: Random seed for reproducibility
-        verbose: Whether to print detailed output
-    
-    Returns:
-        Dictionary with results
+    运行 MDL 模型选择实验。
+
+    参数：
+        true_degree：实际多项式次数，即希望恢复的目标
+        noise_std：高斯噪声标准差
+        n_samples：数据点数量
+        max_degree：考虑的最高次数
+        seed：用于复现的随机种子
+        verbose：是否打印详细输出
+
+    返回：
+        包含结果的字典
     """
     
     np.random.seed(seed)
     
     # =========================================================================
-    # Generate synthetic data
+    # 生成合成数据
     # =========================================================================
     
     x = np.linspace(0, 10, n_samples)
     
-    # Random coefficients for true polynomial
+    # 真实多项式的随机系数
     true_coeffs = np.random.randn(true_degree + 1) * 2
     poly_true = np.poly1d(true_coeffs)
     
@@ -162,7 +162,7 @@ def run_experiment(
         print(f"  Signal-to-Noise ratio: {np.std(y_true) / noise_std:.2f}")
     
     # =========================================================================
-    # Compute scores for all degrees
+    # 计算所有次数的得分
     # =========================================================================
     
     mdl_scores = {}
@@ -174,7 +174,7 @@ def run_experiment(
         aic_scores[deg] = aic(x, y, deg)
         bic_scores[deg] = bic(x, y, deg)
     
-    # Find best for each criterion
+    # 为各准则找到最佳次数
     mdl_best = min(mdl_scores, key=mdl_scores.get)
     aic_best = min(aic_scores, key=aic_scores.get)
     bic_best = min(bic_scores, key=bic_scores.get)
@@ -195,7 +195,7 @@ def run_experiment(
                   f"{bic_scores[deg]:<15.2f}{mdl_marker}{aic_marker}{bic_marker}")
     
     # =========================================================================
-    # Results summary
+    # 结果汇总
     # =========================================================================
     
     if verbose:
@@ -208,10 +208,10 @@ def run_experiment(
         print(f"  BIC selects:  {bic_best} {'[ok]' if bic_best == true_degree else '[FAIL]'}")
     
     # =========================================================================
-    # Compression analysis
+    # 压缩分析
     # =========================================================================
     
-    raw_bits = n_samples * 32  # 32 bits per float
+    raw_bits = n_samples * 32  # 每个浮点数 32 比特
     best_mdl_bits = mdl_scores[mdl_best]
     compression_ratio = raw_bits / best_mdl_bits
     
@@ -229,11 +229,11 @@ def run_experiment(
             print(f"  [NOTE] Data might be mostly noise")
     
     # =========================================================================
-    # Model details
+    # 模型详情
     # =========================================================================
     
     if verbose:
-        # Fit the winning model
+        # 拟合获选模型
         winner_coeffs = np.polyfit(x, y, mdl_best)
         
         print()
@@ -242,7 +242,7 @@ def run_experiment(
         print(f"  Selected degree: {mdl_best}")
         print(f"  Fitted coefficients: {np.round(winner_coeffs, 3)}")
         
-        # Prediction error
+        # 预测误差
         predictions = np.poly1d(winner_coeffs)(x)
         mse = np.mean((y - predictions)**2)
         rmse = np.sqrt(mse)
@@ -250,7 +250,7 @@ def run_experiment(
         print(f"  Training RMSE: {rmse:.4f}")
         print(f"  True noise std: {noise_std:.4f}")
         
-        # Compare to true
+        # 与真实次数比较
         if mdl_best == true_degree:
             print()
             print("  MDL correctly identified the true structure!")
@@ -291,7 +291,7 @@ def run_monte_carlo(
     max_degree: int = 10
 ):
     """
-    Run multiple trials to compare MDL, AIC, BIC reliability.
+    运行多次试验，比较 MDL、AIC、BIC 的可靠性。
     """
     print("\n" + "=" * 70)
     print("MONTE CARLO COMPARISON: MDL vs AIC vs BIC")
@@ -324,7 +324,7 @@ def run_monte_carlo(
     print(f"  AIC: {aic_correct}/{n_trials} ({100*aic_correct/n_trials:.1f}%)")
     print(f"  BIC: {bic_correct}/{n_trials} ({100*bic_correct/n_trials:.1f}%)")
     
-    # Find winner
+    # 找出获胜方法
     winner = 'MDL' if mdl_correct >= max(aic_correct, bic_correct) else \
              ('AIC' if aic_correct > bic_correct else 'BIC')
     

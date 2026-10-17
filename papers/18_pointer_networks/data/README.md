@@ -1,8 +1,9 @@
-# Day 18 Data: Pointer Networks
+# 第 18 天数据：指针网络
 
-This folder is used for:
-- Synthetic sorting sequences.
-- 2D coordinate sets for Travelling Salesperson Problem (TSP).
-- Planar point sets for Convex Hull calculation.
+本目录用于：
 
-Data is typically generated on-the-fly, but this directory can be used to cache large-scale combinatorial datasets.
+- 合成排序序列。
+- 旅行商问题（TSP）的二维坐标集合。
+- 凸包计算的平面点集。
+
+数据通常即时生成；也可以用此目录缓存较大规模的组合问题数据集。

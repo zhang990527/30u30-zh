@@ -1,25 +1,18 @@
-"""
-Complexodynamics: Coffee Mixing Simulation & Complexity Measurement
+"""复杂动力学：咖啡混合模拟与复杂性测量
 
-Implements the core ideas from Aaronson's "The First Law of Complexodynamics"
-blog post (2011):
+实现 Aaronson 2011 年博文《复杂动力学第一定律》（The First Law of Complexodynamics）中的核心思路：
+1. 咖啡—牛奶混合模拟（随机邻居交换的二维像素网格）
+2. 用 gzip 近似柯尔莫哥洛夫复杂度（KC）
+3. 粗粒化 KC（Sean Carroll 在博文评论中的建议）
+4. 两段式编码的精致复杂度（sophistication）代理量
+5. 多尺度复杂性分析（Luca Trevisan 的建议）
+6. 跟踪熵以作比较
 
-1. Coffee-milk mixing simulation (2D pixel grid with random neighbor swaps)
-2. Kolmogorov complexity approximation via gzip
-3. Coarse-grained KC (Sean Carroll's suggestion from blog comments)
-4. Two-part code sophistication proxy
-5. Multi-scale complexity analysis (Luca Trevisan's suggestion)
-6. Entropy tracking for comparison
+原仓库希望展示：熵单调增加，而复杂性（gzip 大小、粗粒化 KC 或精致复杂度代理量）在中间时刻达到峰值后下降，即 Aaronson 的“第一定律”猜想所描述的“隆起”。
+核验说明：gzip 原始大小未必出现隆起；全局像素熵在本模拟中守恒；平均局部熵也不保证每一步单调。代码是教学代理量，不是复杂熵的精确计算或猜想证明。
 
-The central demonstration: entropy increases monotonically, but complexity
-(measured by gzip size, coarse-grained KC, or sophistication proxy) peaks
-at intermediate times and then decreases -- the "hump" that Aaronson's
-"First Law" conjectures must occur.
-
-Reference: https://scottaaronson.blog/?p=762
-
-Author: 30u30 Project
-"""
+参考：https://scottaaronson.blog/?p=762
+作者：30u30 项目"""
 
 import numpy as np
 import gzip
@@ -28,53 +21,44 @@ import warnings
 
 
 # ============================================================================
-# SECTION 1: COFFEE-MILK GRID SIMULATION
+# 第 1 节：咖啡—牛奶网格模拟
 # ============================================================================
-# Aaronson describes a 2D array of black (coffee) and white (milk) pixels.
-# Initially separated (top half black, bottom half white). At each step,
-# pick a random adjacent coffee-milk pair and swap them. This is a discrete
-# random diffusion process.
+# 本章将 Aaronson 的模型描述为黑色（咖啡）和白色（牛奶）像素的二维数组。
+# 初始时两者分离（上半黑、下半白）；每一步
+# 随机选择一对相邻咖啡—牛奶像素并交换。这是离散
+# 随机扩散过程。
 # ============================================================================
 
 def create_initial_grid(size: int = 64) -> np.ndarray:
-    """
-    Create the initial coffee-milk grid: top half = 1 (coffee/black),
-    bottom half = 0 (milk/white).
+    """创建初始咖啡—牛奶网格：上半部分 = 1（咖啡/黑），下半部分 = 0（牛奶/白）。
 
-    Args:
-        size: Side length of the square grid.
-
-    Returns:
-        2D numpy array of shape (size, size) with values 0 or 1.
-    """
+参数：
+    size：方形网格的边长。
+返回：
+    形状为 (size, size)、取值为 0 或 1 的二维 NumPy 数组。"""
     grid = np.zeros((size, size), dtype=np.uint8)
-    grid[:size // 2, :] = 1  # top half is coffee
+    grid[:size // 2, :] = 1  # 上半部分为咖啡
     return grid
 
 
 def find_adjacent_pairs(grid: np.ndarray) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
-    """
-    Find all adjacent pairs where one cell is coffee (1) and the other is milk (0).
-    Considers horizontal and vertical neighbors only (4-connectivity).
-
-    This is the set of "swappable" pairs in Aaronson's model.
-
-    Args:
-        grid: 2D binary array.
-
-    Returns:
-        List of ((r1, c1), (r2, c2)) pairs.
-    """
+    """找出所有一格为咖啡（1）、另一格为牛奶（0）的相邻像素对。
+仅考虑水平与垂直邻居（四连通）。
+这是本章所述模型中“可交换”像素对的集合。
+参数：
+    grid：二维二值数组。
+返回：
+    ((r1, c1), (r2, c2)) 像素对列表。"""
     rows, cols = grid.shape
     pairs = []
 
-    # Horizontal neighbors
+    # 水平邻居
     for r in range(rows):
         for c in range(cols - 1):
             if grid[r, c] != grid[r, c + 1]:
                 pairs.append(((r, c), (r, c + 1)))
 
-    # Vertical neighbors
+    # 垂直邻居
     for r in range(rows - 1):
         for c in range(cols):
             if grid[r, c] != grid[r + 1, c]:
@@ -84,22 +68,16 @@ def find_adjacent_pairs(grid: np.ndarray) -> List[Tuple[Tuple[int, int], Tuple[i
 
 
 def swap_step(grid: np.ndarray) -> np.ndarray:
-    """
-    Perform one swap step: pick a random adjacent coffee-milk pair and swap.
+    """执行一次交换：随机选取一对相邻咖啡—牛奶像素并交换。
 
-    This is the elementary operation in Aaronson's coffee model. At each
-    time step, we uniformly pick from all adjacent pairs where one is
-    coffee and one is milk, then swap them.
-
-    Args:
-        grid: 2D binary array (modified in place).
-
-    Returns:
-        The grid (same object, modified in place).
-    """
+这是本章咖啡模型的基本操作。每个时间步从所有异色相邻像素对中均匀选择一对交换。
+参数：
+    grid：二维二值数组（原地修改）。
+返回：
+    网格（同一对象，已原地修改）。"""
     pairs = find_adjacent_pairs(grid)
     if len(pairs) == 0:
-        return grid  # fully mixed or fully separated (shouldn't happen)
+        return grid  # 无异色相邻对（原注释称完全混合或分离；实际均匀单色网格才会如此）
 
     idx = np.random.randint(len(pairs))
     (r1, c1), (r2, c2) = pairs[idx]
@@ -108,31 +86,25 @@ def swap_step(grid: np.ndarray) -> np.ndarray:
 
 
 def batch_swap(grid: np.ndarray, n_swaps: int = 100) -> np.ndarray:
-    """
-    Perform multiple swap steps at once for efficiency.
+    """为提高效率，批量尝试多次交换。
 
-    For large grids, doing one swap per "step" is very slow. This batches
-    n_swaps random swaps. We pick random adjacent pairs using a fast
-    stochastic method rather than enumerating all pairs each time.
+大网格每“步”只交换一次很慢。这里批量尝试 n_swaps 次随机交换，使用快速随机方法选相邻像素对，不在每次枚举全部像素对。
 
-    Note: this is an approximation of the exact model (some pairs may
-    overlap within a batch), but for large grids the effect is negligible.
-
-    Args:
-        grid: 2D binary array (modified in place).
-        n_swaps: Number of swaps per batch.
-
-    Returns:
-        The grid (same object, modified in place).
-    """
+原说明称这是精确模型的近似，批内像素对可能重叠，大网格影响可忽略。
+核验说明：本实现随机选择像素与方向并可能跳过，而非每次均匀选择异色边；时间参数化和边界行为均有差异，“影响可忽略”未作验证。
+参数：
+    grid：二维二值数组（原地修改）。
+    n_swaps：每批尝试交换的次数。
+返回：
+    网格（同一对象，已原地修改）。"""
     rows, cols = grid.shape
 
     for _ in range(n_swaps):
-        # Pick a random cell
+        # 随机选择一个像素
         r = np.random.randint(rows)
         c = np.random.randint(cols)
 
-        # Pick a random neighbor (up, down, left, right)
+        # 随机选择一个邻居方向（上、下、左、右）
         direction = np.random.randint(4)
         if direction == 0 and r > 0:
             nr, nc = r - 1, c
@@ -143,9 +115,9 @@ def batch_swap(grid: np.ndarray, n_swaps: int = 100) -> np.ndarray:
         elif direction == 3 and c < cols - 1:
             nr, nc = r, c + 1
         else:
-            continue  # boundary, skip
+            continue  # 越过边界，跳过
 
-        # Only swap if they differ (one coffee, one milk)
+        # 仅当两格不同（一格咖啡、一格牛奶）时交换
         if grid[r, c] != grid[nr, nc]:
             grid[r, c], grid[nr, nc] = grid[nr, nc], grid[r, c]
 
@@ -159,39 +131,34 @@ def run_simulation(
     measure_interval: int = 500,
     seed: Optional[int] = 42
 ) -> Dict:
-    """
-    Run the full coffee mixing simulation and measure complexity at intervals.
+    """运行完整咖啡混合模拟，按间隔测量复杂性。
 
-    This is the main experiment. We create a half-and-half grid, run random
-    swaps, and periodically measure:
-    - Shannon entropy (should increase monotonically)
-    - gzip complexity (should show the "hump")
-    - Coarse-grained KC at various scales
-    - Two-part code sophistication proxy
-
-    Args:
-        grid_size: Side length of grid.
-        n_steps: Total number of batch-swap steps.
-        swaps_per_step: How many individual swaps per step.
-        measure_interval: Measure complexity every this many steps.
-        seed: Random seed for reproducibility.
-
-    Returns:
-        Dict with keys:
-            'times': list of measurement times
-            'grids': list of grid snapshots
-            'entropy': list of entropy values
-            'gzip_complexity': list of gzip compressed sizes
-            'coarse_kc': dict of {block_size: list of coarse KC values}
-            'two_part': list of (part1, part2) tuples
-            'fraction_mixed': list of fraction of boundary pixels
-    """
+主实验创建一半咖啡、一半牛奶的网格，运行随机交换，定期测量：
+- 香农熵（原说明预期单调增加；这里的全局像素熵实际守恒）
+- gzip 复杂度（原说明预期“隆起”；不保证出现）
+- 各尺度的粗粒化 KC
+- 两段式编码的精致复杂度代理量
+参数：
+    grid_size：网格边长。
+    n_steps：批量交换总步数。
+    swaps_per_step：每步尝试的单次交换数。
+    measure_interval：每隔多少步测量一次复杂性。
+    seed：用于复现的随机种子。
+返回：
+    字典，包含：
+        'times'：测量时刻列表
+        'grids'：网格快照列表
+        'entropy'：熵值列表
+        'gzip_complexity'：gzip 压缩大小列表
+        'coarse_kc'：{block_size: 粗粒化 KC 值列表} 字典
+        'two_part'：(part1, part2) 元组列表
+        'fraction_mixed'：相邻异色像素对比例列表"""
     if seed is not None:
         np.random.seed(seed)
 
     grid = create_initial_grid(grid_size)
 
-    # Storage
+    # 存储数据
     times = []
     grids = []
     entropy_vals = []
@@ -200,24 +167,24 @@ def run_simulation(
     two_part_vals = []
     fraction_mixed_vals = []
 
-    # Measurement function
+    # 测量函数
     def measure(step):
         times.append(step * swaps_per_step)
         grids.append(grid.copy())
         entropy_vals.append(grid_entropy(grid))
         gzip_vals.append(gzip_complexity(grid))
         for bs in coarse_kc_vals:
-            if grid_size // bs >= 4:  # need at least 4x4 coarse grid
+            if grid_size // bs >= 4:  # 至少需要 4x4 的粗网格
                 coarse_kc_vals[bs].append(coarse_grained_kc(grid, bs))
             else:
                 coarse_kc_vals[bs].append(0)
         two_part_vals.append(two_part_code(grid, block_size=4))
         fraction_mixed_vals.append(boundary_fraction(grid))
 
-    # Initial measurement
+    # 初始测量
     measure(0)
 
-    # Run simulation
+    # 运行模拟
     for step in range(1, n_steps + 1):
         batch_swap(grid, n_swaps=swaps_per_step)
         if step % measure_interval == 0:
@@ -238,65 +205,51 @@ def run_simulation(
 
 
 # ============================================================================
-# SECTION 2: KOLMOGOROV COMPLEXITY APPROXIMATION VIA GZIP
+# 第 2 节：用 gzip 近似柯尔莫哥洛夫复杂度
 # ============================================================================
-# KC is uncomputable, but gzip gives a useful upper bound. Aaronson
-# discusses this approach and Lauren Ouellette used it in her experiments
-# (which became the Day 7 paper).
+# KC 不可计算，但 gzip 加固定解压开销可给出描述长度上界。Aaronson
+# 讨论过这一思路，Lauren Ouellette 曾在实验中使用
+# （后来发展为第 7 天的论文）。
 #
-# For our 2D grid, we serialize to bytes and compress. The compressed
-# size tracks the structure in the grid:
-# - All-one-color: very compressible (low KC)
-# - Random noise: incompressible (high KC)
-# - Structured tendrils: intermediate (moderate KC, but high sophistication)
+# 对二维网格，将像素序列化为字节再压缩。压缩后的
+# 大小反映网格中可被压缩器识别的结构：
+# - 单一颜色：高度可压缩（KC 低）
+# - 随机噪声：难以压缩（KC 高）
+# - 有结构的卷须：居中（中等 KC，但预期精致复杂度高）
 # ============================================================================
 
 def gzip_complexity(grid: np.ndarray) -> int:
-    """
-    Approximate Kolmogorov complexity of a grid using gzip compressed size.
-
-    Args:
-        grid: 2D binary numpy array.
-
-    Returns:
-        Compressed size in bytes.
-    """
+    """使用 gzip 压缩大小近似网格的柯尔莫哥洛夫复杂度。
+参数：
+    grid：二维二值 NumPy 数组。
+返回：
+    压缩后的字节数。"""
     data = grid.astype(np.uint8).tobytes()
     return len(gzip.compress(data, compresslevel=9))
 
 
 def gzip_complexity_bytes(data: bytes) -> int:
-    """
-    gzip complexity of raw bytes.
-
-    Args:
-        data: Raw byte string.
-
-    Returns:
-        Compressed size in bytes.
-    """
+    """原始字节的 gzip 复杂度。
+参数：
+    data：原始字节串。
+返回：
+    压缩后的字节数。"""
     return len(gzip.compress(data, compresslevel=9))
 
 
 def robust_gzip_complexity(grid: np.ndarray) -> float:
-    """
-    More robust KC estimate: average gzip size over row-major and
-    column-major serializations.
+    """较稳健的 KC 估计：对行优先和列优先序列化的 gzip 大小求平均。
 
-    gzip is sensitive to serialization order because it uses LZ77
-    (sliding window). Averaging over orderings reduces this artifact.
-
-    Args:
-        grid: 2D binary numpy array.
-
-    Returns:
-        Average compressed size in bytes.
-    """
-    # Row-major (default)
+gzip 使用 LZ77（滑动窗口），对序列化顺序敏感。对不同顺序求平均有助于减轻这一伪影。
+参数：
+    grid：二维二值 NumPy 数组。
+返回：
+    平均压缩大小，单位为字节。"""
+    # 行优先（默认）
     data_row = grid.astype(np.uint8).tobytes()
     size_row = len(gzip.compress(data_row, compresslevel=9))
 
-    # Column-major
+    # 列优先
     data_col = grid.T.astype(np.uint8).tobytes()
     size_col = len(gzip.compress(data_col, compresslevel=9))
 
@@ -304,28 +257,24 @@ def robust_gzip_complexity(grid: np.ndarray) -> float:
 
 
 # ============================================================================
-# SECTION 3: COARSE-GRAINED KC (SEAN CARROLL'S SUGGESTION)
+# 第 3 节：粗粒化 KC（Sean Carroll 的建议）
 # ============================================================================
-# Carroll proposed in blog comments (#6-7): blur/coarse-grain the bitmap
-# at some scale, then measure KC of the coarse-grained version. This
-# captures macroscopic structure rather than pixel-level noise.
+# Carroll 在博文评论（#6-7）建议：在某个尺度模糊或粗粒化位图，
+# 再测量粗粒化版本的 KC。这将
+# 捕捉宏观结构，而非像素级噪声。
 #
-# The idea: at the right coarse-graining scale, the tendril boundaries
-# create structure that is hard to compress. Too fine = noise dominates.
-# Too coarse = all structure is blurred away.
+# 思路：在合适粗粒化尺度，卷须边界
+# 形成难以压缩的结构。尺度过细时，噪声主导；
+# 尺度过粗时，所有结构都会被抹去。
 # ============================================================================
 
 def coarse_grain(grid: np.ndarray, block_size: int) -> np.ndarray:
-    """
-    Coarse-grain a grid by averaging over block_size x block_size blocks.
-
-    Args:
-        grid: 2D array.
-        block_size: Size of blocks to average over.
-
-    Returns:
-        Coarse-grained 2D array (smaller than input).
-    """
+    """对 block_size x block_size 块求平均，以粗粒化网格。
+参数：
+    grid：二维数组。
+    block_size：求平均的块大小。
+返回：
+    粗粒化二维数组（小于输入）。"""
     h, w = grid.shape
     h_new = h // block_size
     w_new = w // block_size
@@ -341,107 +290,94 @@ def coarse_grain(grid: np.ndarray, block_size: int) -> np.ndarray:
 
 
 def coarse_grained_kc(grid: np.ndarray, block_size: int) -> int:
-    """
-    KC of a coarse-grained version of the grid.
-
-    Steps:
-    1. Average over block_size x block_size blocks
-    2. Quantize to uint8 (0-255)
-    3. Compress with gzip
-
-    Args:
-        grid: 2D binary array.
-        block_size: Coarse-graining scale.
-
-    Returns:
-        Compressed size of the coarse-grained representation.
-    """
+    """网格粗粒化版本的 KC 近似。
+步骤：
+1. 对 block_size x block_size 块求平均
+2. 量化为 uint8（0-255）
+3. 用 gzip 压缩
+参数：
+    grid：二维二值数组。
+    block_size：粗粒化尺度。
+返回：
+    粗粒化表示的压缩大小。"""
     coarse = coarse_grain(grid, block_size)
-    # Quantize to 256 levels
+    # 量化为 256 个等级
     quantized = (coarse * 255).astype(np.uint8)
     return gzip_complexity_bytes(quantized.tobytes())
 
 
 def multiscale_kc(grid: np.ndarray, scales: Optional[List[int]] = None) -> Dict[int, int]:
-    """
-    Compute KC at multiple coarse-graining scales (Trevisan's idea).
+    """计算多个粗粒化尺度的 KC（Trevisan 的想法）。
 
-    Trevisan (blog comment #17) proposed tracking KC at each scale to get
-    a 2D picture of where complexity lives (scale x time).
-
-    Args:
-        grid: 2D binary array.
-        scales: List of block sizes. Defaults to powers of 2.
-
-    Returns:
-        Dict mapping scale -> compressed size.
-    """
+Trevisan（博文评论 #17）建议随时间跟踪各尺度 KC，得到复杂性所在位置的二维图景（尺度 x 时间）。
+参数：
+    grid：二维二值数组。
+    scales：块大小列表，默认采用 2 的幂。
+返回：
+    尺度到压缩大小的映射字典。"""
     grid_size = min(grid.shape)
     if scales is None:
         scales = [2**k for k in range(1, int(np.log2(grid_size)))]
 
     result = {}
     for s in scales:
-        if grid_size // s >= 2:  # need at least 2x2 coarse grid
+        if grid_size // s >= 2:  # 至少需要 2x2 的粗网格
             result[s] = coarse_grained_kc(grid, s)
     return result
 
 
 # ============================================================================
-# SECTION 4: TWO-PART CODE (SOPHISTICATION PROXY)
+# 第 4 节：两段式编码（精致复杂度代理量）
 # ============================================================================
-# Sophistication (Koppel 1988, Gacs-Tromp-Vitanyi) measures the complexity
-# of the "model" part of a two-part code:
+# 精致复杂度（Koppel，1988；Gács–Tromp–Vitányi）衡量
+# 两段式编码中“模型”部分的复杂度：
 #
-#   Part 1: Description of a set S containing x  (the "model")
-#   Part 2: Index of x within S                   (the "data given model")
+#   第一部分：包含 x 的集合 S 的描述（“模型”）
+#   第二部分：x 在 S 中的索引（“给定模型后的数据”）
 #
-# Sophistication = K(S), the complexity of the model.
+# 精致复杂度 = K(S)，即模型的复杂度（非正式概括）。
 #
-# We approximate this by:
-#   Part 1 = coarse-grained version of the grid (the structural model)
-#   Part 2 = residual (exact grid minus coarse reconstruction)
+# 使用如下方法近似：
+#   第一部分 = 网格的粗粒化版本（结构模型）
+#   第二部分 = 残差（精确网格减去粗粒度重建）
 #
-# Part 1 size should show the characteristic hump: low at t=0 (trivial
-# model), high at intermediate times (complex tendril boundaries),
-# low at equilibrium (trivial uniform model).
+# 第一部分大小被预期呈现特征性隆起：t=0 时低（模型
+# 简单），中间时刻高（卷须边界复杂），
+# 平衡时低（简单均匀模型）；具体代理量需实测。
 # ============================================================================
 
 def two_part_code(
     grid: np.ndarray,
     block_size: int = 4
 ) -> Tuple[int, int]:
-    """
-    Compute two-part code sizes for a grid.
+    """计算网格的两段式编码大小。
 
-    Part 1 (model/sophistication): coarse-grained description
-    Part 2 (data given model): residual to reconstruct exact grid
-
-    Args:
-        grid: 2D binary array.
-        block_size: Coarse-graining scale for the model.
-
-    Returns:
-        (part1_size, part2_size) in bytes.
-    """
+第一部分（模型/精致复杂度）：粗粒度描述。
+第二部分（给定模型后的数据）：重建精确网格的残差。
+核验说明：残差被量化，因此本实现并未提供经过验证的无损编码和解码器。
+参数：
+    grid：二维二值数组。
+    block_size：模型的粗粒化尺度。
+返回：
+    (part1_size, part2_size)，单位为字节。"""
     h, w = grid.shape
     grid_float = grid.astype(np.float64)
 
-    # Part 1: coarse model
+    # 第一部分：粗粒度模型
     coarse = coarse_grain(grid_float, block_size)
     model_quantized = (coarse * 255).astype(np.uint8)
     part1 = gzip_complexity_bytes(model_quantized.tobytes())
 
-    # Reconstruct from coarse model
+    # 从粗粒度模型重建
     reconstructed = np.repeat(
         np.repeat(coarse, block_size, axis=0),
         block_size, axis=1
     )[:h, :w]
 
-    # Part 2: residual
-    # Scale residual to [0, 255] range for compression
+    # 第二部分：残差
+    # 将残差缩放到 [0, 255] 范围后压缩
     residual = grid_float - reconstructed
-    # residual is in [-1, 1], map to [0, 255]
+    # 残差位于 [-1, 1]，映射到 [0, 255]
     residual_uint8 = ((residual + 1.0) * 127.5).astype(np.uint8)
     part2 = gzip_complexity_bytes(residual_uint8.tobytes())
 
@@ -449,48 +385,39 @@ def two_part_code(
 
 
 def sophistication_proxy(grid: np.ndarray, block_size: int = 4) -> int:
-    """
-    Sophistication proxy = Part 1 of the two-part code.
-
-    Args:
-        grid: 2D binary array.
-        block_size: Coarse-graining scale.
-
-    Returns:
-        Part 1 size in bytes (the "model" complexity).
-    """
+    """精致复杂度代理量 = 两段式编码的第一部分。
+参数：
+    grid：二维二值数组。
+    block_size：粗粒化尺度。
+返回：
+    第一部分大小，单位为字节（“模型”复杂度）。"""
     part1, _ = two_part_code(grid, block_size)
     return part1
 
 
 # ============================================================================
-# SECTION 5: ENTROPY AND MIXING MEASURES
+# 第 5 节：熵与混合度量
 # ============================================================================
-# Shannon entropy of the pixel distribution. For a binary grid, this is
-# just H(p) = -p*log(p) - (1-p)*log(1-p) where p is the fraction of 1s.
+# 像素取值分布的香农熵。对二值网格，其表达式为
+# H(p) = -p*log(p) - (1-p)*log(1-p)，p 是 1 的比例。
 #
-# For the coffee simulation, entropy tracks the fraction mixed. It starts
-# at 1.0 (half black, half white = maximum entropy for binary) and stays
-# near 1.0 throughout (the fraction of 1s is conserved by swaps).
+# 在咖啡模拟中，全局熵不能跟踪混合程度。它初始为
+# 1.0（一半黑、一半白，二值分布的最大熵），并始终
+# 接近 1.0（交换守恒 1 的比例）。
 #
-# The more useful entropy measure is the LOCAL entropy: compute entropy
-# in sliding windows. This tracks how uniformly mixed each neighborhood is.
+# 更有用的是局部熵：在滑动窗口中计算熵，
+# 跟踪各邻域混合的均匀程度。
 # ============================================================================
 
 def grid_entropy(grid: np.ndarray) -> float:
-    """
-    Shannon entropy of the overall pixel distribution.
+    """整体像素取值分布的香农熵。
 
-    For a binary grid, H = -p*log2(p) - (1-p)*log2(1-p).
-    Note: this is always near 1.0 for the coffee simulation because
-    swaps conserve the total number of coffee/milk pixels.
-
-    Args:
-        grid: 2D binary array.
-
-    Returns:
-        Shannon entropy in bits.
-    """
+对二值网格，H = -p*log2(p) - (1-p)*log2(1-p)。
+注意：咖啡模拟中它始终接近 1.0，因为交换守恒咖啡/牛奶像素总数；偶数边长的初始半半网格中它恒为 1.0。
+参数：
+    grid：二维二值数组。
+返回：
+    香农熵，单位为比特。"""
     p = grid.mean()
     if p == 0.0 or p == 1.0:
         return 0.0
@@ -498,22 +425,17 @@ def grid_entropy(grid: np.ndarray) -> float:
 
 
 def local_entropy(grid: np.ndarray, window_size: int = 8) -> np.ndarray:
-    """
-    Compute entropy in sliding windows across the grid.
+    """用滑动窗口计算网格的局部熵。
 
-    This is more informative than global entropy for tracking mixing.
-    Initially: some windows are all-0, some all-1 (entropy = 0 in each).
-    At equilibrium: all windows are ~50/50 (entropy = 1.0 in each).
-
-    The AVERAGE local entropy increases monotonically with mixing.
-
-    Args:
-        grid: 2D binary array.
-        window_size: Side length of the sliding window.
-
-    Returns:
-        2D array of local entropy values.
-    """
+用于跟踪混合时，比全局熵提供更多信息。
+初期：部分窗口全 0 或全 1（各自熵为 0），跨边界窗口除外。
+平衡时：窗口内约为 50/50（熵接近 1.0）。
+原说明称平均局部熵随混合单调增加；核验说明：它可以波动，不保证每步单调。
+参数：
+    grid：二维二值数组。
+    window_size：滑动窗口边长。
+返回：
+    局部熵值的二维数组。"""
     h, w = grid.shape
     h_out = h - window_size + 1
     w_out = w - window_size + 1
@@ -532,47 +454,36 @@ def local_entropy(grid: np.ndarray, window_size: int = 8) -> np.ndarray:
 
 
 def mean_local_entropy(grid: np.ndarray, window_size: int = 8) -> float:
-    """
-    Average local entropy across the grid. This is a better monotone
-    measure than global entropy for tracking the mixing process.
-
-    Args:
-        grid: 2D binary array.
-        window_size: Side length of sliding window.
-
-    Returns:
-        Mean local entropy.
-    """
+    """全网格的平均局部熵。用于跟踪混合时通常比全局熵更有用，但不保证逐步单调。
+参数：
+    grid：二维二值数组。
+    window_size：滑动窗口边长。
+返回：
+    平均局部熵。"""
     le = local_entropy(grid, window_size)
     return le.mean()
 
 
 def boundary_fraction(grid: np.ndarray) -> float:
-    """
-    Fraction of adjacent pixel pairs that are different (one coffee, one milk).
+    """异色相邻像素对（一格咖啡、一格牛奶）所占比例。
 
-    This tracks the "interface length" between coffee and milk regions.
-    Starts low (single horizontal boundary), peaks during mixing
-    (fractal-like tendrils), then decreases as mixing approaches uniformity.
+它跟踪咖啡区和牛奶区的“界面长度”。原说明称初期低（单一水平边界），混合时达到峰值（类分形卷须），均匀时降低。
+核验说明：微观二值随机网格仍有大量异色边，边界比例未必在后期下降。
 
-    Note: this is related to but not the same as complexity. A checkerboard
-    pattern has maximum boundary fraction but low complexity.
-
-    Args:
-        grid: 2D binary array.
-
-    Returns:
-        Fraction of boundary pairs (0 to 1).
-    """
+注意：它与复杂性有关，但不同；棋盘格边界比例最大，描述却简单。
+参数：
+    grid：二维二值数组。
+返回：
+    边界像素对比例（0 到 1）。"""
     h, w = grid.shape
     total_pairs = 0
     diff_pairs = 0
 
-    # Horizontal pairs
+    # 水平像素对
     h_diff = np.sum(grid[:, :-1] != grid[:, 1:])
     h_total = h * (w - 1)
 
-    # Vertical pairs
+    # 垂直像素对
     v_diff = np.sum(grid[:-1, :] != grid[1:, :])
     v_total = (h - 1) * w
 
@@ -580,30 +491,26 @@ def boundary_fraction(grid: np.ndarray) -> float:
 
 
 # ============================================================================
-# SECTION 6: NORMALIZED COMPLEXITY MEASURES
+# 第 6 节：归一化复杂性度量
 # ============================================================================
-# For comparison, it helps to normalize complexity measures to [0, 1].
-# We define:
+# 为便于比较，将复杂性度量归一化到 [0, 1]。
+# 定义：
 #   normalized_kc = (gzip_size - min_gzip_size) / (max_gzip_size - min_gzip_size)
-# where min is the gzip size of an all-zeros grid and max is a random grid.
+# 其中 min 为全零网格的 gzip 大小，max 为随机网格的参考大小。
 # ============================================================================
 
 def compute_normalization_bounds(grid_size: int, n_samples: int = 5) -> Dict:
-    """
-    Compute gzip size bounds for normalization.
-
-    Args:
-        grid_size: Side length of grid.
-        n_samples: Number of random grids to average over.
-
-    Returns:
-        Dict with 'min_gzip' (all-zeros) and 'max_gzip' (random average).
-    """
-    # Minimum: all-zeros grid
+    """计算用于归一化的 gzip 大小参考界。
+参数：
+    grid_size：网格边长。
+    n_samples：用于平均的随机网格数。
+返回：
+    包含 'min_gzip'（全零）和 'max_gzip'（随机平均值）的字典。"""
+    # 参考最小值：全零网格
     zeros = np.zeros((grid_size, grid_size), dtype=np.uint8)
     min_gzip = gzip_complexity(zeros)
 
-    # Maximum: average over random grids
+    # 参考最大值：对随机网格求平均
     max_gzips = []
     for _ in range(n_samples):
         rand_grid = np.random.randint(0, 2, size=(grid_size, grid_size), dtype=np.uint8)
@@ -617,16 +524,12 @@ def normalize_complexity(
     values: List[float],
     bounds: Dict
 ) -> List[float]:
-    """
-    Normalize complexity values to [0, 1] using precomputed bounds.
-
-    Args:
-        values: Raw complexity values.
-        bounds: Dict with 'min_gzip' and 'max_gzip'.
-
-    Returns:
-        Normalized values.
-    """
+    """用预计算的参考界将复杂性值归一化到 [0, 1]。
+参数：
+    values：原始复杂性值。
+    bounds：包含 'min_gzip' 和 'max_gzip' 的字典。
+返回：
+    归一化后的值。"""
     lo = bounds['min_gzip']
     hi = bounds['max_gzip']
     if hi == lo:
@@ -635,107 +538,92 @@ def normalize_complexity(
 
 
 # ============================================================================
-# SECTION 7: UTILITY FUNCTIONS
+# 第 7 节：实用函数
 # ============================================================================
 
 def grid_to_image(grid: np.ndarray) -> np.ndarray:
-    """
-    Convert binary grid to grayscale image (0 = white, 1 = black).
-
-    Args:
-        grid: 2D binary array.
-
-    Returns:
-        2D array suitable for matplotlib imshow (0.0=white, 1.0=black).
-    """
+    """将二值网格转换为灰度图像（语义约定：0 = 白、1 = 黑）。
+参数：
+    grid：二维二值数组。
+返回：
+    适合 matplotlib imshow 的二维数组（0.0=白、1.0=黑是本函数的语义说明；实际颜色还取决于色图）。"""
     return grid.astype(np.float64)
 
 
 def save_grid(grid: np.ndarray, filepath: str) -> None:
-    """
-    Save grid as a NumPy binary file.
-
-    Args:
-        grid: 2D binary array.
-        filepath: Output path.
-    """
+    """将网格保存为 NumPy 二进制文件。
+参数：
+    grid：二维二值数组。
+    filepath：输出路径。"""
     np.save(filepath, grid)
 
 
 def load_grid(filepath: str) -> np.ndarray:
-    """
-    Load grid from a NumPy binary file.
-
-    Args:
-        filepath: Input path.
-
-    Returns:
-        2D binary array.
-    """
+    """从 NumPy 二进制文件加载网格。
+参数：
+    filepath：输入路径。
+返回：
+    二维二值数组。"""
     return np.load(filepath)
 
 
 def summarize_results(results: Dict) -> str:
-    """
-    Print a summary of simulation results.
-
-    Args:
-        results: Dict returned by run_simulation().
-
-    Returns:
-        Summary string.
-    """
+    """输出模拟结果摘要。
+参数：
+    results：run_simulation() 返回的字典。
+返回：
+    摘要字符串。"""
     times = results['times']
     gzip_vals = results['gzip_complexity']
     entropy_vals = results['entropy']
 
-    # Find peak complexity
+    # 寻找复杂性峰值
     peak_idx = np.argmax(gzip_vals)
     peak_time = times[peak_idx]
     peak_val = gzip_vals[peak_idx]
 
     lines = [
         "=" * 60,
-        "COFFEE MIXING SIMULATION RESULTS",
+        '咖啡混合模拟结果',
         "=" * 60,
-        f"Grid size: {results['grid_size']}x{results['grid_size']}",
-        f"Total swaps: {results['n_steps'] * results['swaps_per_step']:,}",
-        f"Measurements: {len(times)}",
+        f"网格大小：{results['grid_size']}x{results['grid_size']}",
+        f"交换尝试总次数：{results['n_steps'] * results['swaps_per_step']:,}",
+        f"测量次数：{len(times)}",
         "",
-        "COMPLEXITY (gzip compressed size):",
-        f"  Initial:     {gzip_vals[0]} bytes",
-        f"  Peak:        {peak_val} bytes (at swap {peak_time:,})",
-        f"  Final:       {gzip_vals[-1]} bytes",
-        f"  Peak/Initial ratio: {peak_val / max(gzip_vals[0], 1):.2f}x",
+        '复杂性（gzip 压缩大小）：',
+        f"  初值：       {gzip_vals[0]} 字节",
+        f"  峰值：       {peak_val} 字节（交换尝试次数为 {peak_time:,})",
+        f"  终值：       {gzip_vals[-1]} 字节",
+        f"  峰值/初值：{peak_val / max(gzip_vals[0], 1):.2f}x",
         "",
-        "ENTROPY (Shannon, global):",
-        f"  Initial: {entropy_vals[0]:.4f} bits",
-        f"  Final:   {entropy_vals[-1]:.4f} bits",
+        '熵（全局香农熵）：',
+        f"  初值：{entropy_vals[0]:.4f} 比特",
+        f"  终值：{entropy_vals[-1]:.4f} 比特",
         "",
-        "THE HUMP:",
-        f"  Complexity rises from {gzip_vals[0]} to {peak_val} bytes",
-        f"  then falls to {gzip_vals[-1]} bytes.",
+        '隆起概况（是否成立须看下方判定）：',
+        f"  复杂性从 {gzip_vals[0]} 上升至 {peak_val} 字节",
+        f"  随后变为 {gzip_vals[-1]} 字节。",
     ]
 
     if peak_val > gzip_vals[0] and peak_val > gzip_vals[-1]:
-        lines.append("  [OK] Characteristic complexity hump observed.")
+        lines.append('  [OK] 观察到特征性复杂性隆起。')
     else:
-        lines.append("  [NOTE] Hump not clearly visible. Try more steps or larger grid.")
+        lines.append('  [NOTE] 隆起不明显。可尝试更多步或更大网格；代理量本身不保证出现峰值。')
 
     lines.append("=" * 60)
     return "\n".join(lines)
 
 
 # ============================================================================
-# MAIN: Run a quick demo if executed directly
+# 主程序：直接执行时运行小型演示
 # ============================================================================
 
 if __name__ == "__main__":
-    print("Coffee Mixing Simulation")
-    print("Based on Aaronson's 'The First Law of Complexodynamics' (2011)")
+    print('咖啡混合模拟')
+    print('根据 Aaronson《复杂动力学第一定律》（2011）编写的教学模拟')
     print()
 
-    # Small demo
+    # 小型演示
     results = run_simulation(
         grid_size=32,
         n_steps=5000,
@@ -746,6 +634,6 @@ if __name__ == "__main__":
 
     print(summarize_results(results))
 
-    # Show a few grid snapshots
-    print("\nGrid snapshots saved to data/ directory")
-    print("Run train_minimal.py for full simulation with plots.")
+    # 展示几个网格快照
+    print('\n网格快照已保存至 data/ 目录')
+    print('运行 train_minimal.py 可执行完整模拟并绘图。')

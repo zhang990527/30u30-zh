@@ -1,8 +1,8 @@
 """
-Solution 3: Convex Hull Data Formatting
-Standardized for Day 18 of 30u30
+解答 3：凸包数据格式化
+按 30u30 第 18 天的格式组织
 
-Based on: Vinyals et al. (2015) - "Pointer Networks"
+依据：Vinyals 等（2015）《指针网络》（Pointer Networks）
 """
 
 import numpy as np
@@ -10,8 +10,8 @@ from scipy.spatial import ConvexHull
 
 def get_convex_hull_pointers(points):
     """
-    Calculate the indices of points forming the convex hull.
+    计算构成凸包的点的索引。
     """
-    # Simply use scipy's optimized ConvexHull which returns vertex indices in order.
+    # 直接用 scipy 优化的 ConvexHull，按顺序返回顶点索引。
     hull = ConvexHull(points)
     return hull.vertices.tolist()

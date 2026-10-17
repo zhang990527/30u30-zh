@@ -1,148 +1,148 @@
-# Day 15 Cheat Sheet: Bahdanau Attention
+# 第 15 天速查表：Bahdanau 注意力
 
-Quick reference for Neural Machine Translation with Additive Attention.
-
----
-
-## The Big Idea (30 seconds)
-
-Bahdanau Attention (2014) solves the **bottleneck problem** in sequence-to-sequence (seq2seq) models. Traditional models compress the entire input into a single fixed-length vector, which fails for long sequences. Attention allows the decoder to "look back" at all encoder hidden states at each step, computing a context vector that dynamically focuses on relevant parts of the source sentence.
+带加性注意力的神经机器翻译速查。
 
 ---
 
-## Quick Start
+## 核心思想（30 秒）
+
+Bahdanau 注意力（2014）处理序列到序列（seq2seq）模型的**瓶颈问题**。传统模型将整个输入压缩为单个固定长度向量，对长序列效果不佳。注意力允许解码器在每一步“回看”所有编码器隐藏状态，计算上下文向量，动态关注源句子中的相关部分。
+
+---
+
+## 快速开始
 
 ```bash
-# Train on sequence reversal task
+# 在序列反转任务上训练
 python train_minimal.py --task reversal --epochs 20
 
-# Train with custom hidden size
+# 使用自定义隐藏维度训练
 python train_minimal.py --hidden_size 256 --num_layers 2 --lr 0.001
 
-# Visualize attention for a specific sequence
+# 可视化特定序列的注意力
 python visualization.py --demo
 ```
 
 ---
 
-## Key Hyperparameters
+## 关键超参数
 
-| Parameter | Typical Range | What It Does | Tips |
+| 参数 | 典型范围 | 作用 | 建议 |
 |-----------|--------------|--------------|------|
-| `hidden_size` | 128-512 | Size of GRU hidden states | Bigger captures longer sequences |
-| `attention_dim` | 64-256 | Hidden layer of alignment MLP | Should be similar to hidden_size |
-| `learning_rate`| 0.001-0.0001 | Adam optimizer step size | Reduce if loss is unstable |
-| `teacher_forcing`| 0.5-1.0 | Ratio of using ground truth | Start at 1.0 for faster convergence |
+| `hidden_size` | 128-512 | GRU 隐藏状态的维度 | 较大维度有助于捕捉较长序列 |
+| `attention_dim` | 64-256 | 对齐 MLP 的隐藏层维度 | 可取与 hidden_size 相近的值 |
+| `learning_rate`| 0.001-0.0001 | Adam 优化器的步长 | 损失不稳定时减小 |
+| `teacher_forcing`| 0.5-1.0 | 使用真实目标的比例 | 可从 1.0 开始以加快收敛 |
 
 ---
 
-## Common Issues & Fixes
+## 常见问题与处理方法
 
-### Loss is NaN or explosions
+### 损失为 NaN 或出现爆炸
 ```python
-# Fix: Implement gradient clipping
+# 处理：实现梯度裁剪
 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-# Also: Ensure padding mask uses -1e9/inf BEFORE softmax
+# 同时确保在 softmax 前对填充位置使用 -1e9 或负无穷进行屏蔽
 ```
 
-### Attention weights are uniform
+### 注意力权重均匀分布
 ```python
-# Fix: Train longer. Attention is learned and takes time to focus.
-# Or: Increase hidden_size if the task is too complex.
+# 处理：延长训练。注意力需要学习，形成聚焦需要时间。
+# 或者：任务过于复杂时增大 hidden_size。
 ```
 
-### Model ignores end-of-sequence
+### 模型忽略序列结束标记
 ```python
-# Fix: Ensure <eos> token is included in target during training
-# And: Stop generation in translate() when <eos> is sampled
+# 处理：确保训练目标包含 <eos> 词元
+# 并在 translate() 中采样到 <eos> 时停止生成
 ```
 
 ---
 
-## The Math (Paper Grounding)
+## 数学原理（论文依据）
 
-### Alignment Score (Additive)
+### 对齐分数（加性）
 $$e_{ij} = v_a^T \tanh(W_a s_{i-1} + U_a h_j)$$
 
-### Attention Weights
+### 注意力权重
 $$\alpha_{ij} = \frac{\exp(e_{ij})}{\sum_{k=1}^N \exp(e_{ik})}$$
 
-### Context Vector
+### 上下文向量
 $$c_i = \sum_{j=1}^N \alpha_{ij} h_j$$
 
 ---
 
-## Visualization Examples
+## 可视化示例
 
 ```python
 from visualization import plot_attention_heatmap
 
-# Visualize the alignment matrix
+# 可视化对齐矩阵
 plot_attention_heatmap(weights, src_tokens, trg_tokens, save_path='attn.png')
 
-# Check for diagonal pattern in reversal task
+# 检查反转任务中的反对角线模式
 ```
 
 ---
 
-## Experiment Ideas
+## 实验思路
 
-- Compare performance on length 5 vs length 20 sequences.
-- Vary the teacher forcing ratio.
-- Replace Bahdanau (additive) with Luong (multiplicative) attention.
-- Add learning rate scheduling (ReduceLROnPlateau).
+- 比较长度为 5 与 20 的序列上的表现。
+- 改变教师强制比例。
+- 将 Bahdanau 加性注意力替换为 Luong 乘性注意力。
+- 加入学习率调度（ReduceLROnPlateau）。
 
 ---
 
-## File Reference
+## 文件索引
 
-| File | Use It For |
+| 文件 | 用途 |
 |------|-----------|
-| `README.md` | Full tutorial and curriculum context |
-| `paper_notes.md` | Theoretical deep dive and paper review |
-| `implementation.py` | Core model classes and logic |
-| `train_minimal.py` | Training loops and orchestration |
-| `visualization.py` | Plotting heatmaps and metrics |
-| `notebook.ipynb` | Interactive step-by-step learning |
-| `exercises/` | Hands-on implementation practice |
+| `README.md` | 完整教程与课程背景 |
+| `paper_notes.md` | 理论详解与论文解读（实际文件为 `PAPER_NOTES.md`） |
+| `implementation.py` | 核心模型类与逻辑 |
+| `train_minimal.py` | 训练循环与流程组织 |
+| `visualization.py` | 绘制热力图与指标 |
+| `notebook.ipynb` | 交互式分步学习 |
+| `exercises/` | 动手实现练习 |
 
 ---
 
-## Debugging Checklist
+## 调试检查表
 
-- [ ] Is the padding mask applied correctly?
-- [ ] Are encoder bidirectional outputs concatenated (not summed)?
-- [ ] Is teacher forcing handled separately for training vs evaluation?
-- [ ] Does the attention weight sum to 1.0 for every decoder step?
-- [ ] Are you using `ignore_index` in the loss function for padding?
-
----
-
-## Pro Tips
-
-1. **Mask Early**: Setting scores to $-\infty$ before softmax is critical for stability.
-2. **Context Injection**: Concatenate the context vector with the input *and* the GRU output for best results.
-3. **BiRNN**: Always use a bidirectional encoder; it provides the "future" context necessary for valid alignments.
-4. **Log Attention**: Always visualize the attention weights; they are your best debugging tool.
+- [ ] 填充掩码是否正确应用？
+- [ ] 编码器双向输出是否采用拼接而非求和？
+- [ ] 训练与评估是否分别处理教师强制？
+- [ ] 每个解码步骤的注意力权重之和是否为 1.0？
+- [ ] 损失函数是否用 `ignore_index` 忽略填充？
 
 ---
 
-## Success Criteria
+## 实用建议
 
-After training, you should see:
-- A clear "reversed diagonal" pattern in the reversal task.
-- Accuracy > 95% on sequences up to length 15.
-- Attention entropy decreasing over training epochs.
-
----
-
-## Next: Day 16
-
-Once you understand basic attention, move to **Pointer Networks**:
-- Handle variable-sized output spaces.
-- "Point" to input elements instead of a fixed vocabulary.
-- Solving the Traveling Salesman Problem (TSP).
+1. **提前屏蔽**：在 softmax 前将分数设为 $-\infty$，对稳定性很重要；同时要保证每行至少有一个有效位置。
+2. **注入上下文**：原仓库建议将上下文向量分别与输入*以及* GRU 输出拼接，以获得更好效果。
+3. **双向 RNN**：原仓库建议始终使用双向编码器，为对齐提供当前位置之后的“未来”上下文；这属于本教程建议，并非所有注意力模型的必要条件。
+4. **记录注意力**：持续可视化注意力权重，是很有帮助的调试方式。
 
 ---
 
-**Questions?** Check [README.md](README.md)
+## 成功标准
+
+按原仓库预期，训练后应看到以下现象；具体阈值仍需运行验证：
+- 反转任务中出现清晰的“反对角线”模式。
+- 长度不超过 15 的序列上准确率 > 95%。
+- 注意力熵随训练轮数增加而降低。
+
+---
+
+## 下一章：第 16 天
+
+理解基本注意力后，继续学习**指针网络**：
+- 处理大小可变的输出空间。
+- “指向”输入元素，而非从固定词表选择。
+- 求解旅行商问题（TSP）。
+
+---
+
+**遇到问题？**请查看 [README.md](README.md)

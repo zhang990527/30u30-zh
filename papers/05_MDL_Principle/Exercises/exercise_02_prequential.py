@@ -1,28 +1,28 @@
 """
-Exercise 2: Prequential (Predictive) MDL
+练习 2：预序贯（预测式）MDL
 =========================================
 
-Prequential MDL scores a model by how well it predicts UNSEEN data.
+预序贯 MDL 根据模型预测未见数据的表现评分。
 
-The key idea:
-1. Start with a few data points
-2. Fit model to those points
-3. PREDICT the next point (before seeing it)
-4. Record the "surprise" (how wrong was the prediction?)
-5. Add the point to training data, repeat
+核心思想：
+1. 从少量数据点开始
+2. 用这些点拟合模型
+3. 在看到下一个点之前先预测
+4. 记录意外程度，即对数损失
+5. 将该点加入训练数据，继续重复
 
-Total surprise = Prequential MDL score
+总意外程度 = 预序贯 MDL 得分
 
-The Weather Forecaster Analogy:
+天气预报员类比：
 -------------------------------
-A weather forecaster makes predictions every day.
-We score them by how surprised they are by actual outcomes.
-A good forecaster is rarely very surprised → Low prequential score.
+天气预报员每天作出预测。
+根据实际结果带来的意外程度对其评分。
+好的预报员较少遇到意外，预序贯得分较低。
 
-Advantage over Two-Part Code:
-- No need to specify parameter precision
-- More robust for time series
-- Naturally penalizes complexity
+相对两段式编码的优点：
+- 不必显式指定参数精度
+- 自然适用于时间序列，不表示普遍更稳健
+- 通过预测表现约束复杂度
 """
 
 import numpy as np
@@ -36,30 +36,30 @@ def predict_next_point(
     degree: int
 ) -> Tuple[float, float]:
     """
-    Fit model to training data and predict the next point.
+    用训练数据拟合模型，并预测下一个点。
     
-    Args:
-        x_train: Training x values
-        y_train: Training y values
-        x_new: New x value to predict
-        degree: Polynomial degree
+    参数：
+        x_train：训练 x 值
+        y_train：训练 y 值
+        x_new：需要预测的新 x 值
+        degree：多项式次数
         
-    Returns:
-        Tuple of (prediction, estimated_sigma)
+    返回：
+        元组：(prediction, estimated_sigma)
         
-    Example:
+    示例：
         >>> x_train = np.array([0, 1, 2, 3])
-        >>> y_train = np.array([0, 1, 4, 9])  # Roughly quadratic
+        >>> y_train = np.array([0, 1, 4, 9])  # 近似二次函数
         >>> pred, sigma = predict_next_point(x_train, y_train, 4, 2)
-        >>> print(f"Predicted y(4) = {pred:.2f} ± {sigma:.2f}")
+        >>> print(f"预测 y(4) = {pred:.2f} ± {sigma:.2f}")
     """
-    # TODO: Implement prediction
-    # Steps:
-    #   1. Fit polynomial to training data
-    #   2. Compute training residuals to estimate sigma
-    #   3. Predict y value for x_new
+    # TODO：实现预测
+    # 步骤：
+    #   1. 用训练数据拟合多项式
+    #   2. 计算训练残差以估计 sigma
+    #   3. 预测 x_new 对应的 y 值
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def code_length_for_point(
@@ -68,32 +68,32 @@ def code_length_for_point(
     sigma: float
 ) -> float:
     """
-    Compute the code length (bits) for encoding one observation.
+    计算单个观测的高斯编码代价，单位为比特。
     
-    Using Gaussian coding:
+    使用高斯编码：
         L = 0.5 * log2(2π σ²) + (y - ŷ)² / (2σ² ln(2))
     
-    Intuition: The further y_actual is from y_predicted,
-    the more "surprising" it is, and the more bits needed.
+    直观上，y_actual 距 y_predicted 越远，
+    结果越令人意外，所需代价越高。
     
-    Args:
-        y_actual: The actual observed value
-        y_predicted: The model's prediction
-        sigma: Estimated standard deviation
+    参数：
+        y_actual：实际观测值
+        y_predicted：模型预测
+        sigma：估计标准差
         
-    Returns:
-        Code length in bits
+    返回：
+        以比特为单位的码长
         
-    Example:
-        >>> # Small error = short code
-        >>> code_length_for_point(10.0, 10.1, 1.0)  # Low surprise
-        >>> # Large error = long code
-        >>> code_length_for_point(10.0, 15.0, 1.0)  # High surprise
+    示例：
+        >>> # 小误差对应较短编码
+        >>> code_length_for_point(10.0, 10.1, 1.0)  # 意外程度低
+        >>> # 大误差对应较长编码
+        >>> code_length_for_point(10.0, 15.0, 1.0)  # 意外程度高
     """
-    # TODO: Implement Gaussian code length
-    # Hint: sigma should be at least 1e-10 to avoid division by zero
+    # TODO：实现高斯编码代价
+    # 提示：sigma 至少取 1e-10，避免除零
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def prequential_mdl(
@@ -103,40 +103,40 @@ def prequential_mdl(
     start_index: int = None
 ) -> float:
     """
-    Compute the Prequential MDL score for polynomial regression.
+    计算多项式回归的预序贯 MDL 得分。
     
-    Algorithm:
-    1. For i = start_index to n:
-       a. Fit model on points 0..i-1
-       b. Predict point i
-       c. Compute code length for actual vs predicted
-       d. Add to total
+    算法：
+    1. 从 i = start_index 到 n：
+       a. 用第 0 至 i-1 个点拟合模型
+       b. 预测第 i 个点
+       c. 根据实际值与预测值计算编码代价
+       d. 累加至总和
     
-    Args:
-        x: Input values (shape: [n])
-        y: Target values (shape: [n])
-        degree: Polynomial degree
-        start_index: Where to start predictions (default: degree + 2)
+    参数：
+        x：输入值，形状为 [n]
+        y：目标值，形状为 [n]
+        degree：多项式次数
+        start_index：开始预测的位置，默认 degree + 2
         
-    Returns:
-        Total prequential code length in bits
+    返回：
+        预序贯总编码代价，单位为比特
         
-    Example:
+    示例：
         >>> x = np.linspace(0, 10, 50)
         >>> y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.0
-        >>> score_1 = prequential_mdl(x, y, 1)  # Underfit
-        >>> score_2 = prequential_mdl(x, y, 2)  # Just right
-        >>> score_5 = prequential_mdl(x, y, 5)  # Overfit
-        >>> # score_2 should be lowest
+        >>> score_1 = prequential_mdl(x, y, 1)  # 欠拟合
+        >>> score_2 = prequential_mdl(x, y, 2)  # 预期合适
+        >>> score_5 = prequential_mdl(x, y, 5)  # 可能过拟合
+        >>> # 预期 score_2 最低
     """
-    # TODO: Implement prequential MDL
-    # Steps:
-    #   1. Determine start_index (need at least degree+2 points)
-    #   2. Loop from start_index to n
-    #   3. For each point: fit, predict, compute code length
-    #   4. Sum all code lengths
+    # TODO：实现预序贯 MDL
+    # 步骤：
+    #   1. 确定 start_index，至少需要 degree+2 个点
+    #   2. 从 start_index 循环到 n
+    #   3. 对每个点：拟合、预测、计算编码代价
+    #   4. 累加全部编码代价
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def prequential_model_selection(
@@ -145,29 +145,29 @@ def prequential_model_selection(
     max_degree: int = 10
 ) -> Tuple[int, dict]:
     """
-    Select the best polynomial degree using Prequential MDL.
+    使用预序贯 MDL 选择最佳多项式次数。
     
-    Args:
-        x: Input values
-        y: Target values
-        max_degree: Maximum degree to consider
+    参数：
+        x：输入值
+        y：目标值
+        max_degree：考虑的最高次数
         
-    Returns:
-        Tuple of (best_degree, scores_dict)
+    返回：
+        元组：(best_degree, scores_dict)
         
-    Example:
+    示例：
         >>> x = np.linspace(0, 10, 50)
         >>> y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.0
         >>> best, scores = prequential_model_selection(x, y)
-        >>> print(f"Best degree: {best}")
+        >>> print(f"最佳次数：{best}")
     """
-    # TODO: Compute prequential MDL for each degree, return best
+    # TODO：计算每个次数的预序贯 MDL，返回最佳值
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 # =============================================================================
-# TEST YOUR IMPLEMENTATION
+# 测试实现
 # =============================================================================
 
 def test_implementation():
@@ -178,15 +178,15 @@ def test_implementation():
     
     np.random.seed(42)
     
-    # Test 1: predict_next_point
+    # 测试 1：predict_next_point
     print("\n1. Testing predict_next_point()...")
     try:
         x_train = np.array([0, 1, 2, 3, 4])
-        y_train = np.array([0, 1, 4, 9, 16])  # Perfect squares
+        y_train = np.array([0, 1, 4, 9, 16])  # 完全平方数
         
         pred, sigma = predict_next_point(x_train, y_train, 5, 2)
         
-        # Should predict close to 25
+        # 应预测为接近 25
         assert 20 < pred < 30, f"Expected ~25, got {pred}"
         assert sigma >= 0, "Sigma should be non-negative"
         
@@ -196,14 +196,14 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 2: code_length_for_point
+    # 测试 2：code_length_for_point
     print("\n2. Testing code_length_for_point()...")
     try:
         sigma = 1.0
         
-        # Small error
+        # 小误差
         small_code = code_length_for_point(10.0, 10.1, sigma)
-        # Large error
+        # 大误差
         large_code = code_length_for_point(10.0, 15.0, sigma)
         
         assert large_code > small_code, "Larger errors should have longer codes"
@@ -215,11 +215,11 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 3: prequential_mdl
+    # 测试 3：prequential_mdl
     print("\n3. Testing prequential_mdl()...")
     try:
         x = np.linspace(0, 10, 50)
-        y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.5  # Quadratic
+        y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.5  # 二次函数
         
         score_1 = prequential_mdl(x, y, 1)
         score_2 = prequential_mdl(x, y, 2)
@@ -229,7 +229,7 @@ def test_implementation():
         print(f"   Prequential MDL (degree 2): {score_2:.2f} bits")
         print(f"   Prequential MDL (degree 5): {score_5:.2f} bits")
         
-        # Degree 2 should have lowest (best) score
+        # 2 次模型预期具有最低得分
         if score_2 < score_1 and score_2 < score_5:
             print("   [ok] PASSED - Degree 2 has lowest score!")
         else:
@@ -237,7 +237,7 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 4: prequential_model_selection
+    # 测试 4：prequential_model_selection
     print("\n4. Testing prequential_model_selection()...")
     try:
         x = np.linspace(0, 10, 50)
@@ -256,10 +256,10 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 5: Comparison with Two-Part Code
+    # 测试 5：与两段式编码比较
     print("\n5. Comparing with Two-Part Code...")
     try:
-        # Both methods should generally agree on well-structured data
+        # 在结构明显的数据上，两种方法可能一致；不是普遍保证
         x = np.linspace(0, 10, 100)
         y = 5 * np.sin(x) + np.random.randn(100) * 0.5
         

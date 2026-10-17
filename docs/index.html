@@ -1,27 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
 
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>30u30 — 30 Foundational AI Papers in 30 Days</title>
-    <meta name="description"
-        content="A free 30-day AI roadmap to master deep learning. Implement foundational papers (RNN, Transformers, ResNet) from scratch with PyTorch code and exercises.">
-    <meta name="keywords"
-        content="AI roadmap, learn AI from scratch, PyTorch implementations, machine learning papers, RNN tutorial, Transformer architecture code, deep learning curriculum">
-
-    <!-- Open Graph / Social Media -->
-    <meta property="og:image" content="https://ojhaharsh.github.io/30u30/images/preview-banner.png">
-    <meta property="twitter:card" content="summary_large_image">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
-
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>30u30——30 天学习 30 篇 AI 基础文献</title>
+<meta content="免费 30 天 AI 学习路线：从零实现 RNN、Transformer、ResNet 等基础方法，配套代码与练习。" name="description"/>
+<meta content="AI 学习路线,从零学习 AI,PyTorch 实现,机器学习论文,RNN 教程,Transformer 架构,深度学习课程" name="keywords"/>
+<!-- Open Graph / Social Media -->
+<meta content="https://ojhaharsh.github.io/30u30/images/preview-banner.png" property="og:image"/>
+<meta content="summary_large_image" property="twitter:card"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<link href="css/style.css" rel="stylesheet"/>
+<style>
         .announcement-wrapper {
             display: flex;
             justify-content: center;
@@ -70,1379 +64,1202 @@
         }
     </style>
 </head>
-
 <body>
-    <nav class="nav">
-        <div class="nav-container">
-            <a href="#" class="nav-logo">
-                <span class="logo-30">30</span><span class="logo-u">u</span><span class="logo-30">30</span>
-            </a>
-            <div class="nav-links">
-                <a href="#papers">Papers</a>
-                <a href="#journey">Journey</a>
-                <a href="#about">About</a>
-                <a href="https://github.com/ojhaharsh/30u30" target="_blank" class="nav-github">
-                    <i class="fab fa-github"></i>
-                </a>
-            </div>
-            <button class="nav-toggle" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-            </button>
-        </div>
-    </nav>
-
-    <section class="hero">
-        <div class="hero-bg">
-            <div class="hero-grid"></div>
-            <div class="hero-particles" id="particles"></div>
-        </div>
-
-        <div class="hero-content">
-
-            <div class="announcement-wrapper">
-                <div class="announcement-pill">
-                    <span class="new-badge">Coming Soon</span>
-                    <span class="announcement-text">
-                        <strong>Project Aryabhatta</strong>: A new era of AI education.
+<nav class="nav">
+<div class="nav-container">
+<a class="nav-logo" href="#">
+<span class="logo-30">30</span><span class="logo-u">u</span><span class="logo-30">30</span>
+</a>
+<div class="nav-links">
+<a href="#papers">文献</a>
+<a href="#journey">学习路线</a>
+<a href="#about">关于</a>
+<a class="nav-github" href="https://github.com/ojhaharsh/30u30" target="_blank">
+<i class="fab fa-github"></i>
+</a>
+</div>
+<button aria-label="展开或收起菜单" class="nav-toggle">
+<span></span>
+<span></span>
+</button>
+</div>
+</nav>
+<section class="hero">
+<div class="hero-bg">
+<div class="hero-grid"></div>
+<div class="hero-particles" id="particles"></div>
+</div>
+<div class="hero-content">
+<div class="announcement-wrapper">
+<div class="announcement-pill">
+<span class="new-badge">即将推出</span>
+<span class="announcement-text">
+<strong>Project Aryabhatta</strong>：开启 AI 教育的新阶段。
                     </span>
-                </div>
-            </div>
-
-            <div class="hero-badge">
-                <span class="badge-dot"></span>
-                <span>30 Papers Live • Open Source</span>
-            </div>
-
-            <h1 class="hero-title">
-                <span class="title-line">
-                    <span class="title-number">30</span>
-                    <span class="title-text">Foundational</span>
-                </span>
-
-                <span class="title-line">
-                    <span class="title-text">AI Papers</span>
-                </span>
-
-                <span class="title-line">
-                    <span class="title-accent">in</span>
-                    <span class="title-number">30</span>
-                    <span class="title-text">Days</span>
-                </span>
-            </h1>
-
-            <p class="hero-subtitle">
-                From RNNs to Transformers — complete implementations you can run,
-                learn from, and build upon. Every paper, every line of code, explained.
+</div>
+</div>
+<div class="hero-badge">
+<span class="badge-dot"></span>
+<span>30 篇文献已上线 • 开源学习</span>
+</div>
+<h1 class="hero-title">
+<span class="title-line">
+<span class="title-number">30</span>
+<span class="title-text">基础</span>
+</span>
+<span class="title-line">
+<span class="title-text">AI 文献</span>
+</span>
+<span class="title-line">
+<span class="title-accent">用</span>
+<span class="title-number">30</span>
+<span class="title-text">天</span>
+</span>
+</h1>
+<p class="hero-subtitle">
+                从 RNN 到 Transformer，提供可运行、可学习、可继续探索的完整实现，逐篇讲解文献与代码。
             </p>
-
-            <div class="hero-quote">
-                <span class="quote-mark">"</span>
-                <p>If you really learn all of these, you'll know 90% of what matters today</p>
-                <cite>— Ilya Sutskever</cite>
-            </div>
-
-            <div class="hero-actions">
-                <a href="#papers" class="btn btn-primary">
-                    <span>Explore Papers</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                </a>
-                <a href="https://github.com/ojhaharsh/30u30" target="_blank" class="btn btn-secondary">
-                    <i class="fab fa-github"></i>
-                    <span>View on GitHub</span>
-                </a>
-            </div>
-
-            <div class="hero-stats">
-                <div class="stat">
-                    <span class="stat-value">30</span>
-                    <span class="stat-label">PAPERS LIVE</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat">
-                    <span class="stat-value">350+</span>
-                    <span class="stat-label">ACTIVE USERS</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat">
-                    <span class="stat-value">17+</span>
-                    <span class="stat-label">COUNTRIES</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat">
-                    <span class="stat-value">42K+</span>
-                    <span class="stat-label">LINES OF CODE</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="hero-symbols">
-            <div class="symbol symbol-1" title="Neural Networks">
-                <svg viewBox="0 0 100 100">
-                    <circle cx="50" cy="20" r="8" fill="currentColor" opacity="0.6" />
-                    <circle cx="25" cy="50" r="8" fill="currentColor" opacity="0.6" />
-                    <circle cx="75" cy="50" r="8" fill="currentColor" opacity="0.6" />
-                    <circle cx="50" cy="80" r="8" fill="currentColor" opacity="0.6" />
-                    <line x1="50" y1="28" x2="25" y2="42" stroke="currentColor" stroke-width="2" opacity="0.4" />
-                    <line x1="50" y1="28" x2="75" y2="42" stroke="currentColor" stroke-width="2" opacity="0.4" />
-                    <line x1="25" y1="58" x2="50" y2="72" stroke="currentColor" stroke-width="2" opacity="0.4" />
-                    <line x1="75" y1="58" x2="50" y2="72" stroke="currentColor" stroke-width="2" opacity="0.4" />
-                </svg>
-            </div>
-            <div class="symbol symbol-2" title="Attention Mechanism">
-                <svg viewBox="0 0 100 100">
-                    <path d="M50 10 L90 50 L50 90 L10 50 Z" fill="none" stroke="currentColor" stroke-width="2"
-                        opacity="0.5" />
-                    <circle cx="50" cy="50" r="15" fill="currentColor" opacity="0.3" />
-                    <circle cx="50" cy="50" r="8" fill="currentColor" opacity="0.6" />
-                </svg>
-            </div>
-            <div class="symbol symbol-3" title="Recurrence">
-                <svg viewBox="0 0 100 100">
-                    <path d="M30 50 C30 25, 70 25, 70 50 C70 75, 30 75, 30 50" fill="none" stroke="currentColor"
-                        stroke-width="3" opacity="0.5" />
-                    <polygon points="35,45 25,50 35,55" fill="currentColor" opacity="0.6" />
-                </svg>
-            </div>
-        </div>
-    </section>
-
-    <section id="papers" class="papers">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">The Collection</span>
-                <h2 class="section-title">30 Papers, Fully Implemented</h2>
-                <p class="section-desc">Each paper comes with deep explanations, clean code, visualizations, and
-                    exercises. Click any card to explore.</p>
-            </div>
-
-            <div class="papers-filter">
-                <button class="filter-btn active" data-filter="all">All Papers</button>
-                <button class="filter-btn" data-filter="foundations">Foundations</button>
-                <button class="filter-btn" data-filter="vision">Vision</button>
-                <button class="filter-btn" data-filter="transformers">Transformers</button>
-                <button class="filter-btn" data-filter="specialized">Specialized</button>
-                <button class="filter-btn" data-filter="generative">Generative</button>
-                <button class="filter-btn" data-filter="rl">Reinforcement Learning</button>
-            </div>
-
-            <div class="papers-grid">
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/01_Unreasonable_Effectiveness"
-                    target="_blank" class="paper-card" data-day="1" data-unit="foundations">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <path d="M15 40 Q30 15, 40 40 T65 40" fill="none" stroke="currentColor" stroke-width="3" />
-                            <circle cx="40" cy="40" r="6" fill="currentColor" />
-                            <path d="M25 55 L55 55" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"
-                                opacity="0.5" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 01</span>
-                        <h3>The Unreasonable Effectiveness of RNNs</h3>
-                        <p>Character-level language models that generate Shakespeare, code, and music</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> NumPy</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/02_Understanding_LSTM" target="_blank"
-                    class="paper-card" data-day="2" data-unit="foundations">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <rect x="15" y="25" width="50" height="30" rx="4" fill="none" stroke="currentColor"
-                                stroke-width="2.5" />
-                            <line x1="28" y1="25" x2="28" y2="55" stroke="currentColor" stroke-width="2"
-                                opacity="0.4" />
-                            <line x1="41" y1="25" x2="41" y2="55" stroke="currentColor" stroke-width="2"
-                                opacity="0.4" />
-                            <line x1="54" y1="25" x2="54" y2="55" stroke="currentColor" stroke-width="2"
-                                opacity="0.4" />
-                            <circle cx="22" cy="40" r="4" fill="currentColor" opacity="0.7" />
-                            <circle cx="35" cy="40" r="4" fill="currentColor" opacity="0.7" />
-                            <circle cx="48" cy="40" r="4" fill="currentColor" opacity="0.7" />
-                            <circle cx="60" cy="40" r="4" fill="currentColor" opacity="0.7" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 02</span>
-                        <h3>Understanding LSTM Networks</h3>
-                        <p>Gates, memory cells, and learning long-term dependencies</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/03_RNN_Regularization" target="_blank"
-                    class="paper-card" data-day="3" data-unit="foundations">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <circle cx="40" cy="40" r="22" fill="none" stroke="currentColor" stroke-width="2.5"
-                                stroke-dasharray="6 4" />
-                            <circle cx="40" cy="40" r="12" fill="currentColor" opacity="0.3" />
-                            <path d="M28 40 L52 40 M40 28 L40 52" stroke="currentColor" stroke-width="2.5" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 03</span>
-                        <h3>Recurrent Neural Network Regularization</h3>
-                        <p>Dropout, layer norm, and preventing overfitting in sequence models</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/04_Minimizing_Description_Length"
-                    target="_blank" class="paper-card" data-day="4" data-unit="foundations">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <rect x="15" y="20" width="50" height="40" rx="3" fill="none" stroke="currentColor"
-                                stroke-width="2" />
-                            <path d="M22 32 L58 32 M22 40 L48 40 M22 48 L52 48" stroke="currentColor" stroke-width="2"
-                                opacity="0.5" />
-                            <circle cx="58" cy="52" r="10" fill="none" stroke="currentColor" stroke-width="2" />
-                            <path d="M55 52 L61 52 M58 49 L58 55" stroke="currentColor" stroke-width="2" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 04</span>
-                        <h3>Minimizing Description Length</h3>
-                        <p>Compression as the key to intelligence and model selection</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> Python</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/05_MDL_Principle" target="_blank"
-                    class="paper-card" data-day="5" data-unit="foundations">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <path d="M20 55 L30 35 L42 45 L55 20 L65 30" fill="none" stroke="currentColor"
-                                stroke-width="2.5" />
-                            <circle cx="20" cy="55" r="4" fill="currentColor" />
-                            <circle cx="30" cy="35" r="4" fill="currentColor" />
-                            <circle cx="42" cy="45" r="4" fill="currentColor" />
-                            <circle cx="55" cy="20" r="4" fill="currentColor" />
-                            <circle cx="65" cy="30" r="4" fill="currentColor" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 05</span>
-                        <h3>The MDL Principle Tutorial</h3>
-                        <p>Two-part codes, prequential MDL, and normalized maximum likelihood</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> Python</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/06_Complexodynamics" target="_blank"
-                    class="paper-card" data-day="6" data-unit="foundations">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <circle cx="40" cy="40" r="25" fill="none" stroke="currentColor" stroke-width="1.5"
-                                opacity="0.3" />
-                            <circle cx="40" cy="40" r="16" fill="none" stroke="currentColor" stroke-width="2"
-                                opacity="0.5" />
-                            <circle cx="40" cy="40" r="7" fill="currentColor" opacity="0.7" />
-                            <path d="M40 15 L40 20 M40 60 L40 65 M15 40 L20 40 M60 40 L65 40" stroke="currentColor"
-                                stroke-width="2" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 06</span>
-                        <h3>The First Law of Complexodynamics</h3>
-                        <p>Information equilibration and evolutionary dynamics in complex systems</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> Python</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/07_coffee_automaton" target="_blank"
-                    class="paper-card" data-day="7" data-unit="foundations">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <rect x="18" y="18" width="12" height="12" fill="currentColor" opacity="0.3" />
-                            <rect x="34" y="18" width="12" height="12" fill="currentColor" opacity="0.6" />
-                            <rect x="50" y="18" width="12" height="12" fill="currentColor" opacity="0.4" />
-                            <rect x="18" y="34" width="12" height="12" fill="currentColor" opacity="0.7" />
-                            <rect x="34" y="34" width="12" height="12" fill="currentColor" opacity="0.9" />
-                            <rect x="50" y="34" width="12" height="12" fill="currentColor" opacity="0.5" />
-                            <rect x="18" y="50" width="12" height="12" fill="currentColor" opacity="0.5" />
-                            <rect x="34" y="50" width="12" height="12" fill="currentColor" opacity="0.3" />
-                            <rect x="50" y="50" width="12" height="12" fill="currentColor" opacity="0.8" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 07</span>
-                        <h3>The Coffee Automaton</h3>
-                        <p>Cellular automata, chaos theory, and emergent behavior</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> Python</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/08_alexnet" target="_blank"
-                    class="paper-card" data-day="8" data-unit="vision">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <rect x="12" y="12" width="56" height="56" rx="5" fill="none" stroke="currentColor"
-                                stroke-width="2" />
-                            <rect x="18" y="18" width="18" height="18" fill="currentColor" opacity="0.4" />
-                            <rect x="44" y="18" width="18" height="18" fill="currentColor" opacity="0.6" />
-                            <rect x="18" y="44" width="18" height="18" fill="currentColor" opacity="0.5" />
-                            <rect x="44" y="44" width="18" height="18" fill="currentColor" opacity="0.8" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 08</span>
-                        <h3>ImageNet Classification with CNNs</h3>
-                        <p>AlexNet — the paper that sparked the deep learning revolution</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/09_resnet" target="_blank"
-                    class="paper-card" data-day="9" data-unit="vision">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <rect x="15" y="25" width="20" height="30" rx="3" fill="none" stroke="currentColor"
-                                stroke-width="2" />
-                            <rect x="45" y="25" width="20" height="30" rx="3" fill="none" stroke="currentColor"
-                                stroke-width="2" />
-                            <path d="M35 35 L45 40 L35 45" fill="none" stroke="currentColor" stroke-width="2.5" />
-                            <path d="M25 18 Q40 10 55 18" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-dasharray="4 3" />
-                            <path d="M25 62 Q40 70 55 62" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-dasharray="4 3" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 09</span>
-                        <h3>Deep Residual Learning (ResNet)</h3>
-                        <p>Skip connections enabling 1000+ layer networks</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/10_resnet_v2" target="_blank"
-                    class="paper-card" data-day="10" data-unit="vision">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <rect x="20" y="28" width="40" height="24" rx="3" fill="none" stroke="currentColor"
-                                stroke-width="2.5" />
-                            <line x1="33" y1="28" x2="33" y2="52" stroke="currentColor" stroke-width="2"
-                                opacity="0.4" />
-                            <line x1="47" y1="28" x2="47" y2="52" stroke="currentColor" stroke-width="2"
-                                opacity="0.4" />
-                            <path d="M40 15 L40 28 M40 52 L40 65" stroke="currentColor" stroke-width="2.5" />
-                            <circle cx="40" cy="15" r="4" fill="currentColor" />
-                            <circle cx="40" cy="65" r="4" fill="currentColor" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 10</span>
-                        <h3>Identity Mappings in ResNets</h3>
-                        <p>Pre-activation and improved gradient flow</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/11_dilated_convolutions" target="_blank"
-                    class="paper-card" data-day="11" data-unit="vision">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <circle cx="40" cy="40" r="10" fill="none" stroke="currentColor" stroke-width="2.5" />
-                            <circle cx="40" cy="40" r="20" fill="none" stroke="currentColor" stroke-width="2"
-                                opacity="0.5" />
-                            <circle cx="40" cy="40" r="30" fill="none" stroke="currentColor" stroke-width="1.5"
-                                opacity="0.3" />
-                            <circle cx="40" cy="40" r="4" fill="currentColor" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 11</span>
-                        <h3>Multi-Scale Context with Dilated Convolutions</h3>
-                        <p>Exponentially expanding receptive fields without resolution loss</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/12_dropout" target="_blank"
-                    class="paper-card" data-day="12" data-unit="foundations">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <circle cx="20" cy="30" r="6" fill="currentColor" opacity="0.8" />
-                            <circle cx="40" cy="20" r="6" fill="currentColor" opacity="0.3" />
-                            <line x1="35" y1="15" x2="45" y2="25" stroke="currentColor" stroke-width="2"
-                                opacity="0.5" />
-                            <circle cx="60" cy="30" r="6" fill="currentColor" opacity="0.8" />
-                            <circle cx="30" cy="50" r="6" fill="currentColor" opacity="0.3" />
-                            <line x1="25" y1="45" x2="35" y2="55" stroke="currentColor" stroke-width="2"
-                                opacity="0.5" />
-                            <circle cx="50" cy="50" r="6" fill="currentColor" opacity="0.8" />
-                            <circle cx="40" cy="65" r="6" fill="currentColor" opacity="0.8" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 12</span>
-                        <h3>Dropout</h3>
-                        <p>A simple way to prevent neural networks from overfitting</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/13_attention" target="_blank"
-                    class="paper-card featured" data-day="13" data-unit="transformers">
-                    <div class="paper-featured-badge">Landmark Paper</div>
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <circle cx="25" cy="25" r="8" fill="currentColor" opacity="0.6" />
-                            <circle cx="55" cy="25" r="8" fill="currentColor" opacity="0.6" />
-                            <circle cx="25" cy="55" r="8" fill="currentColor" opacity="0.6" />
-                            <circle cx="55" cy="55" r="8" fill="currentColor" opacity="0.6" />
-                            <line x1="25" y1="25" x2="55" y2="25" stroke="currentColor" stroke-width="2.5"
-                                opacity="0.8" />
-                            <line x1="25" y1="25" x2="25" y2="55" stroke="currentColor" stroke-width="2.5"
-                                opacity="0.8" />
-                            <line x1="55" y1="25" x2="55" y2="55" stroke="currentColor" stroke-width="2.5"
-                                opacity="0.8" />
-                            <line x1="25" y1="55" x2="55" y2="55" stroke="currentColor" stroke-width="2.5"
-                                opacity="0.8" />
-                            <line x1="25" y1="25" x2="55" y2="55" stroke="currentColor" stroke-width="2"
-                                opacity="0.4" />
-                            <line x1="55" y1="25" x2="25" y2="55" stroke="currentColor" stroke-width="2"
-                                opacity="0.4" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 13</span>
-                        <h3>Attention Is All You Need</h3>
-                        <p>The Transformer architecture that revolutionized AI</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/14_annotated_transformer" target="_blank"
-                    class="paper-card" data-day="14" data-unit="transformers">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <rect x="15" y="15" width="50" height="50" rx="4" fill="none" stroke="currentColor"
-                                stroke-width="2" />
-                            <line x1="22" y1="28" x2="50" y2="28" stroke="currentColor" stroke-width="2"
-                                opacity="0.8" />
-                            <line x1="22" y1="38" x2="58" y2="38" stroke="currentColor" stroke-width="2"
-                                opacity="0.6" />
-                            <line x1="22" y1="48" x2="45" y2="48" stroke="currentColor" stroke-width="2"
-                                opacity="0.8" />
-                            <circle cx="55" cy="28" r="4" fill="currentColor" opacity="0.6" />
-                            <circle cx="55" cy="48" r="4" fill="currentColor" opacity="0.6" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 14</span>
-                        <h3>The Annotated Transformer</h3>
-                        <p>Line-by-line PyTorch implementation with explanations</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/15_bahdanau_attention" target="_blank"
-                    class="paper-card" data-day="15" data-unit="transformers">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <circle cx="40" cy="20" r="8" fill="currentColor" opacity="0.8" />
-                            <circle cx="20" cy="50" r="7" fill="currentColor" opacity="0.5" />
-                            <circle cx="40" cy="60" r="7" fill="currentColor" opacity="0.5" />
-                            <circle cx="60" cy="50" r="7" fill="currentColor" opacity="0.5" />
-                            <path d="M40 28 L20 43" stroke="currentColor" stroke-width="2" opacity="0.7" />
-                            <path d="M40 28 L40 53" stroke="currentColor" stroke-width="2.5" opacity="0.9" />
-                            <path d="M40 28 L60 43" stroke="currentColor" stroke-width="2" opacity="0.7" />
-                            <circle cx="40" cy="28" r="3" fill="currentColor" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 15</span>
-                        <h3>Bahdanau Attention (NMT)</h3>
-                        <p>The original attention mechanism before Transformers</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/16_order_matters" target="_blank"
-                    class="paper-card" data-day="16" data-unit="transformers">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <circle cx="20" cy="30" r="6" fill="currentColor" opacity="0.5" />
-                            <circle cx="40" cy="25" r="6" fill="currentColor" opacity="0.5" />
-                            <circle cx="60" cy="30" r="6" fill="currentColor" opacity="0.5" />
-                            <circle cx="30" cy="45" r="6" fill="currentColor" opacity="0.5" />
-                            <path d="M15 55 L20 30" stroke="currentColor" stroke-width="2.5"
-                                marker-end="url(#arrowhead)" />
-                            <path d="M25 60 L40 25" stroke="currentColor" stroke-width="2.5"
-                                marker-end="url(#arrowhead)" />
-                            <path d="M35 65 L30 45" stroke="currentColor" stroke-width="2.5"
-                                marker-end="url(#arrowhead)" />
-                            <circle cx="15" cy="55" r="3" fill="#ff6b6b" />
-                            <circle cx="25" cy="60" r="3" fill="#ff6b6b" />
-                            <circle cx="35" cy="65" r="3" fill="#ff6b6b" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 16</span>
-                        <h3>Order Matters (Seq2Seq for Sets)</h3>
-                        <p>Teaching networks when order doesn't matter in inputs</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/17_neural_turing_machines" target="_blank"
-                    class="paper-card" data-day="17" data-unit="specialized">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <rect x="10" y="20" width="60" height="25" rx="3" fill="none" stroke="currentColor"
-                                stroke-width="2" />
-                            <line x1="22" y="20" x2="22" y2="45" stroke="currentColor" stroke-width="1.5"
-                                opacity="0.3" />
-                            <line x1="34" y="20" x2="34" y2="45" stroke="currentColor" stroke-width="1.5"
-                                opacity="0.3" />
-                            <line x1="46" y="20" x2="46" y2="45" stroke="currentColor" stroke-width="1.5"
-                                opacity="0.3" />
-                            <line x1="58" y="20" x2="58" y2="45" stroke="currentColor" stroke-width="1.5"
-                                opacity="0.3" />
-                            <circle cx="40" cy="60" r="10" fill="none" stroke="currentColor" stroke-width="2.5" />
-                            <path d="M40 50 L40 45" stroke="currentColor" stroke-width="2"
-                                marker-end="url(#arrowhead)" />
-                            <circle cx="28" cy="32" r="3" fill="currentColor" opacity="0.8" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 17</span>
-                        <h3>Neural Turing Machines</h3>
-                        <p>Differentiable external memory with content-based addressing</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/18_pointer_networks" target="_blank"
-                    class="paper-card" data-day="18" data-unit="specialized">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <circle cx="15" cy="25" r="6" fill="none" stroke="currentColor" stroke-width="2"
-                                opacity="0.5" />
-                            <circle cx="40" cy="25" r="6" fill="none" stroke="currentColor" stroke-width="2"
-                                opacity="0.5" />
-                            <circle cx="65" cy="25" r="6" fill="currentColor" opacity="0.8" />
-                            <circle cx="40" cy="60" r="8" fill="none" stroke="currentColor" stroke-width="2.5" />
-                            <path d="M40 52 L63 31" stroke="currentColor" stroke-width="2.5" opacity="0.8" />
-                            <polygon points="63,31 56,30 59,36" fill="currentColor" opacity="0.8" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 18</span>
-                        <h3>Pointer Networks</h3>
-                        <p>Attention as output — pointing at input elements for variable-size combinatorial problems</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/19_relational_reasoning" target="_blank"
-                    class="paper-card" data-day="19" data-unit="specialized">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <circle cx="40" cy="20" r="6" fill="currentColor" />
-                            <circle cx="20" cy="60" r="6" fill="currentColor" />
-                            <circle cx="60" cy="60" r="6" fill="currentColor" />
-                            <line x1="40" y1="20" x2="20" y2="60" stroke="currentColor" stroke-width="2" />
-                            <line x1="40" y1="20" x2="60" y2="60" stroke="currentColor" stroke-width="2" />
-                            <line x1="20" y1="60" x2="60" y2="60" stroke="currentColor" stroke-width="2" />
-                            <circle cx="40" cy="45" r="25" fill="none" stroke="currentColor" stroke-width="1.5"
-                                opacity="0.3" stroke-dasharray="4 2" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 19</span>
-                        <h3>Relational Reasoning</h3>
-                        <p>Learning relationships between objects (Sort-of-CLEVR, Relation Networks)</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 7 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/20_Relational_RNNs" target="_blank"
-                    class="paper-card" data-day="20" data-unit="specialized">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <!-- Memory Slots -->
-                            <rect x="25" y="30" width="10" height="20" rx="2" fill="currentColor" opacity="0.6" />
-                            <rect x="40" y="30" width="10" height="20" rx="2" fill="currentColor" opacity="0.6" />
-                            <rect x="55" y="30" width="10" height="20" rx="2" fill="currentColor" opacity="0.6" />
-                            <!-- Attention Arcs -->
-                            <path d="M30 25 Q45 15 60 25" fill="none" stroke="currentColor" stroke-width="2" />
-                            <!-- Recurrent Cycle -->
-                            <path d="M20 50 Q10 40 20 30" fill="none" stroke="currentColor" stroke-width="1.5"
-                                opacity="0.4" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 20</span>
-                        <h3>Relational RNNs</h3>
-                        <p>Memory as a set of interacting slots — solving problems LSTMs can't</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/21_Neural_Message_Passing" target="_blank"
-                    class="paper-card" data-day="21" data-unit="specialized">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <!-- Molecular graph: atoms as nodes, bonds as edges -->
-                            <circle cx="40" cy="20" r="6" fill="currentColor" opacity="0.8" />
-                            <circle cx="20" cy="40" r="6" fill="currentColor" opacity="0.6" />
-                            <circle cx="60" cy="40" r="6" fill="currentColor" opacity="0.6" />
-                            <circle cx="25" cy="62" r="6" fill="currentColor" opacity="0.5" />
-                            <circle cx="55" cy="62" r="6" fill="currentColor" opacity="0.5" />
-                            <!-- Bonds -->
-                            <line x1="40" y1="20" x2="20" y2="40" stroke="currentColor" stroke-width="2"
-                                opacity="0.7" />
-                            <line x1="40" y1="20" x2="60" y2="40" stroke="currentColor" stroke-width="2"
-                                opacity="0.7" />
-                            <line x1="20" y1="40" x2="25" y2="62" stroke="currentColor" stroke-width="2"
-                                opacity="0.7" />
-                            <line x1="60" y1="40" x2="55" y2="62" stroke="currentColor" stroke-width="2"
-                                opacity="0.7" />
-                            <line x1="25" y1="62" x2="55" y2="62" stroke="currentColor" stroke-width="2"
-                                opacity="0.7" />
-                            <!-- Message arrow -->
-                            <path d="M28 38 L38 23" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2"
-                                opacity="0.4" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 21</span>
-                        <h3>Neural Message Passing</h3>
-                        <p>Unifying graph neural networks — messages, updates, and readouts for molecular prediction</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/22_deep_speech_2" target="_blank"
-                    class="paper-card" data-day="22" data-unit="specialized">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <!-- Waveform -->
-                            <path d="M10 40 Q17 25, 24 40 T38 40 T52 40 T66 40" fill="none" stroke="currentColor"
-                                stroke-width="2.5" opacity="0.6" />
-                            <!-- Spectrogram bars -->
-                            <rect x="15" y="50" width="4" height="12" rx="1" fill="currentColor" opacity="0.5" />
-                            <rect x="23" y="46" width="4" height="16" rx="1" fill="currentColor" opacity="0.6" />
-                            <rect x="31" y="48" width="4" height="14" rx="1" fill="currentColor" opacity="0.5" />
-                            <rect x="39" y="44" width="4" height="18" rx="1" fill="currentColor" opacity="0.7" />
-                            <rect x="47" y="50" width="4" height="12" rx="1" fill="currentColor" opacity="0.5" />
-                            <rect x="55" y="47" width="4" height="15" rx="1" fill="currentColor" opacity="0.6" />
-                            <rect x="63" y="52" width="4" height="10" rx="1" fill="currentColor" opacity="0.4" />
-                            <!-- Arrow to text -->
-                            <path d="M35 35 L45 35" stroke="currentColor" stroke-width="1.5" opacity="0.4" />
-                            <polygon points="44,33 48,35 44,37" fill="currentColor" opacity="0.4" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 22</span>
-                        <h3>Deep Speech 2</h3>
-                        <p>End-to-end speech recognition — replacing the entire ASR pipeline with a single neural
-                            network</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/23_variational_lossy_autoencoder"
-                    target="_blank" class="paper-card" data-day="23" data-unit="generative">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <!-- Latent Code Z -->
-                            <circle cx="40" cy="25" r="10" fill="none" stroke="currentColor" stroke-width="2" />
-                            <text x="40" y="29" text-anchor="middle" font-size="12" fill="currentColor"
-                                font-weight="bold">z</text>
-                            <!-- Decoder Grid -->
-                            <rect x="25" y="45" width="30" height="20" rx="2" fill="none" stroke="currentColor"
-                                stroke-width="2" opacity="0.6" />
-                            <!-- Connection (Information Flow) -->
-                            <line x1="40" y1="35" x2="40" y2="45" stroke="currentColor" stroke-width="2"
-                                stroke-dasharray="3 3" />
-                            <!-- Receptive Field Limit -->
-                            <rect x="38" y="52" width="4" height="4" fill="currentColor" opacity="0.9" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 23</span>
-                        <h3>Variational Lossy Autoencoder</h3>
-                        <p>Solving posterior collapse by limiting the decoder's receptive field</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/24_gpipe" target="_blank"
-                    class="paper-card" data-day="24" data-unit="generative">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <!-- Pipeline Stages -->
-                            <rect x="15" y="30" width="12" height="20" rx="2" fill="currentColor" opacity="0.4" />
-                            <rect x="30" y="30" width="12" height="20" rx="2" fill="currentColor" opacity="0.6" />
-                            <rect x="45" y="30" width="12" height="20" rx="2" fill="currentColor" opacity="0.8" />
-                            <rect x="60" y="30" width="12" height="20" rx="2" fill="currentColor" opacity="1.0" />
-                            <!-- Micro-batch arrows -->
-                            <path d="M22 25 L22 30" stroke="currentColor" stroke-width="1.5" opacity="0.4" />
-                            <path d="M37 25 L37 30" stroke="currentColor" stroke-width="1.5" opacity="0.4" />
-                            <path d="M52 25 L52 30" stroke="currentColor" stroke-width="1.5" opacity="0.4" />
-                            <path d="M67 25 L67 30" stroke="currentColor" stroke-width="1.5" opacity="0.4" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 24</span>
-                        <h3>GPipe: Efficient Training of Giant Neural Networks</h3>
-                        <p>Scaling models beyond memory limits with pipeline parallelism and micro-batching</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/25_scaling_laws" target="_blank"
-                    class="paper-card" data-day="25" data-unit="generative">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <!-- Power Law Curve -->
-                            <path d="M20 60 Q 30 25, 70 20" fill="none" stroke="currentColor" stroke-width="3" />
-                            <!-- Axes -->
-                            <line x1="15" y1="65" x2="75" y2="65" stroke="currentColor" stroke-width="2"
-                                opacity="0.5" />
-                            <line x1="15" y1="15" x2="15" y2="75" stroke="currentColor" stroke-width="2"
-                                opacity="0.5" />
-                            <!-- Scaling Particles -->
-                            <circle cx="20" cy="60" r="2" fill="currentColor" />
-                            <circle cx="35" cy="40" r="3" fill="currentColor" />
-                            <circle cx="55" cy="25" r="4" fill="currentColor" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 25</span>
-                        <h3>Scaling Laws for Neural Language Models</h3>
-                        <p>The "Physics of AI" — predicting the performance of massive models using power laws</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/26_kolmogorov_complexity" target="_blank"
-                    class="paper-card" data-day="26" data-unit="generative">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <!-- Compressed block representation -->
-                            <rect x="20" y="20" width="40" height="40" rx="3" fill="none" stroke="currentColor"
-                                stroke-width="2" />
-                            <rect x="25" y="25" width="30" height="30" rx="2" fill="none" stroke="currentColor"
-                                stroke-width="1.5" opacity="0.6" />
-                            <rect x="30" y="30" width="20" height="20" rx="1" fill="currentColor" opacity="0.4" />
-                            <!-- Information 'p' (program) -->
-                            <text x="55" y="65" text-anchor="middle" font-size="14" fill="currentColor"
-                                font-weight="bold" font-family="JetBrains Mono">p</text>
-                            <path d="M40 40 L50 55" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 1" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 26</span>
-                        <h3>Kolmogorov Complexity</h3>
-                        <p>The math of compression and randomness — defining intelligence as the ability to find
-                            patterns</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> Python</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/27_MSI" target="_blank" class="paper-card"
-                    data-day="27" data-unit="generative">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <!-- Universal Agent-Environment loop symbol -->
-                            <circle cx="40" cy="40" r="30" fill="none" stroke="currentColor" stroke-width="2"
-                                opacity="0.3" />
-                            <circle cx="40" cy="40" r="10" fill="none" stroke="currentColor" stroke-width="2.5" />
-                            <path d="M40 10 L40 30 M40 50 L40 70 M10 40 L30 40 M50 40 L70 40" stroke="currentColor"
-                                stroke-width="2" />
-                            <path d="M20 20 L30 30 M60 20 L50 30 M20 60 L30 50 M60 60 L50 50" stroke="currentColor"
-                                stroke-width="1.5" opacity="0.5" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 27</span>
-                        <h3>Machine Super Intelligence</h3>
-                        <p>Universal Intelligence (Upsilon) — formalizing the IQ of any agent across all computable
-                            environments</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> Python</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/28_CS231n" target="_blank"
-                    class="paper-card" data-day="28" data-unit="generative">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <!-- CNN Filter Grid -->
-                            <rect x="15" y="15" width="20" height="20" rx="2" fill="none" stroke="currentColor"
-                                stroke-width="2" opacity="0.5" />
-                            <rect x="30" y="15" width="20" height="20" rx="2" fill="none" stroke="currentColor"
-                                stroke-width="2" opacity="0.6" />
-                            <rect x="45" y="15" width="20" height="20" rx="2" fill="none" stroke="currentColor"
-                                stroke-width="2" opacity="0.7" />
-                            <!-- Pooling arrow -->
-                            <path d="M40 40 L40 48" stroke="currentColor" stroke-width="2" />
-                            <polygon points="37,47 40,52 43,47" fill="currentColor" opacity="0.8" />
-                            <!-- Feature map (smaller) -->
-                            <rect x="25" y="55" width="30" height="15" rx="2" fill="currentColor" opacity="0.3" />
-                            <rect x="28" y="58" width="8" height="8" rx="1" fill="currentColor" opacity="0.6" />
-                            <rect x="39" y="58" width="8" height="8" rx="1" fill="currentColor" opacity="0.5" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 28</span>
-                        <h3>CS231n: CNNs for Visual Recognition</h3>
-                        <p>Conv layers, pooling, and FC networks from scratch — the complete CNN architecture guide</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> NumPy</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/29_PPO" target="_blank" class="paper-card"
-                    data-day="29" data-unit="rl">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <!-- PPO Clipping Function -->
-                            <line x1="10" y1="70" x2="70" y2="70" stroke="currentColor" stroke-width="2"
-                                opacity="0.5" />
-                            <line x1="10" y1="70" x2="10" y2="10" stroke="currentColor" stroke-width="2"
-                                opacity="0.5" />
-
-                            <!-- Unclipped objective (dashed) -->
-                            <line x1="15" y1="65" x2="65" y2="15" stroke="currentColor" stroke-width="2"
-                                stroke-dasharray="4 4" opacity="0.5" />
-
-                            <!-- Clipped objective (solid) -->
-                            <path d="M15 65 L35 45 L55 45 L65 35" stroke="currentColor" stroke-width="2.5"
-                                fill="none" />
-
-                            <!-- Clip bounds -->
-                            <line x1="35" y1="70" x2="35" y2="40" stroke="currentColor" stroke-width="1"
-                                stroke-dasharray="2 2" opacity="0.3" />
-                            <line x1="55" y1="70" x2="55" y2="40" stroke="currentColor" stroke-width="1"
-                                stroke-dasharray="2 2" opacity="0.3" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 29</span>
-                        <h3>Proximal Policy Optimization</h3>
-                        <p>The algorithm behind RLHF and ChatGPT — simple, stable policy gradients via clipping</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-
-                <a href="https://github.com/Ojhaharsh/30u30/tree/main/papers/30_RLHF" target="_blank" class="paper-card"
-                    data-day="30" data-unit="rl">
-                    <div class="paper-symbol">
-                        <svg viewBox="0 0 80 80">
-                            <!-- Feedback Loop -->
-                            <path d="M20 40 Q 20 20, 40 20 Q 60 20, 60 40 Q 60 60, 40 60 Q 30 60, 25 55" fill="none"
-                                stroke="currentColor" stroke-width="2.5" opacity="0.6" />
-                            <polygon points="25,55 30,55 25,50" fill="currentColor" opacity="0.8" />
-                            <!-- Comparison/Choice symbol -->
-                            <rect x="35" y="32" width="25" height="15" rx="2" fill="none" stroke="currentColor"
-                                stroke-width="1.5" opacity="0.4" />
-                            <path d="M40 37 L43 40 L50 33" fill="none" stroke="currentColor" stroke-width="2"
-                                opacity="0.9" />
-                        </svg>
-                    </div>
-                    <div class="paper-content">
-                        <span class="paper-day">Day 30</span>
-                        <h3>Deep RL from Human Feedback</h3>
-                        <p>Teaching AI via preferences — the breakthrough that brought us ChatGPT</p>
-                        <div class="paper-meta">
-                            <span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
-                            <span class="meta-item"><i class="fas fa-dumbbell"></i> 5 exercises</span>
-                        </div>
-                    </div>
-                    <div class="paper-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </div>
-                </a>
-            </div>
-
-            <div class="papers-coming">
-                <h3>Coming Next</h3>
-                <div class="coming-grid">
-                    <div class="coming-card">
-                        <span class="coming-day">Bonus Papers</span>
-                        <span class="coming-title">The Language Model Revolution (BERT, GPT-2, GPT-3...)</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="journey" class="journey">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">The Roadmap</span>
-                <h2 class="section-title">Your 30-Day Journey</h2>
-                <p class="section-desc">From sequence models to modern architectures — a complete curriculum.
+<div class="hero-quote">
+<span class="quote-mark">"</span>
+<p>如果你真正学会了这些内容，就会掌握当今重要知识的 90%。</p>
+<cite>— Ilya Sutskever</cite>
+</div>
+<div class="hero-actions">
+<a class="btn btn-primary" href="#papers">
+<span>浏览文献</span>
+<svg fill="none" height="20" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="20">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</a>
+<a class="btn btn-secondary" href="https://github.com/ojhaharsh/30u30" target="_blank">
+<i class="fab fa-github"></i>
+<span>在 GitHub 上查看</span>
+</a>
+</div>
+<div class="hero-stats">
+<div class="stat">
+<span class="stat-value">30</span>
+<span class="stat-label">篇文献已上线</span>
+</div>
+<div class="stat-divider"></div>
+<div class="stat">
+<span class="stat-value">350+</span>
+<span class="stat-label">活跃用户</span>
+</div>
+<div class="stat-divider"></div>
+<div class="stat">
+<span class="stat-value">17+</span>
+<span class="stat-label">个国家</span>
+</div>
+<div class="stat-divider"></div>
+<div class="stat">
+<span class="stat-value">42K+</span>
+<span class="stat-label">行代码</span>
+</div>
+</div>
+</div>
+<div class="hero-symbols">
+<div class="symbol symbol-1" title="Neural Networks">
+<svg viewbox="0 0 100 100">
+<circle cx="50" cy="20" fill="currentColor" opacity="0.6" r="8"></circle>
+<circle cx="25" cy="50" fill="currentColor" opacity="0.6" r="8"></circle>
+<circle cx="75" cy="50" fill="currentColor" opacity="0.6" r="8"></circle>
+<circle cx="50" cy="80" fill="currentColor" opacity="0.6" r="8"></circle>
+<line opacity="0.4" stroke="currentColor" stroke-width="2" x1="50" x2="25" y1="28" y2="42"></line>
+<line opacity="0.4" stroke="currentColor" stroke-width="2" x1="50" x2="75" y1="28" y2="42"></line>
+<line opacity="0.4" stroke="currentColor" stroke-width="2" x1="25" x2="50" y1="58" y2="72"></line>
+<line opacity="0.4" stroke="currentColor" stroke-width="2" x1="75" x2="50" y1="58" y2="72"></line>
+</svg>
+</div>
+<div class="symbol symbol-2" title="Attention Mechanism">
+<svg viewbox="0 0 100 100">
+<path d="M50 10 L90 50 L50 90 L10 50 Z" fill="none" opacity="0.5" stroke="currentColor" stroke-width="2"></path>
+<circle cx="50" cy="50" fill="currentColor" opacity="0.3" r="15"></circle>
+<circle cx="50" cy="50" fill="currentColor" opacity="0.6" r="8"></circle>
+</svg>
+</div>
+<div class="symbol symbol-3" title="Recurrence">
+<svg viewbox="0 0 100 100">
+<path d="M30 50 C30 25, 70 25, 70 50 C70 75, 30 75, 30 50" fill="none" opacity="0.5" stroke="currentColor" stroke-width="3"></path>
+<polygon fill="currentColor" opacity="0.6" points="35,45 25,50 35,55"></polygon>
+</svg>
+</div>
+</div>
+</section>
+<section class="papers" id="papers">
+<div class="container">
+<div class="section-header">
+<span class="section-tag">文献集</span>
+<h2 class="section-title">30 篇文献及配套实现</h2>
+<p class="section-desc">每篇文献配有深入讲解、清晰代码、可视化与练习。点击卡片开始探索。</p>
+</div>
+<div class="papers-filter">
+<button class="filter-btn active" data-filter="all">全部文献</button>
+<button class="filter-btn" data-filter="foundations">基础</button>
+<button class="filter-btn" data-filter="vision">视觉</button>
+<button class="filter-btn" data-filter="transformers">Transformer</button>
+<button class="filter-btn" data-filter="specialized">专门化架构</button>
+<button class="filter-btn" data-filter="generative">生成模型</button>
+<button class="filter-btn" data-filter="rl">强化学习</button>
+</div>
+<div class="papers-grid">
+<a class="paper-card" data-day="1" data-unit="foundations" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/01_Unreasonable_Effectiveness" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<path d="M15 40 Q30 15, 40 40 T65 40" fill="none" stroke="currentColor" stroke-width="3"></path>
+<circle cx="40" cy="40" fill="currentColor" r="6"></circle>
+<path d="M25 55 L55 55" opacity="0.5" stroke="currentColor" stroke-dasharray="4 3" stroke-width="2"></path>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 1 天</span>
+<h3>循环神经网络令人惊叹的有效性</h3>
+<p>字符级语言模型：生成莎士比亚风格文本、代码与音乐</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> NumPy</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="2" data-unit="foundations" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/02_Understanding_LSTM" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<rect fill="none" height="30" rx="4" stroke="currentColor" stroke-width="2.5" width="50" x="15" y="25"></rect>
+<line opacity="0.4" stroke="currentColor" stroke-width="2" x1="28" x2="28" y1="25" y2="55"></line>
+<line opacity="0.4" stroke="currentColor" stroke-width="2" x1="41" x2="41" y1="25" y2="55"></line>
+<line opacity="0.4" stroke="currentColor" stroke-width="2" x1="54" x2="54" y1="25" y2="55"></line>
+<circle cx="22" cy="40" fill="currentColor" opacity="0.7" r="4"></circle>
+<circle cx="35" cy="40" fill="currentColor" opacity="0.7" r="4"></circle>
+<circle cx="48" cy="40" fill="currentColor" opacity="0.7" r="4"></circle>
+<circle cx="60" cy="40" fill="currentColor" opacity="0.7" r="4"></circle>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 2 天</span>
+<h3>理解 LSTM 网络</h3>
+<p>门控、记忆单元与长程依赖学习</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="3" data-unit="foundations" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/03_RNN_Regularization" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<circle cx="40" cy="40" fill="none" r="22" stroke="currentColor" stroke-dasharray="6 4" stroke-width="2.5"></circle>
+<circle cx="40" cy="40" fill="currentColor" opacity="0.3" r="12"></circle>
+<path d="M28 40 L52 40 M40 28 L40 52" stroke="currentColor" stroke-width="2.5"></path>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 3 天</span>
+<h3>循环神经网络正则化</h3>
+<p>随机失活、层归一化，以及防止序列模型过拟合</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="4" data-unit="foundations" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/04_Minimizing_Description_Length" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<rect fill="none" height="40" rx="3" stroke="currentColor" stroke-width="2" width="50" x="15" y="20"></rect>
+<path d="M22 32 L58 32 M22 40 L48 40 M22 48 L52 48" opacity="0.5" stroke="currentColor" stroke-width="2"></path>
+<circle cx="58" cy="52" fill="none" r="10" stroke="currentColor" stroke-width="2"></circle>
+<path d="M55 52 L61 52 M58 49 L58 55" stroke="currentColor" stroke-width="2"></path>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 4 天</span>
+<h3>最小化描述长度</h3>
+<p>从压缩理解智能与模型选择</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> Python</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="5" data-unit="foundations" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/05_MDL_Principle" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<path d="M20 55 L30 35 L42 45 L55 20 L65 30" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+<circle cx="20" cy="55" fill="currentColor" r="4"></circle>
+<circle cx="30" cy="35" fill="currentColor" r="4"></circle>
+<circle cx="42" cy="45" fill="currentColor" r="4"></circle>
+<circle cx="55" cy="20" fill="currentColor" r="4"></circle>
+<circle cx="65" cy="30" fill="currentColor" r="4"></circle>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 5 天</span>
+<h3>最小描述长度原理教程</h3>
+<p>两部编码、序贯 MDL 与归一化最大似然</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> Python</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="6" data-unit="foundations" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/06_Complexodynamics" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<circle cx="40" cy="40" fill="none" opacity="0.3" r="25" stroke="currentColor" stroke-width="1.5"></circle>
+<circle cx="40" cy="40" fill="none" opacity="0.5" r="16" stroke="currentColor" stroke-width="2"></circle>
+<circle cx="40" cy="40" fill="currentColor" opacity="0.7" r="7"></circle>
+<path d="M40 15 L40 20 M40 60 L40 65 M15 40 L20 40 M60 40 L65 40" stroke="currentColor" stroke-width="2"></path>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 6 天</span>
+<h3>复杂性动力学第一定律</h3>
+<p>复杂系统中的信息均衡与演化动力学</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> Python</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="7" data-unit="foundations" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/07_coffee_automaton" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<rect fill="currentColor" height="12" opacity="0.3" width="12" x="18" y="18"></rect>
+<rect fill="currentColor" height="12" opacity="0.6" width="12" x="34" y="18"></rect>
+<rect fill="currentColor" height="12" opacity="0.4" width="12" x="50" y="18"></rect>
+<rect fill="currentColor" height="12" opacity="0.7" width="12" x="18" y="34"></rect>
+<rect fill="currentColor" height="12" opacity="0.9" width="12" x="34" y="34"></rect>
+<rect fill="currentColor" height="12" opacity="0.5" width="12" x="50" y="34"></rect>
+<rect fill="currentColor" height="12" opacity="0.5" width="12" x="18" y="50"></rect>
+<rect fill="currentColor" height="12" opacity="0.3" width="12" x="34" y="50"></rect>
+<rect fill="currentColor" height="12" opacity="0.8" width="12" x="50" y="50"></rect>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 7 天</span>
+<h3>咖啡自动机</h3>
+<p>细胞自动机、混沌理论与涌现行为</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> Python</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="8" data-unit="vision" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/08_alexnet" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<rect fill="none" height="56" rx="5" stroke="currentColor" stroke-width="2" width="56" x="12" y="12"></rect>
+<rect fill="currentColor" height="18" opacity="0.4" width="18" x="18" y="18"></rect>
+<rect fill="currentColor" height="18" opacity="0.6" width="18" x="44" y="18"></rect>
+<rect fill="currentColor" height="18" opacity="0.5" width="18" x="18" y="44"></rect>
+<rect fill="currentColor" height="18" opacity="0.8" width="18" x="44" y="44"></rect>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 8 天</span>
+<h3>使用卷积神经网络进行 ImageNet 分类</h3>
+<p>AlexNet——推动深度学习革命的论文</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="9" data-unit="vision" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/09_resnet" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<rect fill="none" height="30" rx="3" stroke="currentColor" stroke-width="2" width="20" x="15" y="25"></rect>
+<rect fill="none" height="30" rx="3" stroke="currentColor" stroke-width="2" width="20" x="45" y="25"></rect>
+<path d="M35 35 L45 40 L35 45" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+<path d="M25 18 Q40 10 55 18" fill="none" stroke="currentColor" stroke-dasharray="4 3" stroke-width="2"></path>
+<path d="M25 62 Q40 70 55 62" fill="none" stroke="currentColor" stroke-dasharray="4 3" stroke-width="2"></path>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 9 天</span>
+<h3>深度残差学习（ResNet）</h3>
+<p>通过跳跃连接构建超过 1000 层的网络</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="10" data-unit="vision" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/10_resnet_v2" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<rect fill="none" height="24" rx="3" stroke="currentColor" stroke-width="2.5" width="40" x="20" y="28"></rect>
+<line opacity="0.4" stroke="currentColor" stroke-width="2" x1="33" x2="33" y1="28" y2="52"></line>
+<line opacity="0.4" stroke="currentColor" stroke-width="2" x1="47" x2="47" y1="28" y2="52"></line>
+<path d="M40 15 L40 28 M40 52 L40 65" stroke="currentColor" stroke-width="2.5"></path>
+<circle cx="40" cy="15" fill="currentColor" r="4"></circle>
+<circle cx="40" cy="65" fill="currentColor" r="4"></circle>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 10 天</span>
+<h3>残差网络中的恒等映射</h3>
+<p>预激活与梯度传播改善</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="11" data-unit="vision" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/11_dilated_convolutions" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<circle cx="40" cy="40" fill="none" r="10" stroke="currentColor" stroke-width="2.5"></circle>
+<circle cx="40" cy="40" fill="none" opacity="0.5" r="20" stroke="currentColor" stroke-width="2"></circle>
+<circle cx="40" cy="40" fill="none" opacity="0.3" r="30" stroke="currentColor" stroke-width="1.5"></circle>
+<circle cx="40" cy="40" fill="currentColor" r="4"></circle>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 11 天</span>
+<h3>利用空洞卷积聚合多尺度上下文</h3>
+<p>保持分辨率的同时使感受野指数级扩大</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="12" data-unit="foundations" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/12_dropout" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<circle cx="20" cy="30" fill="currentColor" opacity="0.8" r="6"></circle>
+<circle cx="40" cy="20" fill="currentColor" opacity="0.3" r="6"></circle>
+<line opacity="0.5" stroke="currentColor" stroke-width="2" x1="35" x2="45" y1="15" y2="25"></line>
+<circle cx="60" cy="30" fill="currentColor" opacity="0.8" r="6"></circle>
+<circle cx="30" cy="50" fill="currentColor" opacity="0.3" r="6"></circle>
+<line opacity="0.5" stroke="currentColor" stroke-width="2" x1="25" x2="35" y1="45" y2="55"></line>
+<circle cx="50" cy="50" fill="currentColor" opacity="0.8" r="6"></circle>
+<circle cx="40" cy="65" fill="currentColor" opacity="0.8" r="6"></circle>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 12 天</span>
+<h3>随机失活（dropout）</h3>
+<p>防止神经网络过拟合的简单方法</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card featured" data-day="13" data-unit="transformers" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/13_attention" target="_blank">
+<div class="paper-featured-badge">里程碑论文</div>
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<circle cx="25" cy="25" fill="currentColor" opacity="0.6" r="8"></circle>
+<circle cx="55" cy="25" fill="currentColor" opacity="0.6" r="8"></circle>
+<circle cx="25" cy="55" fill="currentColor" opacity="0.6" r="8"></circle>
+<circle cx="55" cy="55" fill="currentColor" opacity="0.6" r="8"></circle>
+<line opacity="0.8" stroke="currentColor" stroke-width="2.5" x1="25" x2="55" y1="25" y2="25"></line>
+<line opacity="0.8" stroke="currentColor" stroke-width="2.5" x1="25" x2="25" y1="25" y2="55"></line>
+<line opacity="0.8" stroke="currentColor" stroke-width="2.5" x1="55" x2="55" y1="25" y2="55"></line>
+<line opacity="0.8" stroke="currentColor" stroke-width="2.5" x1="25" x2="55" y1="55" y2="55"></line>
+<line opacity="0.4" stroke="currentColor" stroke-width="2" x1="25" x2="55" y1="25" y2="55"></line>
+<line opacity="0.4" stroke="currentColor" stroke-width="2" x1="55" x2="25" y1="25" y2="55"></line>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 13 天</span>
+<h3>注意力就是你所需要的一切</h3>
+<p>推动 AI 变革的 Transformer 架构</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="14" data-unit="transformers" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/14_annotated_transformer" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<rect fill="none" height="50" rx="4" stroke="currentColor" stroke-width="2" width="50" x="15" y="15"></rect>
+<line opacity="0.8" stroke="currentColor" stroke-width="2" x1="22" x2="50" y1="28" y2="28"></line>
+<line opacity="0.6" stroke="currentColor" stroke-width="2" x1="22" x2="58" y1="38" y2="38"></line>
+<line opacity="0.8" stroke="currentColor" stroke-width="2" x1="22" x2="45" y1="48" y2="48"></line>
+<circle cx="55" cy="28" fill="currentColor" opacity="0.6" r="4"></circle>
+<circle cx="55" cy="48" fill="currentColor" opacity="0.6" r="4"></circle>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 14 天</span>
+<h3>带注释的 Transformer</h3>
+<p>逐行讲解的 PyTorch 实现</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="15" data-unit="transformers" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/15_bahdanau_attention" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<circle cx="40" cy="20" fill="currentColor" opacity="0.8" r="8"></circle>
+<circle cx="20" cy="50" fill="currentColor" opacity="0.5" r="7"></circle>
+<circle cx="40" cy="60" fill="currentColor" opacity="0.5" r="7"></circle>
+<circle cx="60" cy="50" fill="currentColor" opacity="0.5" r="7"></circle>
+<path d="M40 28 L20 43" opacity="0.7" stroke="currentColor" stroke-width="2"></path>
+<path d="M40 28 L40 53" opacity="0.9" stroke="currentColor" stroke-width="2.5"></path>
+<path d="M40 28 L60 43" opacity="0.7" stroke="currentColor" stroke-width="2"></path>
+<circle cx="40" cy="28" fill="currentColor" r="3"></circle>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 15 天</span>
+<h3>Bahdanau 注意力（神经机器翻译）</h3>
+<p>Transformer 之前的经典注意力机制</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="16" data-unit="transformers" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/16_order_matters" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<circle cx="20" cy="30" fill="currentColor" opacity="0.5" r="6"></circle>
+<circle cx="40" cy="25" fill="currentColor" opacity="0.5" r="6"></circle>
+<circle cx="60" cy="30" fill="currentColor" opacity="0.5" r="6"></circle>
+<circle cx="30" cy="45" fill="currentColor" opacity="0.5" r="6"></circle>
+<path d="M15 55 L20 30" marker-end="url(#arrowhead)" stroke="currentColor" stroke-width="2.5"></path>
+<path d="M25 60 L40 25" marker-end="url(#arrowhead)" stroke="currentColor" stroke-width="2.5"></path>
+<path d="M35 65 L30 45" marker-end="url(#arrowhead)" stroke="currentColor" stroke-width="2.5"></path>
+<circle cx="15" cy="55" fill="#ff6b6b" r="3"></circle>
+<circle cx="25" cy="60" fill="#ff6b6b" r="3"></circle>
+<circle cx="35" cy="65" fill="#ff6b6b" r="3"></circle>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 16 天</span>
+<h3>顺序很重要：面向集合的序列建模</h3>
+<p>让网络处理输入顺序不影响问题含义的集合任务</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="17" data-unit="specialized" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/17_neural_turing_machines" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<rect fill="none" height="25" rx="3" stroke="currentColor" stroke-width="2" width="60" x="10" y="20"></rect>
+<line opacity="0.3" stroke="currentColor" stroke-width="1.5" x1="22" x2="22" y="20" y2="45"></line>
+<line opacity="0.3" stroke="currentColor" stroke-width="1.5" x1="34" x2="34" y="20" y2="45"></line>
+<line opacity="0.3" stroke="currentColor" stroke-width="1.5" x1="46" x2="46" y="20" y2="45"></line>
+<line opacity="0.3" stroke="currentColor" stroke-width="1.5" x1="58" x2="58" y="20" y2="45"></line>
+<circle cx="40" cy="60" fill="none" r="10" stroke="currentColor" stroke-width="2.5"></circle>
+<path d="M40 50 L40 45" marker-end="url(#arrowhead)" stroke="currentColor" stroke-width="2"></path>
+<circle cx="28" cy="32" fill="currentColor" opacity="0.8" r="3"></circle>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 17 天</span>
+<h3>神经图灵机</h3>
+<p>带有内容寻址机制的可微外部记忆</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="18" data-unit="specialized" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/18_pointer_networks" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<circle cx="15" cy="25" fill="none" opacity="0.5" r="6" stroke="currentColor" stroke-width="2"></circle>
+<circle cx="40" cy="25" fill="none" opacity="0.5" r="6" stroke="currentColor" stroke-width="2"></circle>
+<circle cx="65" cy="25" fill="currentColor" opacity="0.8" r="6"></circle>
+<circle cx="40" cy="60" fill="none" r="8" stroke="currentColor" stroke-width="2.5"></circle>
+<path d="M40 52 L63 31" opacity="0.8" stroke="currentColor" stroke-width="2.5"></path>
+<polygon fill="currentColor" opacity="0.8" points="63,31 56,30 59,36"></polygon>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 18 天</span>
+<h3>指针网络</h3>
+<p>将注意力作为输出，指向输入元素以处理规模可变的组合问题</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="19" data-unit="specialized" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/19_relational_reasoning" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<circle cx="40" cy="20" fill="currentColor" r="6"></circle>
+<circle cx="20" cy="60" fill="currentColor" r="6"></circle>
+<circle cx="60" cy="60" fill="currentColor" r="6"></circle>
+<line stroke="currentColor" stroke-width="2" x1="40" x2="20" y1="20" y2="60"></line>
+<line stroke="currentColor" stroke-width="2" x1="40" x2="60" y1="20" y2="60"></line>
+<line stroke="currentColor" stroke-width="2" x1="20" x2="60" y1="60" y2="60"></line>
+<circle cx="40" cy="45" fill="none" opacity="0.3" r="25" stroke="currentColor" stroke-dasharray="4 2" stroke-width="1.5"></circle>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 19 天</span>
+<h3>关系推理</h3>
+<p>学习对象间的关系（Sort-of-CLEVR、关系网络）</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 7 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="20" data-unit="specialized" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/20_Relational_RNNs" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<!-- Memory Slots -->
+<rect fill="currentColor" height="20" opacity="0.6" rx="2" width="10" x="25" y="30"></rect>
+<rect fill="currentColor" height="20" opacity="0.6" rx="2" width="10" x="40" y="30"></rect>
+<rect fill="currentColor" height="20" opacity="0.6" rx="2" width="10" x="55" y="30"></rect>
+<!-- Attention Arcs -->
+<path d="M30 25 Q45 15 60 25" fill="none" stroke="currentColor" stroke-width="2"></path>
+<!-- Recurrent Cycle -->
+<path d="M20 50 Q10 40 20 30" fill="none" opacity="0.4" stroke="currentColor" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 20 天</span>
+<h3>关系循环神经网络</h3>
+<p>将记忆建模为相互作用的槽，探索 LSTM 难以处理的任务</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="21" data-unit="specialized" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/21_Neural_Message_Passing" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<!-- Molecular graph: atoms as nodes, bonds as edges -->
+<circle cx="40" cy="20" fill="currentColor" opacity="0.8" r="6"></circle>
+<circle cx="20" cy="40" fill="currentColor" opacity="0.6" r="6"></circle>
+<circle cx="60" cy="40" fill="currentColor" opacity="0.6" r="6"></circle>
+<circle cx="25" cy="62" fill="currentColor" opacity="0.5" r="6"></circle>
+<circle cx="55" cy="62" fill="currentColor" opacity="0.5" r="6"></circle>
+<!-- Bonds -->
+<line opacity="0.7" stroke="currentColor" stroke-width="2" x1="40" x2="20" y1="20" y2="40"></line>
+<line opacity="0.7" stroke="currentColor" stroke-width="2" x1="40" x2="60" y1="20" y2="40"></line>
+<line opacity="0.7" stroke="currentColor" stroke-width="2" x1="20" x2="25" y1="40" y2="62"></line>
+<line opacity="0.7" stroke="currentColor" stroke-width="2" x1="60" x2="55" y1="40" y2="62"></line>
+<line opacity="0.7" stroke="currentColor" stroke-width="2" x1="25" x2="55" y1="62" y2="62"></line>
+<!-- Message arrow -->
+<path d="M28 38 L38 23" opacity="0.4" stroke="currentColor" stroke-dasharray="3 2" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 21 天</span>
+<h3>神经消息传递</h3>
+<p>统一图神经网络：用于分子属性预测的消息、更新与读出</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="22" data-unit="specialized" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/22_deep_speech_2" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<!-- Waveform -->
+<path d="M10 40 Q17 25, 24 40 T38 40 T52 40 T66 40" fill="none" opacity="0.6" stroke="currentColor" stroke-width="2.5"></path>
+<!-- Spectrogram bars -->
+<rect fill="currentColor" height="12" opacity="0.5" rx="1" width="4" x="15" y="50"></rect>
+<rect fill="currentColor" height="16" opacity="0.6" rx="1" width="4" x="23" y="46"></rect>
+<rect fill="currentColor" height="14" opacity="0.5" rx="1" width="4" x="31" y="48"></rect>
+<rect fill="currentColor" height="18" opacity="0.7" rx="1" width="4" x="39" y="44"></rect>
+<rect fill="currentColor" height="12" opacity="0.5" rx="1" width="4" x="47" y="50"></rect>
+<rect fill="currentColor" height="15" opacity="0.6" rx="1" width="4" x="55" y="47"></rect>
+<rect fill="currentColor" height="10" opacity="0.4" rx="1" width="4" x="63" y="52"></rect>
+<!-- Arrow to text -->
+<path d="M35 35 L45 35" opacity="0.4" stroke="currentColor" stroke-width="1.5"></path>
+<polygon fill="currentColor" opacity="0.4" points="44,33 48,35 44,37"></polygon>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 22 天</span>
+<h3>Deep Speech 2</h3>
+<p>端到端语音识别：用单个神经网络替代传统自动语音识别流水线</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="23" data-unit="generative" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/23_variational_lossy_autoencoder" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<!-- Latent Code Z -->
+<circle cx="40" cy="25" fill="none" r="10" stroke="currentColor" stroke-width="2"></circle>
+<text fill="currentColor" font-size="12" font-weight="bold" text-anchor="middle" x="40" y="29">z</text>
+<!-- Decoder Grid -->
+<rect fill="none" height="20" opacity="0.6" rx="2" stroke="currentColor" stroke-width="2" width="30" x="25" y="45"></rect>
+<!-- Connection (Information Flow) -->
+<line stroke="currentColor" stroke-dasharray="3 3" stroke-width="2" x1="40" x2="40" y1="35" y2="45"></line>
+<!-- Receptive Field Limit -->
+<rect fill="currentColor" height="4" opacity="0.9" width="4" x="38" y="52"></rect>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 23 天</span>
+<h3>变分有损自编码器</h3>
+<p>通过限制解码器感受野缓解后验坍塌</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="24" data-unit="generative" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/24_gpipe" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<!-- Pipeline Stages -->
+<rect fill="currentColor" height="20" opacity="0.4" rx="2" width="12" x="15" y="30"></rect>
+<rect fill="currentColor" height="20" opacity="0.6" rx="2" width="12" x="30" y="30"></rect>
+<rect fill="currentColor" height="20" opacity="0.8" rx="2" width="12" x="45" y="30"></rect>
+<rect fill="currentColor" height="20" opacity="1.0" rx="2" width="12" x="60" y="30"></rect>
+<!-- Micro-batch arrows -->
+<path d="M22 25 L22 30" opacity="0.4" stroke="currentColor" stroke-width="1.5"></path>
+<path d="M37 25 L37 30" opacity="0.4" stroke="currentColor" stroke-width="1.5"></path>
+<path d="M52 25 L52 30" opacity="0.4" stroke="currentColor" stroke-width="1.5"></path>
+<path d="M67 25 L67 30" opacity="0.4" stroke="currentColor" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 24 天</span>
+<h3>GPipe：高效训练巨型神经网络</h3>
+<p>利用流水线并行与微批次训练超出单设备内存容量的模型</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="25" data-unit="generative" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/25_scaling_laws" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<!-- Power Law Curve -->
+<path d="M20 60 Q 30 25, 70 20" fill="none" stroke="currentColor" stroke-width="3"></path>
+<!-- Axes -->
+<line opacity="0.5" stroke="currentColor" stroke-width="2" x1="15" x2="75" y1="65" y2="65"></line>
+<line opacity="0.5" stroke="currentColor" stroke-width="2" x1="15" x2="15" y1="15" y2="75"></line>
+<!-- Scaling Particles -->
+<circle cx="20" cy="60" fill="currentColor" r="2"></circle>
+<circle cx="35" cy="40" fill="currentColor" r="3"></circle>
+<circle cx="55" cy="25" fill="currentColor" r="4"></circle>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 25 天</span>
+<h3>神经语言模型的规模定律</h3>
+<p>AI 的“物理规律”：使用幂律预测大规模模型的性能</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="26" data-unit="generative" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/26_kolmogorov_complexity" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<!-- Compressed block representation -->
+<rect fill="none" height="40" rx="3" stroke="currentColor" stroke-width="2" width="40" x="20" y="20"></rect>
+<rect fill="none" height="30" opacity="0.6" rx="2" stroke="currentColor" stroke-width="1.5" width="30" x="25" y="25"></rect>
+<rect fill="currentColor" height="20" opacity="0.4" rx="1" width="20" x="30" y="30"></rect>
+<!-- Information 'p' (program) -->
+<text fill="currentColor" font-family="JetBrains Mono" font-size="14" font-weight="bold" text-anchor="middle" x="55" y="65">p</text>
+<path d="M40 40 L50 55" stroke="currentColor" stroke-dasharray="2 1" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 26 天</span>
+<h3>柯尔莫哥洛夫复杂度</h3>
+<p>压缩与随机性的数学：从发现模式的能力理解智能</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> Python</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="27" data-unit="generative" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/27_MSI" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<!-- Universal Agent-Environment loop symbol -->
+<circle cx="40" cy="40" fill="none" opacity="0.3" r="30" stroke="currentColor" stroke-width="2"></circle>
+<circle cx="40" cy="40" fill="none" r="10" stroke="currentColor" stroke-width="2.5"></circle>
+<path d="M40 10 L40 30 M40 50 L40 70 M10 40 L30 40 M50 40 L70 40" stroke="currentColor" stroke-width="2"></path>
+<path d="M20 20 L30 30 M60 20 L50 30 M20 60 L30 50 M60 60 L50 50" opacity="0.5" stroke="currentColor" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 27 天</span>
+<h3>机器超级智能</h3>
+<p>通用智能（Upsilon）：在可计算环境上形式化评价智能体的能力</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> Python</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="28" data-unit="generative" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/28_CS231n" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<!-- CNN Filter Grid -->
+<rect fill="none" height="20" opacity="0.5" rx="2" stroke="currentColor" stroke-width="2" width="20" x="15" y="15"></rect>
+<rect fill="none" height="20" opacity="0.6" rx="2" stroke="currentColor" stroke-width="2" width="20" x="30" y="15"></rect>
+<rect fill="none" height="20" opacity="0.7" rx="2" stroke="currentColor" stroke-width="2" width="20" x="45" y="15"></rect>
+<!-- Pooling arrow -->
+<path d="M40 40 L40 48" stroke="currentColor" stroke-width="2"></path>
+<polygon fill="currentColor" opacity="0.8" points="37,47 40,52 43,47"></polygon>
+<!-- Feature map (smaller) -->
+<rect fill="currentColor" height="15" opacity="0.3" rx="2" width="30" x="25" y="55"></rect>
+<rect fill="currentColor" height="8" opacity="0.6" rx="1" width="8" x="28" y="58"></rect>
+<rect fill="currentColor" height="8" opacity="0.5" rx="1" width="8" x="39" y="58"></rect>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 28 天</span>
+<h3>CS231n：用于视觉识别的卷积神经网络</h3>
+<p>从零实现卷积、池化与全连接网络，学习完整 CNN 架构</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> NumPy</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="29" data-unit="rl" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/29_PPO" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<!-- PPO Clipping Function -->
+<line opacity="0.5" stroke="currentColor" stroke-width="2" x1="10" x2="70" y1="70" y2="70"></line>
+<line opacity="0.5" stroke="currentColor" stroke-width="2" x1="10" x2="10" y1="70" y2="10"></line>
+<!-- Unclipped objective (dashed) -->
+<line opacity="0.5" stroke="currentColor" stroke-dasharray="4 4" stroke-width="2" x1="15" x2="65" y1="65" y2="15"></line>
+<!-- Clipped objective (solid) -->
+<path d="M15 65 L35 45 L55 45 L65 35" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+<!-- Clip bounds -->
+<line opacity="0.3" stroke="currentColor" stroke-dasharray="2 2" stroke-width="1" x1="35" x2="35" y1="70" y2="40"></line>
+<line opacity="0.3" stroke="currentColor" stroke-dasharray="2 2" stroke-width="1" x1="55" x2="55" y1="70" y2="40"></line>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 29 天</span>
+<h3>近端策略优化</h3>
+<p>RLHF 和 ChatGPT 所涉及的算法：通过截断实现简洁、稳定的策略梯度更新</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+<a class="paper-card" data-day="30" data-unit="rl" href="https://github.com/Ojhaharsh/30u30/tree/main/papers/30_RLHF" target="_blank">
+<div class="paper-symbol">
+<svg viewbox="0 0 80 80">
+<!-- Feedback Loop -->
+<path d="M20 40 Q 20 20, 40 20 Q 60 20, 60 40 Q 60 60, 40 60 Q 30 60, 25 55" fill="none" opacity="0.6" stroke="currentColor" stroke-width="2.5"></path>
+<polygon fill="currentColor" opacity="0.8" points="25,55 30,55 25,50"></polygon>
+<!-- Comparison/Choice symbol -->
+<rect fill="none" height="15" opacity="0.4" rx="2" stroke="currentColor" stroke-width="1.5" width="25" x="35" y="32"></rect>
+<path d="M40 37 L43 40 L50 33" fill="none" opacity="0.9" stroke="currentColor" stroke-width="2"></path>
+</svg>
+</div>
+<div class="paper-content">
+<span class="paper-day">第 30 天</span>
+<h3>基于人类反馈的深度强化学习</h3>
+<p>通过偏好指导 AI，为后续 ChatGPT 等系统奠定方法基础</p>
+<div class="paper-meta">
+<span class="meta-item"><i class="fas fa-code"></i> PyTorch</span>
+<span class="meta-item"><i class="fas fa-dumbbell"></i> 5 个练习</span>
+</div>
+</div>
+<div class="paper-arrow">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14M12 5l7 7-7 7"></path>
+</svg>
+</div>
+</a>
+</div>
+<div class="papers-coming">
+<h3>后续内容</h3>
+<div class="coming-grid">
+<div class="coming-card">
+<span class="coming-day">附加论文</span>
+<span class="coming-title">语言模型革命（BERT、GPT-2、GPT-3……）</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="journey" id="journey">
+<div class="container">
+<div class="section-header">
+<span class="section-tag">路线图</span>
+<h2 class="section-title">你的 30 天学习路线</h2>
+<p class="section-desc">从序列模型到现代架构的完整课程。
                 </p>
-            </div>
-
-            <div class="timeline">
-                <div class="timeline-unit complete">
-                    <div class="unit-marker">
-                        <span class="unit-number">01</span>
-                        <div class="unit-line"></div>
-                    </div>
-                    <div class="unit-content">
-                        <div class="unit-header">
-                            <h3>The Foundations</h3>
-                            <span class="unit-status complete">Complete</span>
-                        </div>
-                        <p>Days 1-7 · RNNs, LSTMs, regularization, compression, and complexity theory</p>
-                        <div class="unit-papers">
-                            <span>RNNs</span>
-                            <span>LSTMs</span>
-                            <span>Dropout</span>
-                            <span>MDL</span>
-                            <span>Complexity</span>
-                            <span>Automata</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="timeline-unit complete">
-                    <div class="unit-marker">
-                        <span class="unit-number">02</span>
-                        <div class="unit-line"></div>
-                    </div>
-                    <div class="unit-content">
-                        <div class="unit-header">
-                            <h3>The Deep Learning Explosion</h3>
-                            <span class="unit-status complete">Complete</span>
-                        </div>
-                        <p>Days 8-12 · CNNs, residual learning, and the vision revolution</p>
-                        <div class="unit-papers">
-                            <span>AlexNet</span>
-                            <span>ResNet</span>
-                            <span>ResNet V2</span>
-                            <span>Dilated Conv</span>
-                            <span>Dropout</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="timeline-unit complete">
-                    <div class="unit-marker">
-                        <span class="unit-number">03</span>
-                        <div class="unit-line"></div>
-                    </div>
-                    <div class="unit-content">
-                        <div class="unit-header">
-                            <h3>The Transformer Era</h3>
-                            <span class="unit-status complete">Complete</span>
-                        </div>
-                        <p>Days 13-16 · Attention mechanisms and sequence-to-sequence learning</p>
-                        <div class="unit-papers">
-                            <span>Attention</span>
-                            <span>Annotated Transformer</span>
-                            <span>Bahdanau</span>
-                            <span>Order Matters</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="timeline-unit complete">
-                    <div class="unit-marker">
-                        <span class="unit-number">04</span>
-                        <div class="unit-line"></div>
-                    </div>
-                    <div class="unit-content">
-                        <div class="unit-header">
-                            <h3>Specialized Architectures</h3>
-                            <span class="unit-status complete">Complete</span>
-                        </div>
-                        <p>Days 17-22 · Memory networks, graphs, reasoning, and speech</p>
-                        <div class="unit-papers">
-                            <span>Neural Turing Machines</span>
-                            <span>Pointer Networks</span>
-                            <span>Relational Reasoning</span>
-                            <span>Relational RNNs</span>
-                            <span>MPNNs</span>
-                            <span>Deep Speech 2</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="timeline-unit complete">
-                    <div class="unit-marker">
-                        <span class="unit-number">05</span>
-                        <div class="unit-line"></div>
-                    </div>
-                    <div class="unit-content">
-                        <div class="unit-header">
-                            <h3>Generative Models & Scale</h3>
-                            <span class="unit-status complete">Complete</span>
-                        </div>
-                        <p>Days 23-28 · VAEs, Scaling, Kolmogorov Complexity, SMI, and CNNs</p>
-                        <div class="unit-papers">
-                            <span>VLAE</span>
-                            <span>GPipe</span>
-                            <span>Scaling Laws</span>
-                            <span>Kolmogorov Complexity</span>
-                            <span>Machine Super Intelligence</span>
-                            <span>CS231n CNNs</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="timeline-unit complete">
-                    <div class="unit-marker">
-                        <span class="unit-number">06</span>
-                        <div class="unit-line"></div>
-                    </div>
-                    <div class="unit-content">
-                        <div class="unit-header">
-                            <h3>Modern Foundations</h3>
-                            <span class="unit-status complete">Complete</span>
-                        </div>
-                        <p>Days 29-30 · PPO and the path to ChatGPT (RLHF)</p>
-                        <div class="unit-papers">
-                            <span>Proximal Policy Optimization (PPO)</span>
-                            <span>RLHF</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="timeline-unit future">
-                    <div class="unit-marker">
-                        <span class="unit-number">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                                stroke-linecap="round" stroke-linejoin="round"
-                                style="width: 24px; height: 24px; opacity: 0.8;">
-                                <path
-                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                                <polyline points="3.29 7 12 12 20.71 7" />
-                                <line x1="12" y1="22" x2="12" y2="12" />
-                            </svg>
-                        </span>
-                        <div class="unit-line"></div>
-                    </div>
-                    <div class="unit-content">
-                        <div class="unit-header">
-                            <h3>The Language Model Revolution</h3>
-                            <span class="unit-status upcoming">Coming</span>
-                        </div>
-                        <p>Bonus Papers · BERT, GPT-2, GPT-3, Chinchilla</p>
-                        <div class="unit-papers">
-                        </div>
-                    </div>
-                </div>
-            </div>
-    </section>
-
-    <section id="about" class="about">
-        <div class="container">
-            <div class="about-grid">
-                <div class="about-content">
-                    <span class="section-tag">Why 30u30</span>
-                    <h2 class="section-title">Learn by Building</h2>
-                    <p class="about-text">
-                        Every paper comes with complete, runnable implementations.
-                        No "left as an exercise" — we build everything from scratch so you
-                        truly understand how these systems work.
+</div>
+<div class="timeline">
+<div class="timeline-unit complete">
+<div class="unit-marker">
+<span class="unit-number">01</span>
+<div class="unit-line"></div>
+</div>
+<div class="unit-content">
+<div class="unit-header">
+<h3>基础篇</h3>
+<span class="unit-status complete">已提供</span>
+</div>
+<p>第 1–7 天 · RNN、LSTM、正则化、压缩与复杂性理论</p>
+<div class="unit-papers">
+<span>RNNs</span>
+<span>LSTMs</span>
+<span>随机失活（dropout）</span>
+<span>MDL</span>
+<span>复杂性</span>
+<span>自动机</span>
+</div>
+</div>
+</div>
+<div class="timeline-unit complete">
+<div class="unit-marker">
+<span class="unit-number">02</span>
+<div class="unit-line"></div>
+</div>
+<div class="unit-content">
+<div class="unit-header">
+<h3>深度学习的兴起</h3>
+<span class="unit-status complete">已提供</span>
+</div>
+<p>第 8–12 天 · CNN、残差学习与视觉领域变革</p>
+<div class="unit-papers">
+<span>AlexNet</span>
+<span>ResNet</span>
+<span>ResNet V2</span>
+<span>空洞卷积</span>
+<span>随机失活（dropout）</span>
+</div>
+</div>
+</div>
+<div class="timeline-unit complete">
+<div class="unit-marker">
+<span class="unit-number">03</span>
+<div class="unit-line"></div>
+</div>
+<div class="unit-content">
+<div class="unit-header">
+<h3>Transformer 时代</h3>
+<span class="unit-status complete">已提供</span>
+</div>
+<p>第 13–16 天 · 注意力机制与序列到序列学习</p>
+<div class="unit-papers">
+<span>注意力</span>
+<span>带注释的 Transformer</span>
+<span>Bahdanau</span>
+<span>顺序很重要</span>
+</div>
+</div>
+</div>
+<div class="timeline-unit complete">
+<div class="unit-marker">
+<span class="unit-number">04</span>
+<div class="unit-line"></div>
+</div>
+<div class="unit-content">
+<div class="unit-header">
+<h3>专门化架构</h3>
+<span class="unit-status complete">已提供</span>
+</div>
+<p>第 17–22 天 · 记忆网络、图、推理与语音</p>
+<div class="unit-papers">
+<span>神经图灵机</span>
+<span>指针网络</span>
+<span>关系推理</span>
+<span>关系循环神经网络</span>
+<span>MPNNs</span>
+<span>Deep Speech 2</span>
+</div>
+</div>
+</div>
+<div class="timeline-unit complete">
+<div class="unit-marker">
+<span class="unit-number">05</span>
+<div class="unit-line"></div>
+</div>
+<div class="unit-content">
+<div class="unit-header">
+<h3>生成模型与规模扩展</h3>
+<span class="unit-status complete">已提供</span>
+</div>
+<p>第 23–28 天 · VAE、规模扩展、柯尔莫哥洛夫复杂度、机器超级智能与 CNN</p>
+<div class="unit-papers">
+<span>VLAE</span>
+<span>GPipe</span>
+<span>规模定律</span>
+<span>柯尔莫哥洛夫复杂度</span>
+<span>机器超级智能</span>
+<span>CS231n 卷积神经网络</span>
+</div>
+</div>
+</div>
+<div class="timeline-unit complete">
+<div class="unit-marker">
+<span class="unit-number">06</span>
+<div class="unit-line"></div>
+</div>
+<div class="unit-content">
+<div class="unit-header">
+<h3>现代基础</h3>
+<span class="unit-status complete">已提供</span>
+</div>
+<p>第 29–30 天 · PPO 与通向 ChatGPT 的 RLHF 方法</p>
+<div class="unit-papers">
+<span>近端策略优化（PPO）</span>
+<span>RLHF</span>
+</div>
+</div>
+</div>
+<div class="timeline-unit future">
+<div class="unit-marker">
+<span class="unit-number">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" style="width: 24px; height: 24px; opacity: 0.8;" viewbox="0 0 24 24">
+<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+<polyline points="3.29 7 12 12 20.71 7"></polyline>
+<line x1="12" x2="12" y1="22" y2="12"></line>
+</svg>
+</span>
+<div class="unit-line"></div>
+</div>
+<div class="unit-content">
+<div class="unit-header">
+<h3>语言模型革命</h3>
+<span class="unit-status upcoming">即将推出</span>
+</div>
+<p>附加论文 · BERT、GPT-2、GPT-3、Chinchilla</p>
+<div class="unit-papers">
+</div>
+</div>
+</div>
+</div>
+</div></section>
+<section class="about" id="about">
+<div class="container">
+<div class="about-grid">
+<div class="about-content">
+<span class="section-tag">为什么选择 30u30</span>
+<h2 class="section-title">通过动手实现来学习</h2>
+<p class="about-text">
+                        每篇文献配有实现与参考解答。核心内容不会只留给读者自行补全，而是通过从零构建来解释系统如何运作。练习中的待完成代码仍需读者亲手实现。
                     </p>
-                    <div class="about-features">
-                        <div class="feature">
-                            <div class="feature-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path
-                                        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-                                </svg>
-                            </div>
-                            <div class="feature-text">
-                                <h4>Production Code</h4>
-                                <p>Clean, documented, runs everywhere</p>
-                            </div>
-                        </div>
-                        <div class="feature">
-                            <div class="feature-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                                </svg>
-                            </div>
-                            <div class="feature-text">
-                                <h4>5 Exercises Per Paper</h4>
-                                <p>With complete solutions</p>
-                            </div>
-                        </div>
-                        <div class="feature">
-                            <div class="feature-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                                    <line x1="8" y1="21" x2="16" y2="21" />
-                                    <line x1="12" y1="17" x2="12" y2="21" />
-                                </svg>
-                            </div>
-                            <div class="feature-text">
-                                <h4>Interactive Notebooks</h4>
-                                <p>Run and experiment live</p>
-                            </div>
-                        </div>
-                        <div class="feature">
-                            <div class="feature-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                                </svg>
-                            </div>
-                            <div class="feature-text">
-                                <h4>Deep Explanations</h4>
-                                <p>Theory meets practice</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="about-visual">
-                    <div class="code-preview">
-                        <div class="code-header">
-                            <span class="code-dot"></span>
-                            <span class="code-dot"></span>
-                            <span class="code-dot"></span>
-                            <span class="code-title">transformer.py</span>
-                        </div>
-                        <pre class="code-content"><code><span class="code-keyword">class</span> <span class="code-class">MultiHeadAttention</span>(nn.Module):
-    <span class="code-string">"""Multi-head attention from scratch."""</span>
+<div class="about-features">
+<div class="feature">
+<div class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+</svg>
+</div>
+<div class="feature-text">
+<h4>实用代码</h4>
+<p>清晰、有文档、便于运行</p>
+</div>
+</div>
+<div class="feature">
+<div class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10"></circle>
+<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+<line x1="12" x2="12.01" y1="17" y2="17"></line>
+</svg>
+</div>
+<div class="feature-text">
+<h4>每篇文献配套 5 个练习</h4>
+<p>附完整参考解答</p>
+</div>
+</div>
+<div class="feature">
+<div class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<rect height="14" rx="2" ry="2" width="20" x="2" y="3"></rect>
+<line x1="8" x2="16" y1="21" y2="21"></line>
+<line x1="12" x2="12" y1="17" y2="21"></line>
+</svg>
+</div>
+<div class="feature-text">
+<h4>交互式 Notebook</h4>
+<p>即时运行并开展实验</p>
+</div>
+</div>
+<div class="feature">
+<div class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+</svg>
+</div>
+<div class="feature-text">
+<h4>深入讲解</h4>
+<p>理论结合实践</p>
+</div>
+</div>
+</div>
+</div>
+<div class="about-visual">
+<div class="code-preview">
+<div class="code-header">
+<span class="code-dot"></span>
+<span class="code-dot"></span>
+<span class="code-dot"></span>
+<span class="code-title">transformer.py</span>
+</div>
+<pre class="code-content"><code><span class="code-keyword">class</span> <span class="code-class">MultiHeadAttention</span>(nn.Module):
+    <span class="code-string">"""从零实现多头注意力。"""</span>
     
     <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, d_model, n_heads):
         <span class="code-keyword">super</span>().__init__()
@@ -1452,78 +1269,70 @@
         self.W_v = nn.Linear(d_model, d_model)
         
     <span class="code-keyword">def</span> <span class="code-function">forward</span>(self, x):
-        <span class="code-comment"># Compute attention scores</span>
+        <span class="code-comment"># 计算注意力分数</span>
         scores = Q @ K.transpose(-2, -1)
         scores = scores / math.sqrt(self.d_k)
         attn = F.softmax(scores, dim=-1)
         <span class="code-keyword">return</span> attn @ V</code></pre>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="cta">
-        <div class="container">
-            <div class="cta-content">
-                <h2>Ready to Master the Foundations?</h2>
-                <p>Join the journey. Learn AI the right way — by building from scratch.</p>
-                <div class="cta-actions">
-                    <a href="https://github.com/ojhaharsh/30u30" target="_blank" class="btn btn-primary btn-large">
-                        <i class="fab fa-github"></i>
-                        <span>Star on GitHub</span>
-                    </a>
-                    <a href="#papers" class="btn btn-secondary btn-large">
-                        <span>Start Learning</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <span class="footer-logo">
-                        <span class="logo-30">30</span><span class="logo-u">u</span><span class="logo-30">30</span>
-                    </span>
-                    <p>30 foundational AI papers in 30 days.</p>
-                </div>
-                <div class="footer-links">
-                    <div class="footer-column">
-                        <h4>Explore</h4>
-                        <a href="#papers">Papers</a>
-                        <a href="#journey">Journey</a>
-                        <a href="#about">About</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Resources</h4>
-                        <a href="https://github.com/ojhaharsh/30u30" target="_blank">GitHub</a>
-                        <a href="https://github.com/ojhaharsh/30u30/issues" target="_blank">Issues</a>
-                        <a href="https://github.com/ojhaharsh/30u30/discussions" target="_blank">Discussions</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Connect</h4>
-                        <a href="https://www.linkedin.com/in/harshvardhan-ojha/" target="_blank">LinkedIn</a>
-                        <a href="https://github.com/ojhaharsh" target="_blank">GitHub Profile</a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 30u30 by Harsh Ojha. <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/"
-                        target="_blank" style="color: var(--color-primary);">CC BY-NC-ND 4.0</a> — Learn freely,
-                    but no
-                    copying or commercial use.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script src="js/script.js"></script>
-
-    <script data-goatcounter="https://30u30.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-
-    <script>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="cta">
+<div class="container">
+<div class="cta-content">
+<h2>准备好掌握基础了吗？</h2>
+<p>加入学习路线，通过从零实现掌握 AI。</p>
+<div class="cta-actions">
+<a class="btn btn-primary btn-large" href="https://github.com/ojhaharsh/30u30" target="_blank">
+<i class="fab fa-github"></i>
+<span>在 GitHub 上点亮星标</span>
+</a>
+<a class="btn btn-secondary btn-large" href="#papers">
+<span>开始学习</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<footer class="footer">
+<div class="container">
+<div class="footer-content">
+<div class="footer-brand">
+<span class="footer-logo">
+<span class="logo-30">30</span><span class="logo-u">u</span><span class="logo-30">30</span>
+</span>
+<p>30 天学习 30 篇 AI 基础文献。</p>
+</div>
+<div class="footer-links">
+<div class="footer-column">
+<h4>探索</h4>
+<a href="#papers">文献</a>
+<a href="#journey">学习路线</a>
+<a href="#about">关于</a>
+</div>
+<div class="footer-column">
+<h4>资源</h4>
+<a href="https://github.com/ojhaharsh/30u30" target="_blank">GitHub</a>
+<a href="https://github.com/ojhaharsh/30u30/issues" target="_blank">问题反馈</a>
+<a href="https://github.com/ojhaharsh/30u30/discussions" target="_blank">讨论区</a>
+</div>
+<div class="footer-column">
+<h4>联系</h4>
+<a href="https://www.linkedin.com/in/harshvardhan-ojha/" target="_blank">LinkedIn</a>
+<a href="https://github.com/ojhaharsh" target="_blank">GitHub 个人主页</a>
+</div>
+</div>
+</div>
+<div class="footer-bottom">
+<p>© 2026 30u30，作者 Harsh Ojha。 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" style="color: var(--color-primary);" target="_blank">CC BY-NC-ND 4.0</a> ——可自由学习；复制传播须遵守署名、非商业使用和禁止传播改编作品等许可条款。</p>
+</div>
+</div>
+</footer>
+<script src="js/script.js"></script>
+<script async="" data-goatcounter="https://30u30.goatcounter.com/count" src="//gc.zgo.at/count.js"></script>
+<script>
         document.addEventListener('DOMContentLoaded', () => {
             const stats = document.querySelectorAll('.stat-value');
 
@@ -1553,5 +1362,4 @@
         }
     </script>
 </body>
-
 </html>

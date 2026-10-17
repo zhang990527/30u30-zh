@@ -1,23 +1,20 @@
-"""
-Exercise 4: Adjusted Coarse-Graining (Section 6)
+"""练习 4：调整后的粗粒化（第 6 节）
 
-The paper found that the 3-bucket thresholding (Section 5) produces artifacts:
-border pixels fluctuate between bucket values, creating fake complexity
-especially in the non-interacting model.
+论文发现，3 分箱阈值化（第 5 节）产生伪影：
+边界像素在不同分箱值间波动，产生虚假复杂度，
+尤其是在无相互作用模型中。
 
-Section 6 fixes this with:
-  1. More buckets (7 instead of 3)
-  2. Row-majority adjustment: snap cells near the row majority value
+第 6 节的修正方法：
+  1. 增加分箱数（由 3 改为 7）
+  2. 行众数调整：将接近该行众数的格点归并到众数
 
-Your task:
-  1. Implement the row-majority adjustment algorithm
-  2. Run the non-interacting model with 3-bucket (no adjustment) and
-     7-bucket (with adjustment)
-  3. Show that the adjusted method removes fake complexity from the
-     non-interacting model but preserves it for the interacting model
+任务：
+  1. 实现行众数调整算法
+  2. 用 3 分箱（不调整）和 7 分箱（调整）运行无相互作用模型
+  3. 展示调整后的方法能消除无相互作用模型的虚假复杂度，
+     同时保留有相互作用模型的复杂度
 
-Paper reference: Section 6
-"""
+论文参考：第 6 节"""
 
 import sys
 import os
@@ -30,37 +27,33 @@ from implementation import (
 
 
 def row_majority_adjust(thresholded: np.ndarray) -> np.ndarray:
-    """
-    TODO: Implement the row-majority adjustment from Section 6.1.
+    """TODO：实现第 6.1 节的行众数调整。
 
-    For each row:
-      1. Find the majority (most common) value
-      2. For each cell: if it's within 1 bucket of the majority, set it to majority
+对每行：
+  1. 找到众数（最常见的值）
+  2. 对每个格点：若与众数相差不超过 1 个分箱，则设为众数
 
-    "If a cell is within one threshold value of the majority value in its row,
-    it is adjusted to the majority value." (Section 6.1)
+“若某格点的值与该行众数相差不超过一个阈值间隔，
+就将其调整为众数。”（第 6.1 节）
 
-    Returns adjusted array (don't modify input).
-    """
-    # YOUR CODE HERE
+返回调整后的数组，不要修改输入。"""
+    # 在此编写代码
     pass
 
 
 def measure_with_method(grid, grain_size, num_buckets, use_adjustment):
-    """
-    TODO: Measure complexity using specified method.
+    """TODO：用指定方法测量复杂度。
 
-    1. Coarse-grain the grid
-    2. Threshold into num_buckets
-    3. If use_adjustment, apply row_majority_adjust
-    4. Compress and return size
-    """
-    # YOUR CODE HERE
+1. 对网格粗粒化
+2. 按阈值分为 num_buckets 箱
+3. 若 use_adjustment 为真，应用 row_majority_adjust
+4. 压缩并返回大小"""
+    # 在此编写代码
     pass
 
 
 if __name__ == '__main__':
-    print("Adjusted Coarse-Graining Experiment (Section 6)")
+    print("调整后的粗粒化实验（第 6 节）")
     print("=" * 50)
 
     grid_size = 50
@@ -68,7 +61,7 @@ if __name__ == '__main__':
     num_snapshots = 50
 
     for model in ['interacting', 'non_interacting']:
-        print(f"\n{model.replace('_', '-').title()} model:")
+        print(f"\n{model.replace('_', '-').title()} 模型：")
 
         ca = CoffeeAutomaton(grid_size, model, seed=42)
         steps_per = total_steps // num_snapshots
@@ -88,10 +81,10 @@ if __name__ == '__main__':
                 cx_7adjusted.append(c7)
 
         if cx_3bucket:
-            print(f"  3-bucket peak: {max(cx_3bucket)}")
-            print(f"  7-bucket adjusted peak: {max(cx_7adjusted)}")
+            print(f"  3 分箱峰值：{max(cx_3bucket)}")
+            print(f"  调整后的 7 分箱峰值：{max(cx_7adjusted)}")
 
-    # Expected: non-interacting 7-bucket adjusted should be much lower
-    # than non-interacting 3-bucket (artifacts removed)
-    print("\nIf non-interacting 7-bucket adjusted is much lower than 3-bucket,")
-    print("you've successfully removed the thresholding artifacts (Section 6).")
+    # 预期：调整后的无相互作用 7 分箱结果应显著低于
+    # 无相互作用 3 分箱结果（伪影已消除）
+    print("\n若无相互作用模型调整后的 7 分箱结果远低于 3 分箱，")
+    print("说明已成功消除阈值化伪影（第 6 节）。")

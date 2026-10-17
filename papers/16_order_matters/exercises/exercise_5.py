@@ -1,14 +1,14 @@
 """
-Exercise 5: Traveling Salesman Problem (TSP)
+练习 5：旅行商问题（TSP）
 ============================================
 
-Approximate combinatorial optimization using Pointer Networks.
+使用指针网络近似求解组合优化问题。
 
-Task: Given city coordinates, find a tour that visits all cities and 
-      minimizes total Euclidean distance.
+任务：给定城市坐标，找出访问所有城市且
+      总欧氏距离尽可能短的巡回路径。
 
-Concept: TSP is NP-Hard. Neural networks are used here to learn a strong 
-         approximation heuristic.
+概念：TSP 是 NP 难问题。此处用神经网络学习效果较好的
+         近似启发式方法。
 """
 
 import torch
@@ -22,7 +22,7 @@ from implementation import ReadProcessWrite
 
 class TSPDataset(Dataset):
     """
-    TSP instances where ground truth is provided by a nearest-neighbor greedy heuristic.
+    TSP 实例，其监督目标由最近邻贪心启发式方法提供。
     """
     def __init__(self, num_samples, num_cities):
         self.num_samples = num_samples
@@ -60,7 +60,7 @@ def compute_tour_length(tour, cities):
 
 
 def demo_tsp():
-    print("Training Pointer Network for TSP Approximation")
+    print('训练指针网络近似求解 TSP')
     print("-" * 30)
     
     num_cities = 10
@@ -73,17 +73,12 @@ def demo_tsp():
         num_layers=3
     ).to(device)
     
-    print("TSP model initialized.")
+    print('TSP 模型已初始化。')
 
 
 if __name__ == "__main__":
     demo_tsp()
     
-    print("Exercise 5 Summary")
+    print('练习 5 小结')
     print("-" * 30)
-    print("""
-Key concepts covered:
-1. Combinatorial Optimization: Learning to solve search problems from data.
-2. Heuristic Learning: Training on greedy baseline outputs to learn generalizable rules.
-3. Path Consistency: Ensuring the model generates a valid permutation (no revisiting).
-    """)
+    print('\n涵盖的关键概念：\n1. 组合优化：从数据中学习求解搜索问题。\n2. 启发式学习：用贪心基线输出训练，学习可泛化的规则。\n3. 路径一致性：确保模型生成合法置换（不重复访问）。\n    ')

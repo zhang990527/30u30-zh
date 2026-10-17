@@ -1,173 +1,175 @@
-# Paper Notes: Understanding LSTM Networks
+# 原文笔记：理解 LSTM 网络（Understanding LSTM Networks）
 
-> Christopher Olah's blog post (August 2015)
+> Christopher Olah 的博客文章（2015 年 8 月）
 > http://colah.github.io/posts/2015-08-Understanding-LSTMs/
 
 ---
 
-## ELI5 (Explain Like I'm 5)
+## 通俗解释（ELI5）
 
-Imagine you're reading a really long story, and someone asks you "who was the main character?" If you only remember the last sentence, you're stuck. You need a way to keep important notes while you read — like writing key facts on a sticky note.
+假设你正在读一个很长的故事，有人问你“主角是谁？”如果只记得最后一句，你就答不上来。你需要一边阅读，一边保留重要笔记，例如把关键事实写在便签上。
 
-That's what an LSTM does. A regular RNN is like reading without notes — you forget stuff fast. An LSTM carries a "sticky note" (the cell state) that it can write on, erase from, and read at each step. Three "rules" control the sticky note:
+LSTM 就像这样。普通 RNN 像是不做笔记地阅读，很快便会遗忘。LSTM 则携带一张“便签”，也就是细胞状态（cell state），每一步都可以写入、擦除和读取。三个“规则”控制这张便签：
 
-1. **Erase rule** (forget gate): scratch out old notes that aren't relevant anymore
-2. **Write rule** (input gate): add new important facts
-3. **Read rule** (output gate): decide which notes are relevant right now
+1. **擦除规则**（遗忘门）：划掉不再相关的旧笔记。
+2. **写入规则**（输入门）：添加重要的新事实。
+3. **读取规则**（输出门）：决定当前哪些笔记与输出有关。
 
-The sticky note travels alongside the reading, and information on it doesn't degrade — unlike a regular RNN where everything gets fuzzier over time.
+便签伴随阅读过程向前传递。与普通 RNN 中信息容易随时间变得模糊不同，细胞状态提供了保留信息的路径。
 
-Note: This analogy is ours, not Colah's. His metaphor is the "conveyor belt" — see below.
-
----
-
-## What This Post Actually Is
-
-This isn't a research paper — it's a visual explainer. Colah walks through how LSTMs work step by step, using diagrams that became the de facto reference for understanding LSTMs. If you've seen an LSTM diagram anywhere on the internet, it probably traces back to this post.
-
-The post covers: RNN recap, the long-term dependency problem, the LSTM cell state and gates, and LSTM variants (including GRUs).
+注意：便签是本仓库的比喻，并非 Colah 的原话。他使用的比喻是“传送带”，见下文。信息是否保持不变仍取决于门控值。
 
 ---
 
-## The Long-Term Dependency Problem
+## 原文是什么类型的文章
 
-Colah's key examples:
+这是一篇图解文章，而非研究论文。Colah 通过一系列图示逐步讲解 LSTM 的工作方式；这些图示后来成为理解 LSTM 的常用参考。网上常见的 LSTM 示意图，很可能源于这篇文章。
 
-**Short-term (easy):** "the clouds are in the ___" — predicting "sky" only needs recent context. RNNs handle this fine.
-
-**Long-term (hard):** "I grew up in France... I speak fluent ___" — predicting "French" requires remembering "France" from much earlier. The relevant information and where it's needed are far apart. RNNs struggle here.
-
-He references Hochreiter (1991) and Bengio et al. (1994) as the work that identified fundamental reasons why this is hard — gradients either vanish or explode when backpropagating through many time steps.
+原文内容包括：回顾循环神经网络（RNN）、长期依赖问题、LSTM 的细胞状态与门，以及包括 GRU 在内的 LSTM 变体。
 
 ---
 
-## The Cell State: Colah's "Conveyor Belt"
+## 长期依赖问题
 
-This is the central metaphor of the post, in Colah's own words:
+Colah 的主要例子：
 
-> "The cell state is kind of like a conveyor belt. It runs straight down the entire chain, with only some minor linear interactions. It's very easy for information to just flow along it unchanged."
+**短期依赖（较容易）：**“the clouds are in the ___”（云在___中）。预测 “sky” 只需要最近的上下文，RNN 一般能处理。
 
-The cell state is a separate path that runs parallel to the hidden state. Information can ride along it without degradation, unless the LSTM explicitly modifies it through gates.
+**长期依赖（较困难）：**“I grew up in France... I speak fluent ___”（我在法国长大……我能流利地说___）。预测 “French” 需要记住前面很远处的 “France”。相关信息与使用它的位置相距很远，这是 RNN 难以处理的情况。
 
-Standard RNN: just a hidden state, passed through a tanh at each step.
-LSTM: hidden state + cell state, where the cell state has a direct additive connection across time steps.
+原文引用 Hochreiter（1991）与 Bengio 等（1994），说明这种困难的根本原因：经过很多时间步的反向传播后，梯度可能消失或爆炸。
 
 ---
 
-## The Three Gates (Step by Step from the Post)
+## 细胞状态：Colah 的“传送带”
 
-Gates are sigmoid layers followed by pointwise multiplication. Sigmoid outputs values between 0 ("let nothing through") and 1 ("let everything through").
+这是原文的核心比喻。以下为 Colah 原话的中文翻译：
 
-### 1. Forget Gate
+> “细胞状态有点像一条传送带。它沿着整条链直接向前传递，期间只有少量线性交互。信息很容易沿着它保持不变地流动。”
 
-> "The first step in our LSTM is to decide what information we're going to throw away from the cell state."
+细胞状态是与隐藏状态（hidden state）并行的一条独立路径。除非 LSTM 通过门控对它进行修改，信息可以沿这条路径保留。
 
-Looks at h_{t-1} and x_t, outputs a value between 0 and 1 for each element in the cell state.
+标准 RNN：只有隐藏状态，每步都经过 tanh 变换。
+LSTM：隐藏状态加上细胞状态，细胞状态在相邻时间步之间具有直接的加性更新路径。
 
-**Colah's example:** In a language model tracking subject gender, when we encounter a new subject, we want to forget the old one's gender.
+---
+
+## 三个门：按原文逐步讲解
+
+门由 sigmoid 层与逐元素乘法构成。sigmoid 输出 0（“完全不让信息通过”）与 1（“让全部信息通过”）之间的数值。
+
+### 1. 遗忘门（Forget Gate）
+
+> “LSTM 的第一步，是决定从细胞状态中丢弃哪些信息。”
+
+它读取 h_{t-1} 和 x_t，为细胞状态的每一个元素输出一个介于 0 与 1 之间的值。
+
+**Colah 的例子：** 在跟踪主语性别的语言模型中，遇到新主语时，希望遗忘旧主语的性别。
 
 $$f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)$$
 
-### 2. Input Gate + Cell Candidate
+### 2. 输入门与候选细胞状态（Input Gate + Cell Candidate）
 
-Two parts:
-- **Input gate** (sigmoid): decides which values to update
-- **Cell candidate** (tanh): creates a vector of new candidate values
+由两部分组成：
+- **输入门**（sigmoid）：决定更新哪些值。
+- **候选细胞状态**（tanh）：生成新的候选值向量。
 
-**Colah's example:** We want to add the new subject's gender to the cell state, replacing the one we're forgetting.
+**Colah 的例子：** 希望把新主语的性别加入细胞状态，替换正在遗忘的旧信息。
 
 $$i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)$$
 $$\tilde{C}_t = \tanh(W_C \cdot [h_{t-1}, x_t] + b_C)$$
 
-### 3. Cell State Update
+### 3. 更新细胞状态
 
-This is where the actual memory update happens:
+真正的记忆更新发生在这里：
 
 $$C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t$$
 
-Forget gate scales old memory, input gate scales new candidates, then they're added. This additive update is why gradients flow well — the derivative of C_t with respect to C_{t-1} is just f_t, not a matrix multiplication.
+遗忘门缩放旧记忆，输入门缩放新的候选值，然后将二者相加。这种加性更新有助于梯度传播：在固定门值的细胞状态直接路径上，C_t 对 C_{t-1} 的导数为 f_t，无需经过权重矩阵乘法。
 
-### 4. Output Gate
+### 4. 输出门（Output Gate）
 
-> "Finally, we need to decide what we're going to output."
+> “最后，我们需要决定输出什么。”
 
-Sigmoid decides which parts of the cell state to expose. The cell state is pushed through tanh (to get values between -1 and 1), then multiplied by the output gate.
+sigmoid 决定输出细胞状态中的哪些部分。细胞状态先经过 tanh，把取值映射至 -1 到 1，再逐元素乘以输出门。
 
-**Colah's example:** If we just saw a subject, we might want to output information relevant to a verb — like whether the subject is singular or plural, for verb conjugation.
+**Colah 的例子：** 如果刚刚读到一个主语，可能希望输出与动词有关的信息，例如主语是单数还是复数，以选择正确的动词形式。
 
 $$o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)$$
 $$h_t = o_t \odot \tanh(C_t)$$
 
 ---
 
-## Variants Covered in the Post
+## 原文讨论的变体
 
-### Peephole Connections (Gers & Schmidhuber, 2000)
-Gates can look at the cell state directly, not just h_{t-1} and x_t. Some papers use peepholes on all gates, some on just a few.
+### 窥孔连接（Peephole Connections，Gers 与 Schmidhuber，2000）
+门可以直接读取细胞状态，而不局限于 h_{t-1} 与 x_t。有的论文为所有门加入窥孔连接，有的只为部分门加入。
 
-### Coupled Forget and Input Gates
-Instead of deciding separately what to forget and what to add, make those decisions together: only forget when something new is coming in, only add when making room.
+### 耦合遗忘门与输入门
+将“遗忘什么”和“添加什么”两个决策结合起来：只有新信息写入时才遗忘，只有腾出空间时才添加。
 
-### GRU (Cho et al., 2014)
-Merges forget and input gates into a single "update gate." Also merges cell state and hidden state. Simpler than LSTM, increasingly popular at the time of writing.
+### 门控循环单元（GRU，Cho 等，2014）
+将遗忘门与输入门的作用合并为一个“更新门”，同时合并细胞状态与隐藏状态。它比 LSTM 简单，在原文写作时日益流行。
 
-### Do Variants Matter?
-Colah references two key studies:
-- **Greff et al. (2015)** compared popular variants and found "they're all about the same"
-- **Jozefowicz et al. (2015)** tested over 10,000 RNN architectures and found some that beat LSTMs on certain tasks
-
----
-
-## The Post's Conclusion
-
-Colah ends with: attention is the "next step." He references Xu et al. (2015) for attention-based image captioning and mentions Grid LSTMs (Kalchbrenner et al. 2015) and generative models (Gregor et al. 2015, Chung et al. 2015) as other exciting directions.
-
-Note that this post was written in August 2015 — two years before "Attention Is All You Need" (2017). The post correctly predicted attention's importance but couldn't have known it would eventually replace LSTMs entirely in most NLP tasks.
+### 各种变体之间的差异重要吗？
+Colah 引用了两项重要研究：
+- **Greff 等（2015）**比较了常见变体，发现它们在研究所覆盖的条件下“基本相当”。
+- **Jozefowicz 等（2015）**测试了超过 10,000 种 RNN 架构，找到了一些在特定任务上优于 LSTM 的架构。
 
 ---
 
-## What the Post Doesn't Cover
+## 原文结论
 
-- Vanishing gradient math in detail (it references Hochreiter and Bengio but doesn't derive it)
-- Training procedures, hyperparameters, or practical implementation advice
-- Benchmarks or performance numbers
-- The forget gate bias initialization trick (b_f = 1, from Jozefowicz et al. 2015)
-- Bidirectional LSTMs, stacked LSTMs, or attention mechanisms in detail
-- Any comparison of LSTM vs vanilla RNN on actual tasks
+Colah 最后指出：注意力（attention）是“下一步方向”。他引用 Xu 等（2015）的基于注意力的图像描述生成工作，同时提到网格 LSTM（Grid LSTM，Kalchbrenner 等，2015）及生成模型（Gregor 等，2015；Chung 等，2015）等值得关注的方向。
 
-This is an architecture explainer, not a benchmarking paper.
+这篇文章写于 2015 年 8 月，比《注意力就是你所需要的一切》（Attention Is All You Need，2017）早两年。原文预见了注意力的重要性，但当时还无法预知它后来会在多数自然语言处理任务的主流架构中取代 LSTM。
 
 ---
 
-## Our Additions (Not from the Post)
+## 原文没有覆盖的内容
 
-### Why the Additive Update Matters for Gradients
+- 梯度消失的详细数学推导（引用了 Hochreiter 和 Bengio 等人的工作，但未自行推导）。
+- 训练过程、超参数或具体实现建议。
+- 基准测试与性能数值。
+- 遗忘门偏置的初始化技巧（b_f = 1，来自 Jozefowicz 等，2015）。
+- 双向 LSTM、堆叠 LSTM 或注意力机制的详细介绍。
+- 在实际任务上比较 LSTM 与基本 RNN。
 
-The cell state update C_t = f_t * C_{t-1} + i_t * C_tilde means the gradient of C_t with respect to C_{t-1} is just f_t (a scalar gate value near 1), rather than a weight matrix multiplication. This is why gradients don't vanish — they take a direct path through the cell state.
+它是一篇架构图解，而非基准评测论文。
 
-In a vanilla RNN, gradients must pass through h_t = tanh(W_hh * h_{t-1} + ...), meaning they get multiplied by W_hh at every step. If eigenvalues of W_hh are below 1, gradients shrink exponentially.
+---
 
-### Practical Initialization Note
+## 本仓库的补充内容（并非来自原文）
 
-Initializing the forget gate bias to 1 (so forget gates start near 1, meaning "remember by default") is now standard practice. This comes from Jozefowicz et al. (2015), one of the papers Colah references.
+### 加性更新为什么有助于梯度传播
 
-### Where LSTMs Stand Now (Our Retrospective)
+细胞状态更新 C_t = f_t * C_{t-1} + i_t * C_tilde 意味着：固定门值时，C_t 对 C_{t-1} 的直接路径导数为 f_t，也就是可以接近 1 的逐维门值，而不需要乘以权重矩阵。这条路径有助于缓解梯度消失。
 
-| Aspect | 2015 (when post was written) | Now |
+在基本 RNN 中，梯度必须穿过 h_t = tanh(W_hh * h_{t-1} + ...)，因此每步都涉及 W_hh 的乘法。原仓库以 W_hh 的特征值小于 1 来直观解释梯度指数衰减；完整分析还要考虑 tanh 导数及沿途雅可比矩阵的乘积。
+
+**核对说明：** 直接路径导数不等于整个计算图的总导数，因为各门也间接依赖先前状态。LSTM 不保证任意任务和任意门值下都不会梯度消失。
+
+### 实用的初始化说明
+
+将遗忘门偏置初始化为 1，是一种常见做法，它让初始门值倾向于保留信息。这来自 Colah 引用的 Jozefowicz 等（2015）。偏置为 1 并不表示 sigmoid 输出等于 1；输入项为零时门值约为 0.73。
+
+### LSTM 如今的位置（本仓库的回顾）
+
+| 方面 | 2015 年（原文写作时） | 后来的发展 |
 |--------|------|-----|
-| Dominant architecture | LSTMs ruled NLP, speech, translation | Transformers dominate most tasks |
-| Attention | Emerging add-on to LSTMs | Replaced LSTMs in "Attention Is All You Need" |
-| Where LSTMs still appear | Everywhere | Time series, streaming, edge devices, smaller models |
-| Colah's prediction about attention | "There is a next step and it's attention!" | Exactly right |
+| 主流架构 | LSTM 广泛用于自然语言处理、语音与翻译 | Transformer 成为多数相关任务的主流架构 |
+| 注意力 | 新兴的 LSTM 附加机制 | 《Attention Is All You Need》使用不依赖 LSTM 的架构 |
+| LSTM 的应用 | 广泛应用 | 时间序列、流式处理、边缘设备、小型模型 |
+| Colah 对注意力的预测 | “还有下一步，那就是注意力！” | 后来的发展证实了这一方向的重要性 |
 
 ---
 
-## Questions Worth Thinking About
+## 值得思考的问题
 
-1. Colah says the cell state carries information "with only some minor linear interactions." What are those "minor linear interactions" specifically? (Answer: the forget gate multiplication and the input gate addition.)
+1. Colah 说，细胞状态传递信息时“只有少量线性交互”。这些交互具体是什么？（答：遗忘门的乘法与输入门控制的加性更新。）
 
-2. The post mentions coupled forget/input gates as a variant. What's the tradeoff? (You can only add new information by forgetting old information, which might be too restrictive.)
+2. 原文把耦合遗忘门与输入门作为一种变体。它有什么权衡？（只有遗忘旧信息才能写入新信息，可能限制过强。）
 
-3. Greff et al. found LSTM variants perform "about the same." Why might that be? (Maybe the core design — additive cell state with learned gates — is what matters, not the specific gate configuration.)
+3. Greff 等发现 LSTM 各变体的表现“基本相当”，为什么可能出现这种结果？（也许真正重要的是加性细胞状态与可学习门控，而非具体的门配置。）
 
-4. Colah correctly predicted attention's importance. But he framed it as an add-on to RNNs, not a replacement. What changed? (Vaswani et al. 2017 showed self-attention alone, without any recurrence, was sufficient and more parallelizable.)
+4. Colah 正确预见了注意力的重要性，但将它视为 RNN 的附加机制。后来发生了什么？（Vaswani 等，2017，表明无需循环、自注意力本身即可构建有效模型，而且更容易并行计算。）

@@ -1,194 +1,217 @@
-# Paper Notes: Quantifying the Rise and Fall of Complexity in Closed Systems: The Coffee Automaton
+<a id="paper-notes-quantifying-the-rise-and-fall-of-complexity-in-closed-systems-the-coffee-automaton"></a>
+# 论文笔记：量化封闭系统中复杂性的兴衰：咖啡元胞自动机（Quantifying the Rise and Fall of Complexity in Closed Systems: The Coffee Automaton）
 
-> Aaronson, Carroll, Ouellette (2014) — arXiv:1405.6903
-
----
-
-## ELI5
-
-Imagine you have a glass where the top half is chocolate milk and the bottom half is regular milk. At the start, it's easy to describe: "chocolate on top, white on bottom." At the end, once they've fully mixed, it's also easy: "uniform light brown everywhere." But in the middle, when there are swirls and tendrils — that's hard to describe. You'd have to say *where each swirl is*.
-
-This paper measures exactly how hard that middle description is, and shows it really does peak then drop back down.
-
-> Note: This analogy is ours, not the authors'. The paper uses "coffee and cream" rather than chocolate milk, and the measurement is done computationally via compression, not verbal description.
+> Aaronson、Carroll、Ouellette（2014）— arXiv:1405.6903
 
 ---
 
-## What the Paper Actually Covers
+<a id="eli5"></a>
+## 通俗解释
 
-### Structure
+想象一个杯子，上半杯是巧克力牛奶，下半杯是普通牛奶。开始时很容易描述：“上面巧克力色，下面白色。”完全混合后也很容易：“到处都是均匀的浅棕色。”但中间出现旋涡和细长分支时就很难描述了：必须说明*每个旋涡具体在哪里*。
 
-1. **Introduction** — sets up the problem (complexity rises then falls in closed systems)
-2. **Background** — reviews four complexity measures: apparent complexity, sophistication, logical depth, light-cone complexity
-3. **The Coffee Automaton** — defines the two models (interacting and non-interacting)
-4. **Approximating Apparent Complexity** — describes what they tried and what worked
-5. **Coarse-Graining Experiment** — first experiment with 3-bucket thresholding
-6. **Adjusted Coarse-Graining Experiment** — improved experiment with 7 buckets + majority adjustment
-7. **Conclusions and Further Work**
-8. **Appendix** — proof that non-interacting model never becomes complex
+这篇论文测量的正是中间状态有多难描述，并展示它确实先达到峰值，再回落。
 
-### The authors
-
-- **Scott Aaronson** (MIT) — complexity theorist, proposed complextropy in Day 6 blog post
-- **Sean M. Carroll** (Caltech) — physicist, posed the original "coffee cup" question at the FQXi conference
-- **Lauren Ouellette** (MIT undergrad) — implemented the experiments. Aaronson mentioned her in the Day 6 blog post: "a wonderful MIT undergrad...recently started a research project with me"
+> 注：这个类比来自本项目，而非论文作者。论文使用“咖啡与奶油”，不是巧克力牛奶；测量依靠计算机压缩，而非语言描述。
 
 ---
 
-## The Core Idea (From the Paper)
+<a id="what-the-paper-actually-covers"></a>
+## 论文实际涵盖的内容
 
-The paper's question (Section 1): "There is no general principle that quantifies and explains the existence of high-complexity states at intermediate times in closed systems. It is the aim of this work to explore such a principle."
+<a id="structure"></a>
+### 结构
 
-Their approach:
-1. Define "apparent complexity" as the KC of a coarse-grained (smoothed + thresholded) bitmap
-2. Approximate KC using gzip compressed file size
-3. Run the coffee automaton
-4. Measure this quantity over time
-5. Show it peaks at intermediate times
+1. **引言**——提出问题：封闭系统中的复杂度先升后降
+2. **背景**——回顾四种复杂性度量：表观复杂度、精致度、逻辑深度、光锥复杂度
+3. **咖啡元胞自动机**——定义两种模型：有相互作用与无相互作用
+4. **近似表观复杂度**——说明尝试过什么，哪些方法有效
+5. **粗粒化实验**——使用 3 分箱阈值化的首个实验
+6. **调整后的粗粒化实验**——使用 7 分箱加众数调整的改进实验
+7. **结论与后续工作**
+8. **附录**——证明无相互作用模型始终不会变复杂
 
-Why apparent complexity and not the alternatives? Direct quote (Section 2.5): "we did not know of any efficient way to approximate sophistication or logical depth."
+<a id="the-authors"></a>
+### 作者
+
+- **Scott Aaronson**（MIT）——计算复杂性理论学者，在第 6 天的博客中提出 complextropy
+- **Sean M. Carroll**（Caltech）——物理学家，在 FQXi 会议提出最初的“咖啡杯”问题
+- **Lauren Ouellette**（MIT 本科生）——实现实验。Aaronson 在第 6 天的博客中称她为“一位出色的 MIT 本科生……最近开始和我合作开展一个研究项目”
 
 ---
 
-## The Four Complexity Measures (Section 2)
+<a id="the-core-idea-from-the-paper"></a>
+## 核心思想（来自论文）
 
-### 2.1 Apparent Complexity
+论文的问题（第 1 节）：“目前没有一般原理能够量化并解释封闭系统在中间时刻出现高复杂度状态的现象。本研究旨在探索这样的原理。”
 
-Definition: $H(f(x))$ where $H$ is an entropy measure and $f$ is a denoising/smoothing function.
+研究方法：
+1. 将“表观复杂度”（apparent complexity）定义为粗粒化（平滑 + 阈值化）位图的柯尔莫哥洛夫复杂度（KC）
+2. 用 gzip 压缩文件大小近似 KC
+3. 运行咖啡元胞自动机
+4. 随时间测量这个量
+5. 展示它在中间时刻达到峰值
 
-In practice: $f$ = coarse-graining (average over local square, then threshold). $H$ = gzip compressed size (proxy for KC).
+为什么使用表观复杂度而非其他度量？第 2.5 节原文直接解释：“我们不知道任何能够高效近似精致度或逻辑深度的方法。”
 
-Advantages:
-- Simple
-- Computable
-- Directly captures the "interestingness" intuition
+---
 
-Disadvantage: The smoothing function $f$ seems arbitrary. But the paper argues this is analogous to the choice of coarse-graining in Boltzmann entropy — physically motivated by the locality of interactions.
+<a id="the-four-complexity-measures-section-2"></a>
+## 四种复杂性度量（第 2 节）
 
-### 2.2 Sophistication (Koppel 1987)
+<a id="21-apparent-complexity"></a>
+### 2.1 表观复杂度（Apparent Complexity）
 
-The $c$-sophistication of string $x$:
+定义：$H(f(x))$，其中 $H$ 是熵度量，$f$ 是去噪／平滑函数。
+
+实际操作：$f$ = 粗粒化（局部方形区域取平均，再阈值化）；$H$ = gzip 压缩大小（KC 的代理量）。
+
+优点：
+- 简单
+- 可计算
+- 直接捕捉直觉上的“有趣程度”
+
+缺点：平滑函数 $f$ 的选择似乎有任意性。但论文认为，它类似于玻尔兹曼熵中粗粒化方式的选择，其物理依据是相互作用的局域性。
+
+<a id="22-sophistication-koppel-1987"></a>
+### 2.2 精致度（Sophistication，Koppel，1987）
+
+字符串 $x$ 的 $c$-精致度：
 
 $$\text{soph}_c(x) = \min_{S} K(S) \quad \text{subject to } x \in S, \; K(S) + \log_2|S| \leq K(x) + c$$
 
-In words: find the smallest model $S$ that contains $x$, where $S$'s description plus the randomness needed to specify $x$ within $S$ is near-optimal.
+用文字来说：寻找包含 $x$ 的最小模型 $S$，要求 $S$ 的描述长度，加上在 $S$ 内指定 $x$ 所需的随机信息量，接近最优。
 
-**Why they rejected it**: For any short probabilistic program $P$ (like the coffee automaton), the output $x$ has low sophistication with overwhelming probability. Take $S$ = {all outputs $y$ of $P$ with $\Pr[y] \approx \Pr[x]$}. This $S$ takes only $O(\log n)$ bits to describe. So "sophistication as defined above seems irrelevant to the coffee cup or other physical systems: it simply never becomes large for such systems!" (Section 2.2)
+**未采用的原因：** 对任意短概率程序 $P$（如咖啡元胞自动机），其输出 $x$ 以压倒性概率具有低精致度。令 $S$ = {程序 $P$ 的所有满足 $\Pr[y] \approx \Pr[x]$ 的输出 $y$}。描述这个 $S$ 只需 $O(\log n)$ 比特。因此，“上述定义的精致度似乎与咖啡杯或其他物理系统无关：在这类系统中，它根本不会变大！”（第 2.2 节）
 
-However, **resource-bounded** sophistication might work — but then you need to approximate it, and they didn't know how to do that efficiently.
+不过，**资源受限**的精致度可能可行；但这需要近似计算，作者不知道如何高效实现。
 
-### 2.3 Logical Depth (Bennett)
+<a id="23-logical-depth-bennett"></a>
+### 2.3 逻辑深度（Logical Depth，Bennett）
 
-The time taken by the shortest program that outputs $x$ (within $c$ bits of optimal).
+输出 $x$ 的最短程序（允许比最优长度多 $c$ 比特）所需的运行时间。
 
-**Why they rejected it**: "generating what many people would regard as a visually complex pattern...simply need not take a long time!" (Section 2.3). Also, "even less clear how to estimate it in practice."
+**未采用的原因：** “生成人们通常认为在视觉上复杂的图案……根本不一定需要很长时间！”（第 2.3 节）此外，“更不清楚如何在实践中估计它”。
 
-### 2.4 Light-Cone Complexity (Shalizi et al.)
+<a id="24-light-cone-complexity-shalizi-et-al"></a>
+### 2.4 光锥复杂度（Light-Cone Complexity，Shalizi 等）
 
 $$\text{LCC}(a) = I(V_{P(a)} : V_{F(a)}) = H(V_{P(a)}) + H(V_{F(a)}) - H(V_{P(a)}, V_{F(a)})$$
 
-The mutual information between a point's past and future light-cones.
+某点的过去光锥与未来光锥之间的互信息。
 
-**Why they didn't use it**: It requires the causal history, not just the current state. Also, it stays large even after the system mixes (because the past light-cone contains almost the same random information as the future light-cone for slowly-changing systems).
+**未使用的原因：** 它需要因果历史，只有当前状态还不够。此外，即使系统已混合，它仍可能很大：对于缓慢变化的系统，过去光锥和未来光锥包含几乎相同的随机信息。
 
-### 2.5 Synthesis
+<a id="25-synthesis"></a>
+### 2.5 综合
 
-The key insight (Section 2.5): apparent complexity is a "resource-bounded" sophistication. The coarse-graining function $f$ defines the model $S_{f,x} = \{y : f(y) = f(x)\}$, and $K(S_{f,x}) \approx K(f(x))$. So instead of minimizing over ALL possible models (which is uncomputable), you pick one specific model family (coarse-grained images) and measure its description length.
+关键见解（第 2.5 节）：表观复杂度是一种“资源受限”的精致度。粗粒化函数 $f$ 定义模型 $S_{f,x} = \{y : f(y) = f(x)\}$，且 $K(S_{f,x}) \approx K(f(x))$。因此，不必在所有可能模型中最小化（这不可计算），而是选择一个特定模型族——粗粒化图像——并测量其描述长度。
 
-Antunes and Fortnow (2009) proved that coarse sophistication and "Busy Beaver depth" are equivalent up to $O(\log n)$.
-
----
-
-## The Experiments
-
-### What Worked and What Didn't (Section 4)
-
-What they tried:
-1. **OSCR algorithm** (Evans et al. 2003): A two-part code approach. Result: "noisy...no obvious trend." Because it "does not take into account the two-dimensionality of the automaton state."
-2. **Two-part code with diff**: Coarse-grained state as Part 1, fine-to-coarse diff as Part 2. Result: "suffered from artifacts due to the way the diff was represented."
-3. **Direct coarse-graining + gzip**: Compress the coarse-grained state. Entropy = gzip(fine-grained), Complexity = gzip(coarse-grained). **This worked.**
-
-### Coarse-Graining Experiment — 3 Buckets (Section 5)
-
-Method:
-- Average values in g x g squares
-- Threshold into 3 buckets: mostly coffee (near 0), mixed (near 0.5), mostly cream (near 1)
-- Compress with gzip
-- Complexity = compressed size of thresholded coarse-grained array
-- Entropy = compressed size of fine-grained array
-
-Results:
-- Both interacting and non-interacting models show complexity rising then falling
-- Entropy increases monotonically in both
-- BUT the non-interacting result turns out to be an artifact
-
-Scaling (Figures 6-8):
-- Max entropy ~ $n^2$ (quadratic, proportional to particle count)
-- Max complexity ~ $n$ (linear, proportional to grid side length)
-- Time to max complexity ~ $n^2$
-
-### Adjusted Coarse-Graining — 7 Buckets + Majority (Section 6)
-
-Problem with 3 buckets: border pixel artifacts. Cells near a threshold boundary fluctuate between buckets due to small noise, creating fake complexity.
-
-Fix:
-- 7 buckets instead of 3 (finer resolution)
-- Row-majority adjustment: if a cell is within 1 threshold of the majority value in its row, snap it to the majority value
-
-Results:
-- **Interacting model**: Complexity curve preserved. Rise-and-fall still appears.
-- **Non-interacting model**: Complexity flattened to nearly zero. The previous rise was entirely a thresholding artifact.
-
-This is the paper's most significant empirical finding.
-
-### The Proof for Non-Interacting (Appendix, Section 9)
-
-Claim: For the non-interacting model, the apparent complexity is at most $O(\log n + \log t)$ at all times.
-
-Key steps:
-1. Each cream particle does an independent random walk
-2. Expected count $E[a_t(x,y)]$ depends only on vertical position (by symmetry with periodic boundary)
-3. Within any $L \times L$ square $B$, actual count concentrates around expectation by Chernoff bounds
-4. Provided grain size $L \gg G\sqrt{3\ln(2n^2)}$, all grains match their expected colors
-5. The coarse-grained image can be reconstructed from $n$ and $t$ alone
-6. Therefore KC is $O(\log n + \log t)$
+Antunes 与 Fortnow（2009）证明，粗精致度与“忙海狸深度”（Busy Beaver depth）在 $O(\log n)$ 误差范围内等价。
 
 ---
 
-## The Math
+<a id="the-experiments"></a>
+## 实验
 
-### Entropy Estimates
+<a id="what-worked-and-what-didnt-section-4"></a>
+### 哪些方法有效，哪些无效（第 4 节）
 
-**Kolmogorov complexity** (used as the theoretical foundation):
+作者尝试了：
+1. **OSCR 算法**（Evans 等，2003）：两段式编码方法。结果：“噪声很大……没有明显趋势。”原因是它“没有考虑自动机状态的二维性质”。
+2. **用差异进行两段式编码：** 第一部分编码粗粒化状态，第二部分编码细粒度与粗粒化状态的差异。结果：“由于差异的表示方式而受到伪影影响。”
+3. **直接粗粒化 + gzip：** 压缩粗粒化状态。熵 = gzip（细粒度状态），复杂度 = gzip（粗粒化状态）。**这种方法有效。**
+
+<a id="coarse-graining-experiment--3-buckets-section-5"></a>
+### 粗粒化实验——3 个分箱（第 5 节）
+
+方法：
+- 在 g x g 方块内取平均
+- 按阈值分成 3 箱：以咖啡为主（接近 0）、混合（接近 0.5）、以奶油为主（接近 1）
+- 用 gzip 压缩
+- 复杂度 = 阈值化后的粗粒化数组的压缩大小
+- 熵 = 细粒度数组的压缩大小
+
+结果：
+- 有相互作用和无相互作用模型的复杂度都先升后降
+- 两者的熵都单调增加
+- 但无相互作用模型的结果后来被发现是伪影
+
+标度（图 6-8）：
+- 最大熵 ~ $n^2$（二次关系，与粒子数成正比）
+- 最大复杂度 ~ $n$（线性关系，与网格边长成正比）
+- 达到最大复杂度的时间 ~ $n^2$
+
+<a id="adjusted-coarse-graining--7-buckets--majority-section-6"></a>
+### 调整后的粗粒化——7 分箱 + 众数（第 6 节）
+
+3 分箱的问题是边界像素伪影。阈值边界附近的格点受微小噪声影响，在不同分箱间波动，产生虚假复杂度。
+
+修正方法：
+- 将 3 分箱改为 7 分箱，提供更细分辨率
+- 行众数调整：若某格点与该行众数相差不超过 1 个阈值间隔，就将其归并到众数
+
+结果：
+- **有相互作用模型：** 复杂度曲线得以保留，仍然先升后降。
+- **无相互作用模型：** 复杂度变得平坦且接近零。此前的上升完全是阈值化伪影。
+
+这是论文最重要的实证发现。
+
+<a id="the-proof-for-non-interacting-appendix-section-9"></a>
+### 无相互作用模型的证明（附录第 9 节）
+
+命题：无相互作用模型的表观复杂度在所有时刻都至多为 $O(\log n + \log t)$。
+
+关键步骤：
+1. 每个奶油粒子都进行独立随机游走
+2. 期望计数 $E[a_t(x,y)]$ 只依赖垂直位置，这是周期边界下的对称性所致
+3. 在任意 $L \times L$ 方块 $B$ 内，由 Chernoff 界可知，实际计数集中在期望附近
+4. 只要粗粒化块的边长 $L \gg G\sqrt{3\ln(2n^2)}$，所有块就会呈现各自的期望颜色
+5. 仅凭 $n$ 和 $t$ 就能重建粗粒化图像
+6. 因此 KC 为 $O(\log n + \log t)$
+
+---
+
+<a id="the-math"></a>
+## 数学
+
+<a id="entropy-estimates"></a>
+### 熵估计
+
+**柯尔莫哥洛夫复杂度**（理论基础）：
 $$K(x) = \text{length of shortest program that outputs } x$$
 
-In practice, approximated by:
+实际近似为：
 $$\hat{K}(x) = \text{len}(\text{gzip}(x))$$
 
-### Apparent Complexity
+<a id="apparent-complexity"></a>
+### 表观复杂度
 
 $$C_{\text{apparent}}(x) = K(f(x))$$
 
-where $f$ is the coarse-graining function. In practice:
+其中 $f$ 是粗粒化函数。实际计算：
 
 $$\hat{C}(x) = \text{len}(\text{gzip}(\text{threshold}(\text{avg\_blocks}(x, g))))$$
 
-### Sophistication (for reference)
+<a id="sophistication-for-reference"></a>
+### 精致度（供参考）
 
 $$\text{soph}_c(x) = \min\{K(S) : x \in S, \; K(S) + \log_2|S| \leq K(x) + c\}$$
 
-Coarse sophistication (robust version):
+粗精致度（稳健版本）：
 $$\text{csoph}(x) = \min_c \{c + \text{soph}_c(x)\}$$
 
-### Chernoff Bound (used in Appendix)
+<a id="chernoff-bound-used-in-appendix"></a>
+### Chernoff 界（附录使用）
 
-For sum $a_t(B)$ of independent 0/1 random variables:
+对独立 0/1 随机变量之和 $a_t(B)$：
 
 $$\Pr[|a_t(B) - E[a_t(B)]| > L^2/G] < 2\exp\left(-\frac{L^2}{3G^2}\right)$$
 
-So grain size $L \gg G\sqrt{3\ln(2n^2)} = \Theta(G\sqrt{\log n})$ ensures all grains match expectations.
+因此，粗粒化块边长 $L \gg G\sqrt{3\ln(2n^2)} = \Theta(G\sqrt{\log n})$ 能确保所有块与期望一致。
 
-### Scaling Results
+<a id="scaling-results"></a>
+### 标度结果
 
 $$\max(\hat{K}(x)) \sim n^2 \quad \text{(entropy, quadratic in grid size)}$$
 
@@ -198,50 +221,54 @@ $$t_{\text{peak}} \sim n^2 \quad \text{(time to peak, quadratic)}$$
 
 ---
 
-## What the Paper Gets Right
+<a id="what-the-paper-gets-right"></a>
+## 论文做得好的地方
 
-1. Clear, well-defined experiment with reproducible setup
-2. Honest about failures — they report OSCR and two-part code attempts that didn't work
-3. Separate analysis of interacting vs non-interacting — showed that the key result depends on interactions
-4. Caught their own artifact (Section 5 vs Section 6) and fixed it
-5. Analytical proof for the non-interacting case, not just numerics
-6. Extensive comparison of complexity measures with clear reasoning for choices
+1. 实验清晰、定义明确，实验设置可复现
+2. 如实报告失败：OSCR 与两段式编码的尝试没有奏效
+3. 分别分析有相互作用和无相互作用模型，说明关键结果依赖相互作用
+4. 发现并修正了自身实验中的伪影（第 5 节与第 6 节）
+5. 对无相互作用情形给出解析证明，不仅有数值实验
+6. 广泛比较复杂性度量，清楚解释选择依据
 
-## What the Paper Doesn't Cover
+<a id="what-the-paper-doesnt-cover"></a>
+## 论文未涵盖的内容
 
-1. No proof that the interacting model *must* become complex — this is explicitly listed as an open problem
-2. No comparison with light-cone complexity (mentioned as future work)
-3. No systematic study of grain size selection
-4. The OSCR implementation may just have been bad — the algorithm itself might work with a better 2D-aware version
-5. Only tested on the specific initial condition (top-half/bottom-half). Other geometries might give different curves.
-6. No connection to practical ML — this is pure complexity theory applied to a toy physical model
-
----
-
-## Looking Back (Our Retrospective, Not in the Paper)
-
-> Note: This section contains our reflections, not claims from the paper.
-
-Ten years later, this paper remains one of the only empirical studies of how complexity evolves in a closed system. The coffee automaton is now a standard example in complexity theory lectures, though the open problem (proving the interacting model must become complex) remains unsolved as of 2024.
-
-The choice to use gzip as a KC proxy has aged well — it's the same approach used in recent "gzip classification" papers (Jiang et al. 2023, "Low-Resource Text Classification: A Parameter-Free Classification Method with Compressors"). The principle that you can use off-the-shelf compressors to estimate Kolmogorov complexity continues to be productive.
-
-The connection between Days 6 and 7 is direct: Aaronson proposed complextropy (Day 6 blog post, 2011), Carroll posed the coffee cup question (FQXi conference, 2011), and three years later they published this empirical study (2014). Lauren Ouellette wrote the code as an MIT undergrad.
-
-For ML practitioners: the notion that "interestingness" peaks at intermediate stages of a mixing/optimization process has loose analogies to representation learning (where intermediate layers of deep networks capture the most "useful" features), but the paper makes no such claims, and the connection is speculative.
+1. 没有证明有相互作用模型*必然*变复杂，作者明确将其列为开放问题
+2. 没有与光锥复杂度比较，列为未来工作
+3. 没有系统研究粗粒化尺度的选择
+4. OSCR 的失败可能只是实现不佳；考虑二维结构的更好版本也许有效
+5. 只测试了特定初始条件（上半部／下半部）。其他几何形状可能产生不同曲线。
+6. 未联系实际机器学习；这是将纯复杂性理论用于一个玩具物理模型
 
 ---
 
-## Questions Worth Thinking About
+<a id="looking-back-our-retrospective-not-in-the-paper"></a>
+## 回顾（本项目的回顾，不属于论文）
 
-1. The paper proves the non-interacting model stays simple. Can you prove the interacting model *must* become complex? What would such a proof look like?
+> 注：本节包含本项目的思考，不是论文中的主张。
 
-2. They used gzip, which is based on LZ77+ Huffman coding. What would happen with a stronger compressor (e.g., LZMA, brotli, or a learned compressor)?
+十年后，这篇论文仍是研究封闭系统复杂性如何演变的少数实证工作之一。咖啡元胞自动机现已成为复杂性理论课程中的常见例子，不过，截至 2024 年，证明有相互作用模型必然变复杂这一开放问题仍未解决。
 
-3. The grain size g is fixed experimentally. Could you define a notion of "optimal" grain size — the one that maximizes the peak complexity? Does this relate to the renormalization group?
+使用 gzip 作为 KC 代理量的选择经受住了时间检验。近期的“gzip 分类”论文也采用类似方法，如 Jiang 等（2023）的《低资源文本分类：一种使用压缩器的无参数分类方法》（Low-Resource Text Classification: A Parameter-Free Classification Method with Compressors）。使用现成压缩器估计柯尔莫哥洛夫复杂度，仍然是富有成果的思路。
 
-4. What happens with different initial conditions? What if coffee and cream start in a checkerboard pattern? Or a single cream droplet in the center?
+第 6、7 天之间有直接联系：Aaronson 在 2011 年的博客中提出 complextropy，Carroll 在 2011 年 FQXi 会议提出咖啡杯问题，三年后他们发表这项实证研究（2014）。Lauren Ouellette 当时作为 MIT 本科生编写了代码。
 
-5. How does this connect to the "origin of structure" in the actual universe? Carroll (co-author and physicist) cares about this question — his book "From Eternity to Here" discusses the thermodynamic arrow of time and the specialness of the Big Bang's low-entropy state.
+对机器学习实践者而言，混合／优化过程中间阶段的“有趣程度”达到峰值，与表示学习有一些松散类比，例如深度网络的中间层捕捉最“有用”的特征。但论文并未作出这样的主张，这种联系只是推测。
 
-6. The paper shows max complexity ~ n (linear in grid side). Is there a physical system where max complexity grows faster than linearly? What would that require?
+---
+
+<a id="questions-worth-thinking-about"></a>
+## 值得思考的问题
+
+1. 论文证明无相互作用模型保持简单。你能证明有相互作用模型*必然*变复杂吗？这样的证明会是什么样？
+
+2. gzip 基于 LZ77 + Huffman 编码。若换用更强的压缩器，如 LZMA、brotli 或学习式压缩器，会怎样？
+
+3. 实验中粗粒化块的边长 g 是固定的。能否定义使复杂度峰值最大的“最优”粗粒化尺度？这与重整化群有关吗？
+
+4. 不同初始条件会怎样？若咖啡与奶油从棋盘格开始，或奶油起初只是中心的一滴，会怎样？
+
+5. 这如何联系真实宇宙的“结构起源”？物理学家、共同作者 Carroll 关心这个问题；他的书《从永恒到此刻》（From Eternity to Here）讨论热力学时间之箭，以及大爆炸低熵初始态的特殊性。
+
+6. 论文展示最大复杂度 ~ n，与网格边长成线性关系。有无物理系统的最大复杂度增长快于线性？这需要什么条件？

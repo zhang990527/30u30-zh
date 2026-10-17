@@ -1,14 +1,21 @@
-# NTM Copy Task Data
+# NTM 复制任务数据
 
-The data for the Neural Turing Machine (NTM) experiments is generated procedurally. In the [train.py](../train.py) script, the `generate_copy_task` function creates random bit sequences for the model to learn to copy.
+神经图灵机（NTM）实验的数据通过程序生成。实际脚本 [train_minimal.py](../train_minimal.py) 中，`generate_copy_instance` 函数创建随机比特序列，供模型学习复制。
 
-## Sequence Format
-For a given width $W$ (default 8) and sequence length $L$:
-1. **Input Phase:**
-   - $L$ vectors of bits $\{0, 1\}^W$.
-   - A delimiter vector (e.g., all 0s with a 1 at index $W+1$).
-2. **Output Phase:**
-   - $L$ vectors of 0s (model is expected to output the copied sequence here).
+> 译注：原文链接为不存在的 `train.py`，函数名写作 `generate_copy_task`；此处按实际代码标明入口与函数名。
 
-## Directory Purpose
-This directory is reserved for saving trained weights or any extracted features if you wish to run larger-scale experiments beyond the provided training script.
+## 序列格式
+
+给定宽度 $W$（默认为 8）与序列长度 $L$：
+
+1. **输入阶段：**
+   - $L$ 个比特向量 $\{0, 1\}^W$。
+   - 一个分隔向量，例如除第 $W+1$ 个分量为 1 外，其余均为 0。
+2. **输出阶段：**
+   - $L$ 个全零输入向量，模型应在此阶段输出复制的序列。
+
+> 译注：上述“第 $W+1$ 个分量”采用从 1 开始的计数；Python 对应索引为 `width`，不是 `width + 1`。
+
+## 目录用途
+
+如果希望在提供的训练脚本之外开展更大规模实验，可以使用此目录保存训练权重或提取的特征。

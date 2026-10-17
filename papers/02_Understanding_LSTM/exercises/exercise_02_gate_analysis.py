@@ -1,23 +1,23 @@
 """
-Exercise 2: Gate Activation Analysis
+练习 2：门激活分析
 =====================================
 
-Goal: Train an LSTM and analyze what each gate learns to do.
+目标：训练 LSTM，分析各门学到的行为。
 
-Your Task:
-- Train an LSTM on a simple repeating pattern
-- Capture and visualize gate activations
-- Analyze when gates open/close
-- Write a report on your findings
+你的任务：
+- 在简单重复模式上训练 LSTM
+- 记录并可视化门激活值
+- 分析各门何时开启或关闭
+- 撰写观察报告
 
-Learning Objectives:
-1. Understand when forget gates activate (what to throw away)
-2. See when input gates activate (what to add)
-3. Observe when output gates activate (what to reveal)
-4. Learn how gates coordinate to solve tasks
+学习目标：
+1. 理解遗忘门何时激活，以及遗忘什么
+2. 观察输入门何时激活，以及写入什么
+3. 观察输出门何时激活，以及输出什么
+4. 学习各门如何协作完成任务
 
-Time: 1-2 hours
-Difficulty: Medium
+用时：1-2 小时
+难度：中
 """
 
 import numpy as np
@@ -31,75 +31,75 @@ from visualization import plot_gate_activations, analyze_gate_patterns
 
 def create_repeating_pattern(pattern="abc", repeats=10):
     """
-    Create a simple repeating pattern for analysis.
+    创建用于分析的简单重复模式。
     
-    Args:
-        pattern: String pattern to repeat (e.g., "abc")
-        repeats: Number of times to repeat
+    参数：
+        pattern：待重复的字符串模式，例如 "abc"
+        repeats：重复次数
     
-    Returns:
-        text: Repeated pattern string
-        char_to_idx: Character to index mapping
-        idx_to_char: Index to character mapping
+    返回：
+        text：重复后的模式字符串
+        char_to_idx：字符到索引的映射
+        idx_to_char：索引到字符的映射
     """
-    # TODO 1: Create the text by repeating the pattern
-    # Hint: text = pattern * repeats
-    text = None  # Replace with your code
+    # TODO 1：通过重复模式创建文本
+    # 提示：text = pattern * repeats
+    text = None  # 替换为你的代码
     
-    # TODO 2: Create vocabulary mappings
+    # TODO 2：创建词表映射
     chars = sorted(list(set(text)))
-    char_to_idx = {}  # Fill this in
-    idx_to_char = {}  # Fill this in
+    char_to_idx = {}  # 在此填写
+    idx_to_char = {}  # 在此填写
     
     return text, char_to_idx, idx_to_char
 
 
 def train_and_capture_gates(text, char_to_idx, hidden_size=32, num_iterations=500):
     """
-    Train LSTM and capture gate activations.
-    
-    Args:
-        text: Training text
-        char_to_idx: Character to index mapping
-        hidden_size: Size of hidden layer
-        num_iterations: Number of training iterations
-    
-    Returns:
-        lstm: Trained LSTM model
-        gates_dict: Dictionary of gate activations
-        cell_states: List of cell states
+    训练 LSTM 并记录门激活值。
+
+    参数：
+        text：训练文本
+        char_to_idx：字符到索引的映射
+        hidden_size：隐藏层维度
+        num_iterations：训练迭代次数
+
+    返回：
+        lstm：训练好的 LSTM 模型
+        gates_dict：门激活值字典
+        cell_states：细胞状态列表
     """
     vocab_size = len(char_to_idx)
     
-    # TODO 3: Create LSTM
-    lstm = None  # Replace with LSTM initialization
+    # TODO 3：创建 LSTM
+    lstm = None  # 替换为 LSTM 初始化代码
     
-    # TODO 4: Training loop
-    # Initialize states
+    # TODO 4：训练循环
+    # 初始化状态
     h_prev = np.zeros(hidden_size)
     C_prev = np.zeros(hidden_size)
     
     seq_length = 10
     learning_rate = 0.01
     
-    print("Training LSTM...")
+    print('正在训练 LSTM……')
     for iteration in range(num_iterations):
-        # TODO 5: Sample a random sequence from text
-        # Hint: start = np.random.randint(0, len(text) - seq_length - 1)
+        # TODO 5：从文本中随机抽取一段序列
+        # 提示：start = np.random.randint(0, len(text) - seq_length - 1)
         pass
         
-        # TODO 6: Forward pass
+        # TODO 6：前向传播
         
-        # TODO 7: Backward pass
+        # TODO 7：反向传播
         
-        # TODO 8: Update weights
+        # TODO 8：更新权重
         
-        # Print progress
+        # 打印进度
         if iteration % 100 == 0:
-            print(f"Iteration {iteration}")
+            print(f"迭代 {iteration}")
     
-    # TODO 9: Capture gate activations on a test sequence
-    # Run forward pass and manually capture f_t, i_t, o_t for each step
+    # TODO 9：在测试序列上记录门激活值
+    # 运行前向传播，手动记录每一步的 f_t、i_t、o_t
     test_seq = text[:20]
     gates_dict = {
         'forget': [],
@@ -108,73 +108,73 @@ def train_and_capture_gates(text, char_to_idx, hidden_size=32, num_iterations=50
     }
     cell_states = []
     
-    # TODO 10: Fill gates_dict and cell_states by running forward pass
-    # and manually computing gates (see implementation.py for reference)
+    # TODO 10：运行前向传播并填写 gates_dict 与 cell_states
+    # 手动计算各门值（参见 implementation.py）
     
     return lstm, gates_dict, cell_states, test_seq
 
 
 def analyze_gates(gates_dict, cell_states, sequence):
     """
-    Analyze and visualize gate patterns.
+    分析并可视化门模式。
     
-    Args:
-        gates_dict: Dictionary with 'forget', 'input', 'output' keys
-        cell_states: List of cell state arrays
-        sequence: Text sequence corresponding to time steps
+    参数：
+        gates_dict：含 'forget'、'input'、'output' 键的字典
+        cell_states：细胞状态数组列表
+        sequence：与各时间步对应的文本序列
     """
     print("\n" + "=" * 60)
-    print("GATE ACTIVATION ANALYSIS")
+    print('门激活分析')
     print("=" * 60)
     
-    # TODO 11: Use visualization functions
+    # TODO 11：使用可视化函数
     # plot_gate_activations(gates_dict, sequence)
     
-    # TODO 12: Compute statistics
-    # For each gate, compute:
-    # - Mean activation
-    # - Std deviation
-    # - % fully open (>0.9)
-    # - % fully closed (<0.1)
+    # TODO 12：计算统计量
+    # 对每个门计算：
+    # - 平均激活值
+    # - 标准差
+    # - 完全开启的比例（>0.9）
+    # - 完全关闭的比例（<0.1）
     
-    print("\nYour analysis here...")
+    print('\n在此填写你的分析……')
 
 
 def write_report(gates_dict, sequence):
     """
-    Write a report on your findings.
+    撰写观察报告。
     
-    TODO 13: Answer these questions in your report:
+    TODO 13：在报告中回答以下问题：
     
-    1. Which gates are most active on average?
-    2. Do any gates specialize (always on or off)?
-    3. How do gates respond to specific characters?
-    4. Do you see any patterns related to the repeating structure?
-    5. What surprised you most?
+    1. 哪些门平均最活跃？
+    2. 是否有门出现特化行为，例如始终开启或关闭？
+    3. 各门如何响应特定字符？
+    4. 是否观察到与重复结构相关的模式？
+    5. 什么最令你意外？
     """
     print("\n" + "=" * 60)
     print("REPORT")
     print("=" * 60)
-    print("\nWrite your findings here...")
+    print('\n在此填写你的观察……')
 
 
 if __name__ == "__main__":
     print(__doc__)
     
-    # Create simple pattern
+    # 创建简单模式
     text, char_to_idx, idx_to_char = create_repeating_pattern("abc", repeats=20)
-    print(f"Pattern: {text[:30]}...")
+    print(f"模式：{text[:30]}...")
     
-    # Train and capture gates
+    # 训练并记录门值
     lstm, gates_dict, cell_states, sequence = train_and_capture_gates(
         text, char_to_idx
     )
     
-    # Analyze
+    # 分析
     analyze_gates(gates_dict, cell_states, sequence)
     
-    # Write report
+    # 撰写报告
     write_report(gates_dict, sequence)
     
-    print("\nExercise 2 complete.")
-    print("Compare your results with solutions/solution_02_gate_analysis.py")
+    print('\n练习 2 结束。')
+    print('与 solutions/solution_02_gate_analysis.py 比较（原文路径；实际为 exercise_02_solution.py）')

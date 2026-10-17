@@ -1,7 +1,10 @@
-# Day 19 Data: Relational Reasoning
+# 第 19 天数据：关系推理
 
-This folder is used for the **Sort-of-CLEVR** dataset.
-- `train_data.pickle`: 10,000 images and questions.
-- `test_data.pickle`: 1,000 images and questions.
+本目录用于 **Sort-of-CLEVR** 数据集。
 
-The dataset contains colored shapes (Circles, Squares) and relational/non-relational questions about them.
+- `train_data.pickle`：10,000 张图像及对应问题。
+- `test_data.pickle`：1,000 张图像及对应问题。
+
+数据集包含彩色形状（圆形、正方形），以及关于它们的关系问题与非关系问题。
+
+> 说明：以上描述为原仓库的数据约定，不代表这些文件已存在或本次已下载。

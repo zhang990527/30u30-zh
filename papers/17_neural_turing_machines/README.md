@@ -1,153 +1,165 @@
-# Day 17: Neural Turing Machines (NTM)
+# 第 17 天：神经图灵机（Neural Turing Machines，NTM）
 
-> Alex Graves, Greg Wayne, Ivo Danihelka (2014) - [Original Paper](https://arxiv.org/abs/1410.5401)
+> Alex Graves、Greg Wayne、Ivo Danihelka（2014）— [原论文](https://arxiv.org/abs/1410.5401)
 
-**Time:** 3-5 hours  
-**Prerequisites:** PyTorch, LSTM intuition, Linear Algebra (matrix products)  
-**Code:** PyTorch (Implementation + Visualization)
-
----
-
-## What This Paper Is Actually About
-
-The Neural Turing Machine (NTM) addresses a fundamental limitation of recurrent neural networks (RNNs): the coupling of processing power and memory capacity. 
-
-In a standard LSTM, the "memory" is the hidden state vector. If you want to store more information, you have to increase the size of that vector, which also increases the number of weights in the network (the "thinking" part). The NTM breaks this coupling by connecting a neural network **Controller** to a separate **Memory Bank**. 
-
-This allows the network to store large amounts of data without becoming computationally unmanageable. It successfully learns *algorithms* (like sorting and copying) rather than just statistical mappings.
+**用时：**3–5 小时  
+**前置知识：**PyTorch、对 LSTM 的直观理解、线性代数（矩阵乘法）  
+**代码：**PyTorch（实现与可视化）
 
 ---
 
-## The Core Idea: Differentiable Addressing
+## 这篇论文究竟研究什么
 
-The central problem Graves et al. address is: **How do you make a pointer differentiable?**
+神经图灵机（NTM）针对循环神经网络（RNN）的一个根本局限：计算能力与记忆容量相互耦合。
 
-In a standard computer, a pointer is a discrete address (e.g., "0x7ffd"). You can't take a derivative of a discrete address. To solve this, Graves et al. introduced **Weightings**. 
+在标准 LSTM 中，“记忆”由内部状态向量承载。想存储更多信息，就需要增大向量，同时也会增加网络权重的数量，即“思考”部分的规模。NTM 将神经网络**控制器（controller）**连接到独立的**存储器（memory bank）**，从而解除这种耦合。
 
-Instead of reading from one address, the NTM "reads" from every address at once, using a weighting vector $w_t$ that sums to 1. If the weight is 1.0 at address $A$ and 0.0 everywhere else, it's a discrete pointer. If it's spread out, it's a "blurry" focus.
+这使网络可以存储大量数据，而不必同步扩大控制器。它能够学习排序、复制等*算法*，而不仅是统计映射。
 
-### The Addressing Pipeline (Section 3.3.1)
-
-To determine where to focus, the NTM uses a four-stage process:
-
-1.  **Content Addressing (Eq 5):** The model emits a "search key" $k_t$. It looks for rows in memory that are similar to $k_t$ using cosine similarity.
-2.  **Interpolation (Eq 7):** A gate $g_t$ decides whether to use the new search result or stick with the previous focus $w_{t-1}$.
-3.  **Convolutional Shift (Eq 8):** A shift weighting $s_t$ performs circular convolution, allowing the "pointer" to move (e.g., "stay put", "move +1", "move -1").
-4.  **Sharpening (Eq 9):** A factor $\gamma_t$ "squeezes" the distribution to make the focus more precise.
+> 译注：原文将 LSTM 的记忆直接称作隐藏状态；严格来说，LSTM 还具有细胞状态。外部存储仍有寻址开销，不能据此认为增大存储器没有计算成本。下文的泛化描述指论文实验，不代表本章模型未经训练就具有相同性能。
 
 ---
 
-## What the NTM Actually Showed
+## 核心思想：可微寻址
 
-### 1. The Copy Task (Section 4.1)
-The model is shown a sequence of random bits, a delimiter, and is then asked to repeat the sequence. 
+Graves 等人要解决的核心问题是：**怎样让指针可微？**
 
-- **LSTM Result:** Struggles once the sequence length exceeds the size of its hidden state.
-- **NTM Result:** Learns to increment its memory pointer as it writes, and then increment it as it reads. It generalizes to sequences much longer than those it was trained on because it learned the *algorithm* of copying, not just the data.
+在普通计算机中，指针是离散地址，例如“0x7ffd”，无法对离散地址直接求导。为此，Graves 等人引入了**权重分布（weighting）**。
 
-### 2. The Sorting Task (Section 4.5)
-The model is shown a list of vectors, each with a priority. It is then asked to output them in sorted order.
+NTM 不只读取一个地址，而是借助总和为 1 的权重向量 $w_t$ 同时“读取”所有地址。如果地址 $A$ 的权重为 1.0，其余地址为 0.0，就相当于离散指针；如果权重分散，就形成“模糊”的关注范围。
 
-- **Outcome:** The NTM learns to use its memory to store## The Architecture
+### 寻址流程（第 3.3.1 节）
 
-### 1. The Addressing Pipeline (Section 3.3.1)
-The NTM uses a four-stage process to decide where to focus its "blurry" pointer:
+NTM 通过四个阶段确定关注位置：
 
-1. **Content Addressing**: Emits a "search key" $k_t$. Looks for rows in memory similar to $k_t$ using cosine similarity (Eq 5).
-2. **Interpolation**: A gate $g_t$ decides whether to use the new search result or stick with the previous focus (Eq 7).
-3. **Convolutional Shift**: A shift weighting $s_t$ performs circular convolution, allowing the pointer to move (e.g., stay put, +1, -1) (Eq 8).
-4. **Sharpening**: A factor $\gamma_t$ "squeezes" the distribution to make the focus more precise (Eq 9).
-
-### 2. Controller & Heads
-- **Memory Matrix ($N \times M$):** The "scratchpad" where data is stored.
-- **Read Head**: Computes a weighted average of memory: $r_t = \sum w_t(i) M_t(i)$ (Section 3.1).
-- **Write Head**: Performs an **Erase** followed by an **Add** (Section 3.2):
-  - `M_t(i) = M_{t-1}(i) * [1 - w_t(i) * e_t]` (Erase)
-  - `M_t(i) = M_t(i) + w_t(i) * a_t` (Add)
-
-**Variables & Dimensions:**
-- `w_t` (N): The weighting vector (the pointer).
-- `e_t` (M): The erase vector (0 to 1).
-- `a_t` (M): The add vector (data to write).
-- `k_t` (M): The content search key.
+1. **基于内容的寻址（公式 5）：**模型产生“检索键” $k_t$，通过余弦相似度查找存储器中与之相似的行。
+2. **插值（公式 7）：**门 $g_t$ 决定采用新检索结果，还是保持上一时刻的关注分布 $w_{t-1}$。
+3. **卷积移位（公式 8）：**移位权重 $s_t$ 执行循环卷积，使“指针”可以移动，例如“保持不动”“向前移动 +1”“向后移动 -1”。
+4. **锐化（公式 9）：**因子 $\gamma_t$ 使分布更尖锐，从而提高定位精度。
 
 ---
 
-## Implementation Notes
+## NTM 实际展示了什么
 
-When implementing an NTM, pay attention to these stability details:
+### 1. 复制任务（第 4.1 节）
 
-- **Gradient Clipping (Section 4)**: NTMs are notoriously hard to train. A clip of 10.0 is almost mandatory to prevent divergence during the circular shift operation.
-- **Numerical Stability**: Operations like sharpening ($w^\gamma$) can generate extremely large or small numbers. Use `torch.clamp` and small epsilons ($1e-8$) to prevent `NaN`.
-- **Initialization**: Initial memory and weights should be learned parameters (`nn.Parameter`), not just zeros.
+模型先接收随机比特序列和分隔符，然后需要复现该序列。
 
-**Things that will bite you:**
-- **Circular Convolution**: Implementing Eq 8 correctly requires a specialized 1D convolution or a sequence of `torch.roll` operations.
-- **Softplus for Positivity**: Parameters like $\beta$ (key strength) and $\gamma$ (sharpening) must be positive. Use `1 + F.softplus(x)` to ensure stability.
-- **Memory Footprint**: A $128 \times 20$ memory bank is small, but the addressing logic (calculating scores for every slot) adds significant overhead per step.
-ry and weights are learned. In our implementation, we use learned buffers for `init_memory` and `init_w` to match this.
+- **LSTM 的结果：**原文称，当序列长度超出隐藏状态的承载能力时，LSTM 难以完成任务。
+- **NTM 的结果：**模型学习到写入时递增存储指针，再在读取时递增指针。由于学到了复制的*算法*而非只记住数据，它能泛化到比训练序列长得多的序列。
+
+> 译注：序列长度与隐藏状态维数不是可以直接比较的存储上限；这一说法是原仓库的直观解释，不是严格的容量定理。
+
+### 2. 排序任务（第 4.5 节）
+
+模型接收一组带有优先级的向量，并按排序后的顺序输出。
+
+- **结果：**原仓库此处在“学会利用存储器存储……”后发生文本拼接，句子不完整。未补造缺失结论；关于优先级排序的完整讲解见 [paper_notes.md](paper_notes.md)。
+
+## 架构
+
+### 1. 寻址流程（第 3.3.1 节）
+
+NTM 用四阶段流程决定其“模糊”指针关注哪里：
+
+1. **内容寻址：**产生“检索键” $k_t$，通过余弦相似度寻找相似的存储行（公式 5）。
+2. **插值：**门 $g_t$ 决定采用新检索结果还是保留之前的关注分布（公式 7）。
+3. **卷积移位：**移位权重 $s_t$ 执行循环卷积，使指针可以不动、移动 +1 或移动 -1（公式 8）。
+4. **锐化：**因子 $\gamma_t$ 收紧分布，使关注位置更精确（公式 9）。
+
+### 2. 控制器与读写头
+
+- **存储矩阵（$N \times M$）：**用于存储数据的“草稿纸”。
+- **读头：**计算存储内容的加权平均：$r_t = \sum w_t(i) M_t(i)$（第 3.1 节）。
+- **写头：**先**擦除（erase）**，再**添加（add）**（第 3.2 节）：
+  - `M_t(i) = M_{t-1}(i) * [1 - w_t(i) * e_t]`（擦除）
+  - `M_t(i) = M_t(i) + w_t(i) * a_t`（添加）
+
+**变量与维度：**
+
+- `w_t`（N）：权重向量，即指针。
+- `e_t`（M）：擦除向量，取值在 0 到 1 之间。
+- `a_t`（M）：添加向量，即要写入的数据。
+- `k_t`（M）：内容检索键。
 
 ---
 
-## What to Build
+## 实现说明
 
-### Quick Start
+实现 NTM 时，需要关注以下稳定性细节：
+
+- **梯度裁剪（第 4 节）：**NTM 的训练较困难。原仓库建议将裁剪阈值设为 10.0，以降低循环移位过程中发散的风险；这是实现建议，不是适用于所有设置的必要定律。
+- **数值稳定性：**锐化（$w^\gamma$）等运算可能产生极大或极小的数值。可使用 `torch.clamp` 和较小的 epsilon（$1e-8$）避免 `NaN`。
+- **初始化：**原仓库建议将初始存储与权重设为可学习参数（`nn.Parameter`），而非简单置零。
+
+**容易踩坑的地方：**
+
+- **循环卷积：**正确实现公式 8，需要专门的一维卷积或一系列 `torch.roll` 操作。
+- **用 Softplus 保证取值约束：**$\beta$（键强度）应为正，$\gamma$（锐化参数）应不小于 1。实现中前者使用 `F.softplus(x)`，后者使用 `1 + F.softplus(x)`。
+- **存储开销：**$128 \times 20$ 的存储器本身不大，但每一步都要计算各槽位分数，寻址逻辑会带来额外开销。
+
+> 译注：原文此处还有残句，声称 `init_memory` 与 `init_w` 是“可学习缓冲区”。实际代码使用 `register_buffer`，它们不是由优化器学习的参数。保留实现行为，明确这一文码差异。
+
+---
+
+## 动手实现
+
+### 快速开始
 
 ```bash
-# Install dependencies
+# 安装依赖
 pip install -r requirements.txt
 
-# Run the copy task training
-python train.py
+# 运行复制任务训练
+python train_minimal.py
 ```
 
-### Exercises (in `exercises/`)
+> 译注：原文命令为 `python train.py`，该文件不存在；本章实际入口为 `train_minimal.py`。训练默认运行 10001 次迭代，不应把快速运行成功当作完成收敛验证。
 
-| # | Task | What You'll Get Out of It |
-|---|------|---------------------------|
-| 1 | Content-based addressing | Implement cosine similarity weighting (Eq 5) |
-| 2 | Convolutional shift | Build circular convolution for location-based addressing (Eq 8) |
-| 3 | Memory erase and add | Implement the write head update operations (Eq 3, 4) |
-| 4 | Controller input preparation | Concatenate input with previous read vectors (Section 2) |
-| 5 | Sharpening mechanism | Apply gamma exponentiation to prevent blurry focus (Eq 9) |
+### 练习（位于 `exercises/`）
 
-Solutions are in `exercises/solutions/`. Try to get stuck first.
+| # | 任务 | 学习目标 |
+|---|------|----------|
+| 1 | 基于内容的寻址 | 实现余弦相似度权重计算（公式 5） |
+| 2 | 卷积移位 | 为基于位置的寻址构造循环卷积（公式 8） |
+| 3 | 存储擦除与添加 | 实现写头的更新操作（公式 3、4） |
+| 4 | 准备控制器输入 | 将输入与上一时刻的读取向量拼接（第 2 节） |
+| 5 | 锐化机制 | 应用 gamma 幂运算，避免关注分布过于模糊（公式 9） |
 
----
-
-## Key Takeaways
-
-1. **Decoupling memory from computation is the core contribution.** Standard RNNs store everything in the hidden state, coupling memory capacity with processing power. The NTM separates these by connecting a controller to an external memory bank (Section 1).
-
-2. **Differentiable addressing makes discrete pointer operations learnable.** By using soft weightings that sum to 1, the NTM can read and write to memory locations while remaining fully differentiable for backpropagation (Section 3.1).
-
-3. **The four-stage addressing pipeline is necessary, not decorative.** Content addressing alone cannot implement simple algorithms like incrementing a pointer. Interpolation, shift, and sharpening together allow learned sequential access patterns (Section 3.3.1).
-
-4. **NTMs learn algorithms, not just statistical mappings.** On the copy task, the model generalizes to sequences longer than those in training because it learns to increment a pointer, not memorize sequence patterns (Section 4.1).
+参考解答在 `exercises/solutions/`。先自己尝试，遇到困难后再查看。
 
 ---
 
-## Files in This Directory
+## 要点
 
-| File | What It Is |
-|------|------------|
-| `implementation.py` | Full NTM with controller, memory, and read/write heads |
-| `train.py` | Training script for the copy task |
-| `visualization.py` | Memory state and addressing weight visualizations |
-| `notebook.ipynb` | Interactive walkthrough of addressing mechanisms |
-| `exercises/` | 5 exercises with solutions |
-| `paper_notes.md` | Condensed notes on the original paper |
-| `CHEATSHEET.md` | Quick reference for architecture dimensions and training tips |
-| `requirements.txt` | Python dependencies |
+1. **将存储与计算解耦是核心贡献。**标准 RNN 将信息存入内部状态，使记忆容量与计算能力耦合。NTM 将控制器连接到外部存储器，使两者分离（第 1 节）。
+2. **可微寻址使离散指针操作能够通过学习获得。**借助总和为 1 的软权重，NTM 可以读写存储位置，同时保持可微，以便通过反向传播训练（第 3.1 节）。
+3. **四阶段寻址流程有实际作用。**仅靠内容寻址无法直接实现递增指针等操作；插值、移位和锐化共同支持可学习的顺序访问模式（第 3.3.1 节）。
+4. **NTM 可以学习算法，而不只是统计映射。**复制任务中，模型学会递增指针，而非仅记忆序列模式，因此能泛化到比训练序列更长的序列（第 4.1 节）。
 
 ---
 
-## Further Reading
+## 本目录文件
 
-- [Original Paper - Neural Turing Machines (arXiv:1410.5401)](https://arxiv.org/abs/1410.5401)
-- [Differentiable Neural Computers (Graves et al., 2016)](https://www.nature.com/articles/nature20101) - the successor to NTMs with improved memory addressing
-- [Learning to Transduce with Unbounded Memory (Grefenstette et al., 2015)](https://arxiv.org/abs/1506.02516) - alternative neural stack/queue architectures
+| 文件 | 内容 |
+|------|------|
+| `implementation.py` | 包含控制器、存储器与读写头的 NTM 实现 |
+| `train_minimal.py` | 复制任务训练脚本（原文误写为 `train.py`） |
+| `visualization.py` | 存储状态与寻址权重可视化 |
+| `notebook.ipynb` | 寻址机制的交互式讲解 |
+| `exercises/` | 5 个练习及参考解答 |
+| `paper_notes.md` | 原论文的精简笔记 |
+| `CHEATSHEET.md` | 架构维度与训练建议速查 |
+| `requirements.txt` | Python 依赖 |
 
 ---
 
-**Next:** [Day 18 - Pointer Networks](../18_pointer_networks/)
+## 延伸阅读
+
+- [原论文：《神经图灵机》（Neural Turing Machines，arXiv:1410.5401）](https://arxiv.org/abs/1410.5401)
+- [可微神经计算机（Differentiable Neural Computers，Graves 等，2016）](https://www.nature.com/articles/nature20101)：NTM 的后继架构，改进了存储寻址。
+- [《利用无界存储学习序列转换》（Learning to Transduce with Unbounded Memory，Grefenstette 等，2015）](https://arxiv.org/abs/1506.02516)：采用神经栈／队列的替代架构。
+
+---
+
+**下一章：**[第 18 天：指针网络](../18_pointer_networks/)

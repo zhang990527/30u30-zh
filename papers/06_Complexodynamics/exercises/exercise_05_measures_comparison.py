@@ -1,57 +1,47 @@
-"""
-Exercise 5: Complexity Measures Comparison
+"""练习 5：比较复杂性度量
 
-The capstone exercise: run ALL complexity measures on the same coffee
-mixing simulation and compare their curves. The goal is to see which
-measures show the characteristic "hump" most clearly.
+综合练习：对同一次咖啡混合模拟运行全部复杂性度量，比较曲线，观察哪些度量最清晰地呈现特征性“隆起”。
 
-Measures to compare:
-1. gzip complexity (raw KC proxy)
-2. Coarse-grained KC at multiple scales (Carroll's idea)
-3. Two-part code Part 1 (sophistication proxy)
-4. Boundary fraction (interface length)
-5. Shannon entropy (should NOT show the hump -- it's monotone)
+比较以下度量：
+1. gzip 复杂度（原始 KC 代理量）
+2. 多尺度粗粒化 KC（Carroll 的想法）
+3. 两段式编码的第一部分（精致复杂度代理量）
+4. 边界比例（界面长度）
+5. 香农熵（原说明预期单调，不出现隆起；全局像素熵在本模拟中守恒）
 
-Reference: Aaronson (2011, blog post), discussion of which measure is "right"
-
-Tasks:
-1. Run a single simulation
-2. Measure all 5 quantities at each time step
-3. Plot all on a single normalized figure
-4. Identify which measure shows the clearest hump
-5. Discuss: which is closest to Aaronson's complextropy?
-"""
+参考：Aaronson（2011，博文），关于哪种度量“合适”的讨论。
+任务：
+1. 运行一次模拟
+2. 每个测量时刻记录全部 5 个量
+3. 在同一张归一化图上绘制它们
+4. 找出隆起最清晰的度量
+5. 讨论：哪个最接近 Aaronson 的复杂熵？"""
 
 import numpy as np
 import gzip
 import sys
 import os
 
-# Add parent directory to path for importing implementation
+# 将上级目录加入导入路径，以导入 implementation
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def run_comparison(grid_size=64, n_steps=30000, swaps_per_step=50,
                    measure_interval=300):
-    """
-    Run simulation and collect all complexity measures.
+    """运行模拟，收集全部复杂性度量。
 
-    Returns:
-        Dict with keys: 'times', 'gzip', 'coarse_kc_4', 'coarse_kc_8',
-        'part1', 'boundary', 'entropy'
-
-    TODO:
-    1. Import or implement: create_grid, batch_swap, gzip_complexity,
-       coarse_grained_kc, two_part_code, grid_entropy, boundary_fraction
-    2. Run simulation, measure at intervals
-    3. Return all data as a dict
-    """
-    # YOUR CODE HERE
-    raise NotImplementedError("Implement run_comparison")
+返回：
+    包含 'times'、'gzip'、'coarse_kc_4'、'coarse_kc_8'、'part1'、'boundary'、'entropy' 的字典。
+待完成：
+1. 导入或实现 create_grid、batch_swap、gzip_complexity、coarse_grained_kc、two_part_code、grid_entropy、boundary_fraction
+2. 运行模拟，按间隔测量
+3. 将全部数据作为字典返回"""
+    # 在此编写代码
+    raise NotImplementedError('请实现 run_comparison')
 
 
 def normalize_to_01(values):
-    """Normalize a list of values to [0, 1] range."""
+    """将数值列表归一化到 [0, 1] 范围。"""
     arr = np.array(values, dtype=float)
     lo, hi = arr.min(), arr.max()
     if hi == lo:
@@ -60,55 +50,50 @@ def normalize_to_01(values):
 
 
 def plot_comparison(data):
-    """
-    Plot all measures on a single normalized figure.
+    """将全部度量绘制在同一张归一化图上。
 
-    TODO:
-    1. Normalize each measure to [0, 1]
-    2. Plot all on same axes
-    3. Mark the peak time for each
-    4. Add legend
-    5. Note which measures show the hump and which don't
-    """
-    # YOUR CODE HERE
-    raise NotImplementedError("Plot comparison")
+待完成：
+1. 将各度量归一化到 [0, 1]
+2. 在相同坐标轴上绘制
+3. 标出各自峰值时刻
+4. 添加图例
+5. 说明哪些度量呈现隆起，哪些没有"""
+    # 在此编写代码
+    raise NotImplementedError('请绘制度量比较图')
 
 
 def analyze_results(data):
-    """
-    Print analysis of which measures show the hump.
+    """输出各度量是否呈现隆起的分析。
 
-    For each measure:
-    - Peak time
-    - Peak/initial ratio
-    - Peak/final ratio
-    - Whether it's monotone (no hump) or has a clear peak
-
-    TODO: Implement this analysis.
-    """
-    # YOUR CODE HERE
-    raise NotImplementedError("Analyze results")
+对每个度量给出：
+- 峰值时刻
+- 峰值/初值之比
+- 峰值/终值之比
+- 是否单调（无隆起），或是否有明显峰值
+待完成：实现此分析。"""
+    # 在此编写代码
+    raise NotImplementedError('请分析结果')
 
 
 if __name__ == "__main__":
-    print("Exercise 5: Complexity Measures Comparison")
+    print('练习 5：比较复杂性度量')
     print("=" * 40)
     print()
 
-    print("Running simulation with all measures...")
+    print('运行模拟并计算全部度量……')
     data = run_comparison()
     print()
 
-    print("Analysis:")
+    print('分析：')
     analyze_results(data)
     print()
 
-    print("Plotting comparison...")
+    print('绘制度量比较图……')
     plot_comparison(data)
     print()
 
-    print("Questions to consider:")
-    print("1. Which measure shows the sharpest hump?")
-    print("2. Do gzip and sophistication peak at the same time?")
-    print("3. Is boundary fraction a good complexity proxy? Why or why not?")
-    print("4. Which measure is closest to Aaronson's complextropy?")
+    print('思考问题：')
+    print('1. 哪种度量的隆起最明显？')
+    print('2. gzip 与精致复杂度代理量是否同时达到峰值？')
+    print('3. 边界比例是好的复杂性代理量吗？为什么？')
+    print('4. 哪种度量最接近 Aaronson 的复杂熵？')

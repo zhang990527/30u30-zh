@@ -1,26 +1,23 @@
-"""
-Exercise 5: Compressor Comparison
+"""练习 5：比较压缩器
 
-The paper (Figure 5) shows that different file compression programs produce
-qualitatively similar complexity curves.
+论文图 5 表明，不同文件压缩程序产生的复杂度曲线在定性上相似。
 
-"The results achieved using the coarse-graining metric are qualitatively similar
-when different compression programs are used, as shown in Figure 5." (Section 5.2)
+“如图 5 所示，采用不同压缩程序时，粗粒化度量所得结果
+在定性上相似。”（第 5.2 节）
 
-Your task:
-  1. Run the interacting coffee automaton
-  2. At each snapshot, compress the coarse-grained state with multiple compressors
-  3. Plot complexity curves for each compressor
-  4. Verify they all show the rise-and-fall pattern
+任务：
+  1. 运行有相互作用的咖啡元胞自动机
+  2. 在每个快照处，用多个压缩器压缩粗粒化状态
+  3. 为每个压缩器绘制复杂度曲线
+  4. 验证所有曲线都呈先升后降模式
 
-Available compressors in Python:
-  - gzip (LZ77 + Huffman)
-  - bz2 (Burrows-Wheeler + Huffman)
-  - lzma (LZMA2)
-  - zlib (same as gzip, different wrapper)
+Python 中可用的压缩器：
+  - gzip（LZ77 + Huffman）
+  - bz2（Burrows-Wheeler + Huffman）
+  - lzma（LZMA2）
+  - zlib（与 gzip 相同算法，不同封装）
 
-Paper reference: Section 5.2, Figure 5
-"""
+论文参考：第 5.2 节，图 5"""
 
 import sys
 import os
@@ -38,59 +35,52 @@ from implementation import (
 
 
 def compress_with_all(data: bytes) -> dict:
-    """
-    TODO: Compress data with multiple algorithms.
+    """TODO：使用多种算法压缩数据。
 
-    Return a dict with compressor name -> compressed size.
-    Use: gzip, bz2, lzma, zlib
-    """
-    # YOUR CODE HERE
+返回从压缩器名称到压缩大小的字典。
+使用 gzip、bz2、lzma、zlib。"""
+    # 在此编写代码
     pass
 
 
 def run_compressor_comparison(grid_size=50, total_steps=50000, num_snapshots=60):
-    """
-    TODO: Run the automaton and collect complexity estimates from each compressor.
+    """TODO：运行自动机，收集各压缩器的复杂度估计值。
 
-    Returns:
-        times: list of time steps
-        results: dict of {compressor_name: [sizes at each time step]}
-    """
-    # YOUR CODE HERE
-    # Hint:
-    #   1. Create CoffeeAutomaton
-    #   2. At each snapshot, get grid, coarse-grain, threshold, adjust
-    #   3. Convert to bytes
-    #   4. Compress with all compressors
-    #   5. Collect sizes
+返回：
+    times：时间步列表
+    results：{压缩器名称: [各时间步的大小]} 字典"""
+    # 在此编写代码
+    # 提示：
+    #   1. 创建 CoffeeAutomaton
+    #   2. 在每个快照处，获取网格、粗粒化、阈值化、调整
+    #   3. 转为字节
+    #   4. 用所有压缩器压缩
+    #   5. 收集大小
     pass
 
 
 def plot_comparison(times, results):
-    """
-    TODO: Plot complexity curves for all compressors.
+    """TODO：为所有压缩器绘制复杂度曲线。
 
-    All curves should show the same qualitative rise-and-fall pattern,
-    even though the absolute values differ.
-    """
+尽管绝对数值不同，所有曲线都应表现出定性一致的先升后降模式。"""
     import matplotlib.pyplot as plt
 
-    # YOUR CODE HERE
+    # 在此编写代码
     pass
 
 
 if __name__ == '__main__':
-    print("Compressor Comparison (Figure 5)")
+    print("压缩器比较（图 5）")
     print("=" * 50)
 
     result = run_compressor_comparison()
 
     if result is not None:
         times, compressor_results = result
-        print("\nPeak complexity by compressor:")
+        print("\n各压缩器的复杂度峰值：")
         for name, sizes in compressor_results.items():
             peak = max(sizes)
             peak_t = times[sizes.index(peak)] if isinstance(sizes, list) else times[np.argmax(sizes)]
-            print(f"  {name:>6}: {peak:>6} bytes at t={peak_t}")
+            print(f"  {name:>6}：{peak:>6} 字节，位于 t={peak_t}")
 
         plot_comparison(times, compressor_results)

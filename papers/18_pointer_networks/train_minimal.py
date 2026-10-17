@@ -1,11 +1,11 @@
 """
-Minimal Training Script for Pointer Networks
-Standardized for Day 18 of 30u30
+指针网络最小训练脚本
+按 30u30 第 18 天的格式组织
 
-Train a Pointer Network on a sorting task. The model learns to output
-the indices of input numbers in increasing order.
+在排序任务上训练指针网络，学习按输入数字递增顺序
+输出它们的索引。
 
-Usage:
+用法：
     python train_minimal.py --epochs 20 --seq_len 5
 """
 
@@ -20,18 +20,18 @@ from implementation import PointerNetwork
 
 class SortingDataset(Dataset):
     """
-    Dataset of random number sequences and their sorted indices.
+    随机数序列及其排序索引的数据集。
     
-    Args:
-        num_samples (int): Total sequences to generate.
-        seq_len (int): Length of each sequence.
+    参数：
+        num_samples（int）：生成的序列总数。
+        seq_len（int）：每个序列的长度。
     """
     def __init__(self, num_samples=5000, seq_len=5):
         self.samples = []
         for _ in range(num_samples):
-            # Generate random numbers in [0, 1)
+            # 生成 [0, 1) 内的随机数
             nums = np.random.rand(seq_len)
-            # Targets are the indices that would sort the array
+            # 目标为能够将数组排序的索引
             indices = np.argsort(nums)
             self.samples.append((nums, indices))
             
@@ -44,33 +44,33 @@ class SortingDataset(Dataset):
 
 def train(epochs=20, seq_len=5, batch_size=64, hidden_size=64, lr=0.001):
     """
-    Standard training logic for the Pointer Network.
+    指针网络的标准训练逻辑。
     
-    Args:
-        epochs (int): Number of training passes.
-        seq_len (int): Input sequence length.
-        batch_size (int): Samples per update.
-        hidden_size (int): Model capacity.
-        lr (float): Learning rate for Adam.
+    参数：
+        epochs（int）：遍历训练数据的次数。
+        seq_len（int）：输入序列长度。
+        batch_size（int）：每次更新的样本数。
+        hidden_size（int）：模型容量。
+        lr（float）：Adam 学习率。
     """
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    # === Step 1: Prepare Data ===
+    # === 第 1 步：准备数据 ===
     train_data = SortingDataset(10000, seq_len=seq_len)
     loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
     
-    # === Step 2: Initialize Model ===
+    # === 第 2 步：初始化模型 ===
     model = PointerNetwork(input_size=1, hidden_size=hidden_size).to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
     criterion = nn.NLLLoss()
     
-    print(f"\nTraining Pointer Network on '{device}'")
-    print(f"Sequence Length: {seq_len} | Hidden Size: {hidden_size}")
+    print(f"\n正在以下任务上训练指针网络：'{device}'")
+    print(f"序列长度：{seq_len} | 隐藏状态大小：{hidden_size}")
     print("=" * 60)
     
     start_time = time.time()
     
-    # === Step 3: Training Loop ===
+    # === 第 3 步：训练循环 ===
     for epoch in range(1, epochs + 1):
         model.train()
         total_loss = 0
@@ -78,16 +78,16 @@ def train(epochs=20, seq_len=5, batch_size=64, hidden_size=64, lr=0.001):
         for x, y in loader:
             x, y = x.to(device), y.to(device)
             
-            # Forward pass
+            # 前向传播
             optimizer.zero_grad()
             output = model(x)
             
-            # Compute loss (flatten batch and time dimensions)
+            # 计算损失（展平批次和时间维）
             loss = criterion(output.view(-1, seq_len), y.view(-1))
             
-            # Backward pass
+            # 反向传播
             loss.backward()
-            # Gradient clipping is standard for Ptr-Nets to stabilize RNNs
+            # Ptr-Net 通常通过梯度裁剪稳定 RNN 训练
             torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
             optimizer.step()
             
@@ -95,24 +95,24 @@ def train(epochs=20, seq_len=5, batch_size=64, hidden_size=64, lr=0.001):
             
         avg_loss = total_loss / len(loader)
         
-        # Print progress every 5 epochs
+        # 每 5 轮打印进度
         if epoch % 5 == 0 or epoch == 1:
             elapsed = time.time() - start_time
-            print(f"Epoch {epoch:2d}/{epochs} | Loss: {avg_loss:.4f} | Time: {elapsed:.1f}s")
+            print(f"轮次 {epoch:2d}/{epochs} | 损失：{avg_loss:.4f} | 用时：{elapsed:.1f}s")
 
     print("=" * 60)
-    print(f"Training complete! Final Loss: {avg_loss:.4f}")
+    print(f"训练完成！最终损失：{avg_loss:.4f}")
     
-    # Save model
+    # 保存模型
     torch.save(model.state_dict(), "model_weights.pth")
-    print("[OK] Model saved to model_weights.pth")
+    print('[OK] 模型已保存至 model_weights.pth')
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Pointer Network Training")
-    parser.add_argument("--epochs", type=int, default=20, help="Number of training epochs")
-    parser.add_argument("--seq_len", type=int, default=5, help="Length of sorting sequence")
-    parser.add_argument("--hidden_size", type=int, default=64, help="LSTM hidden size")
-    parser.add_argument("--lr", type=float, default=0.001, help="Learning rate")
+    parser = argparse.ArgumentParser(description='指针网络训练')
+    parser.add_argument("--epochs", type=int, default=20, help='训练轮数')
+    parser.add_argument("--seq_len", type=int, default=5, help='排序序列长度')
+    parser.add_argument("--hidden_size", type=int, default=64, help='LSTM 隐藏状态大小')
+    parser.add_argument("--lr", type=float, default=0.001, help='学习率')
     args = parser.parse_args()
     
     train(

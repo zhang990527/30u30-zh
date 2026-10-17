@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Day 2 Setup Script
+第 2 天环境设置脚本
 ==================
 
-Quick setup for Understanding LSTM Networks.
+《理解 LSTM 网络》的快速设置。
 
-This script:
-1. Checks Python version
-2. Installs required packages
-3. Verifies installation
-4. Runs a quick test
+本脚本将：
+1. 检查 Python 版本
+2. 安装所需软件包
+3. 验证安装
+4. 运行快速测试
 
-Usage:
+用法：
     python setup.py
 """
 
@@ -21,57 +21,57 @@ import os
 
 
 def check_python_version():
-    """Check if Python version is 3.7+."""
-    print("Checking Python version...")
+    """检查 Python 版本是否为 3.7 或以上。"""
+    print('正在检查 Python 版本……')
     version = sys.version_info
     if version.major < 3 or (version.major == 3 and version.minor < 7):
-        print(f"FAIL: Python 3.7+ required. You have {version.major}.{version.minor}")
+        print(f"失败：需要 Python 3.7 或以上，当前为 {version.major}.{version.minor}")
         return False
-    print(f"OK: Python {version.major}.{version.minor}.{version.micro}")
+    print(f"通过：Python {version.major}.{version.minor}.{version.micro}")
     return True
 
 
 def install_requirements():
-    """Install required packages."""
-    print("\nInstalling requirements...")
+    """安装所需软件包。"""
+    print('\n正在安装依赖……')
     try:
         subprocess.check_call([
             sys.executable, "-m", "pip", "install", "-r", "requirements.txt"
         ])
-        print("OK: Requirements installed")
+        print('通过：依赖安装完成')
         return True
     except subprocess.CalledProcessError:
-        print("FAIL: Failed to install requirements")
+        print('失败：依赖安装未完成')
         return False
 
 
 def verify_imports():
-    """Verify that all required packages can be imported."""
-    print("\nVerifying imports...")
+    """验证所需软件包均能导入。"""
+    print('\n正在验证导入……')
     required = ['numpy', 'matplotlib', 'jupyter']
     
     all_ok = True
     for package in required:
         try:
             __import__(package)
-            print(f"OK: {package}")
+            print(f"通过：{package}")
         except ImportError:
-            print(f"FAIL: {package} - failed to import")
+            print(f"失败：{package} - 导入失败")
             all_ok = False
     
     return all_ok
 
 
 def run_quick_test():
-    """Run a quick test of the LSTM implementation."""
-    print("\nRunning quick test...")
+    """快速测试 LSTM 实现。"""
+    print('\n正在运行快速测试……')
     try:
         from implementation import LSTM
         
-        # Create tiny LSTM
+        # 创建小型 LSTM
         lstm = LSTM(input_size=5, hidden_size=8, output_size=5)
         
-        # Test forward pass
+        # 测试前向传播
         import numpy as np
         inputs = [0, 1, 2, 3, 4]
         targets = [1, 2, 3, 4, 0]
@@ -81,53 +81,53 @@ def run_quick_test():
         loss = lstm.forward(inputs, targets, h, C)
         
         if loss > 0:
-            print(f"OK: LSTM test passed (loss: {loss:.4f})")
+            print(f"通过：LSTM 测试通过（损失：{loss:.4f})")
             return True
         else:
-            print("FAIL: LSTM test failed")
+            print('失败：LSTM 测试未通过')
             return False
             
     except Exception as e:
-        print(f"FAIL: LSTM test failed: {e}")
+        print(f"失败：LSTM 测试未通过：{e}")
         return False
 
 
 def main():
-    """Main setup function."""
+    """环境设置主函数。"""
     print("=" * 60)
-    print("Day 2: Understanding LSTM Networks - Setup")
+    print('第 2 天：理解 LSTM 网络——环境设置')
     print("=" * 60)
     
-    # Check Python version
+    # 检查 Python 版本
     if not check_python_version():
         sys.exit(1)
     
-    # Install requirements
+    # 安装依赖
     if not install_requirements():
-        print("\nInstallation failed. Try manually:")
+        print('\n安装失败。可以手动尝试：')
         print("    pip install -r requirements.txt")
         sys.exit(1)
     
-    # Verify imports
+    # 验证导入
     if not verify_imports():
-        print("\nSome packages failed to import")
+        print('\n部分软件包导入失败')
         sys.exit(1)
     
-    # Run test
+    # 运行测试
     if not run_quick_test():
-        print("\nTest failed. Check implementation.py")
+        print('\n测试失败，请检查 implementation.py')
         sys.exit(1)
     
-    # Success!
+    # 设置成功！
     print("\n" + "=" * 60)
-    print("Setup complete.")
+    print('设置完成。')
     print("=" * 60)
-    print("\nNext steps:")
-    print("  1. Read README.md for overview")
-    print("  2. Read paper_notes.md for ELI5 explanation")
-    print("  3. Try: python train_minimal.py --data data/input.txt")
-    print("  4. Open notebook.ipynb in Jupyter")
-    print("  5. Try exercises in exercises/ folder")
+    print('\n后续步骤：')
+    print('  1. 阅读 README.md 了解概况')
+    print('  2. 阅读 paper_notes.md 中的通俗解释')
+    print('  3. 尝试：python train_minimal.py --data data/input.txt')
+    print('  4. 在 Jupyter 中打开 notebook.ipynb')
+    print('  5. 尝试 exercises/ 目录中的练习')
 
 
 if __name__ == "__main__":

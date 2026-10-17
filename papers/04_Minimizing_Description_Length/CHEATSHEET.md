@@ -1,147 +1,147 @@
-# MDL / Bayesian NN Cheatsheet
+# MDL／贝叶斯神经网络速查表
 
-Quick reference for Hinton & van Camp (1993) and our implementation.
-
----
-
-## The Paper's Contribution (30 seconds)
-
-**Problem:** Standard NNs use high-precision weights that overfit by encoding training noise.
-**Insight:** Represent weights as Gaussian distributions. Minimize total description length = data error + weight complexity.
-**Result:** MDL objective = variational free energy. The "bits back" argument connects information theory to Bayesian inference.
-
-This is a theoretical paper (6 pages, one toy experiment). The framework it establishes is the foundation for VAEs, Bayes by Backprop, and much of Bayesian deep learning.
+Hinton 与 van Camp（1993）及本实现的快速参考。
 
 ---
 
-## Key Equations
+## 论文贡献（30 秒）
+
+**问题：** 普通神经网络可能用高精度权重编码训练噪声，造成过拟合。
+**洞见：** 将权重表示为高斯分布，最小化总描述长度，即数据误差代价与权重复杂度代价之和。
+**结果：** 在相应编码与近似假设下，MDL 目标对应变分自由能。“比特回收”（bits back）论证将信息论与贝叶斯推断联系起来。
+
+原仓库将其描述为一篇理论论文（6 页，含一个小型实验）。其框架是 VAE、Bayes by Backprop 和许多贝叶斯深度学习工作的理论基础。原论文实验细节尚待一手全文核验。
+
+---
+
+## 关键方程
 
 ```
-Weight sampling:     w = mu + sigma * epsilon,    epsilon ~ N(0,1)
-Sigma from rho:      sigma = log(1 + exp(rho))    (softplus, ensures sigma > 0)
+权重采样：          w = mu + sigma * epsilon,    epsilon ~ N(0,1)
+从 rho 得到 sigma： sigma = log(1 + exp(rho))    （softplus，保证 sigma > 0）
 
-KL divergence:       KL = 0.5 * sum(sigma^2 + mu^2 - 1 - log(sigma^2))
-Error cost:          NLL ~ MSE (assuming Gaussian noise)
+KL 散度：           KL = 0.5 * sum(sigma^2 + mu^2 - 1 - log(sigma^2))
+误差代价：          NLL ~ MSE （假设高斯噪声）
 
-Total loss:          L = NLL + beta * KL
+总损失：            L = NLL + beta * KL
 ```
 
-- **KL** pulls weights toward prior N(0,1) — makes them simpler/fuzzier
-- **NLL** pulls weights toward fitting data — makes them precise
-- **beta** controls the trade-off (most important hyperparameter)
+- **KL** 将权重拉向先验 N(0,1)，使描述更简单、分布更分散。
+- **NLL**（负对数似然）促使权重拟合数据，使取值更精确。
+- **beta** 控制两者的权衡，是最重要的超参数。
 
 ---
 
-## Quick Start
+## 快速开始
 
 ```bash
-# Train with default settings (gappy sine wave)
+# 使用默认设置训练（带缺口的正弦波）
 python train_minimal.py
 
-# More regularization (simpler model, more uncertainty)
+# 更强的正则化（更简单的模型，更大的不确定性）
 python train_minimal.py --kl-weight 0.5
 
-# Less regularization (fits data harder, less uncertainty)
+# 更弱的正则化（更着重拟合数据，更小的不确定性）
 python train_minimal.py --kl-weight 0.001
 ```
 
-### In Python
+### 在 Python 中使用
 
 ```python
 from implementation import MDLNetwork
 
 net = MDLNetwork(input_size=1, hidden_size=20, output_size=1)
 
-# Forward pass — returns DIFFERENT result each time (weights are sampled)
+# 前向传播：由于采样权重，每次结果不同
 pred = net.forward(x)
 
-# Loss = error + beta * complexity
+# 损失 = 误差 + beta * 复杂度
 loss = MSE(pred, y) + kl_weight * net.total_kl()
 
-# Prediction with uncertainty (100 forward passes)
+# 带不确定性的预测（100 次前向传播）
 mean, std = net.predict_with_uncertainty(x_test, n_samples=100)
 ```
 
 ---
 
-## Paper's Hyperparameters
+## 论文与实现的超参数
 
-The paper is theoretical and doesn't specify practical training details. These are **our** recommended settings:
+原仓库说明论文主要讨论理论，没有给出这里的实用训练细节。以下是**本项目**的建议设置：
 
-### Starting Point
+### 建议起点
 ```python
 hidden_size = 20
-kl_weight = 0.1       # beta — adjust first if problems
+kl_weight = 0.1       # beta：出现问题时优先调整
 lr = 0.01
 epochs = 2000
-rho_init = -3.0       # sigma starts at ~0.05
+rho_init = -3.0       # sigma 初值约为 0.05
 ```
 
 ---
 
-## Hyperparameter Guide
+## 超参数指南
 
-| Parameter | Typical Range | Notes |
+| 参数 | 典型范围 | 说明 |
 |-----------|--------------|-------|
-| `kl_weight` (beta) | 0.001 - 1.0 | Most important. Higher = simpler, fuzzier. Lower = overfits. |
-| `hidden_size` | 10 - 50 | Network capacity |
-| `rho_init` | -3.0 to -5.0 | Initial uncertainty. softplus(-3) ~ 0.05 |
-| `lr` | 0.001 - 0.01 | Learning rate |
+| `kl_weight` (beta) | 0.001 - 1.0 | 最重要。较大时更简单、分布更分散；较小时可能过拟合。 |
+| `hidden_size` | 10 - 50 | 网络容量 |
+| `rho_init` | -3.0 至 -5.0 | 初始不确定性，softplus(-3) ~ 0.05 |
+| `lr` | 0.001 - 0.01 | 学习率 |
 
 ---
 
-## Common Issues
+## 常见问题
 
-### Model predicts a flat line (underfitting)
-- `kl_weight` too high — the model is terrified of complexity
-- Fix: reduce `kl_weight` (try 0.1 -> 0.01)
+### 模型预测接近平线（欠拟合）
+- `kl_weight` 过大，复杂度惩罚过强。
+- 处理：减小 `kl_weight`（尝试 0.1 -> 0.01）。
 
-### No uncertainty in gaps (overfitting)
-- `kl_weight` too low — acting like a standard NN
-- Fix: increase `kl_weight`
+### 缺口区域没有不确定性（可能过拟合）
+- `kl_weight` 过小，表现类似普通神经网络。
+- 处理：增大 `kl_weight`。
 
-### Loss explodes (NaN)
-- sigma blew up or collapsed
-- Fix: clip gradients, lower learning rate, check softplus for numerical issues
+### 损失发散（NaN）
+- sigma 可能过大或趋近零。
+- 处理：检查梯度裁剪、降低学习率，并检查 softplus 的数值稳定性。
 
 ---
 
-## Standard vs. Bayesian Comparison
+## 普通网络与贝叶斯网络对比
 
-| Aspect | Standard NN | MDL / Bayesian NN |
+| 方面 | 普通神经网络 | MDL／贝叶斯神经网络 |
 |--------|------------|-------------------|
-| Weights | Fixed numbers | Distributions N(mu, sigma) |
-| Prediction | Deterministic | Stochastic (different each pass) |
-| Unknown data | Confidently wrong | Shows high uncertainty |
-| Parameters | W, b | mu, rho (2x params per weight) |
-| Loss | Error only | Error + KL divergence |
+| 权重 | 固定数值 | 分布 N(mu, sigma) |
+| 预测 | 确定性 | 随机性（每次前向传播不同） |
+| 未知数据 | 可能自信地给出错误结果 | 可通过权重采样反映不确定性，但不保证校准良好 |
+| 参数 | W, b | mu, rho（每个权重对应 2 个参数） |
+| 损失 | 只有误差项 | 误差项 + KL 散度 |
 
 ---
 
-## Debugging Checklist
+## 调试清单
 
-- [ ] Is beta (kl_weight) reasonable? Not too high (flat line) or too low (overfit)?
-- [ ] Is sigma computed via softplus (always positive)?
-- [ ] Are gradients combining BOTH error and KL sources?
-- [ ] Is KL scaled by 1/N (number of data points)?
-- [ ] For uncertainty plots: using enough MC samples (50-100)?
+- [ ] beta（kl_weight）是否合理？是否过大（平线）或过小（过拟合）？
+- [ ] 是否通过 softplus 计算 sigma，保证其为正？
+- [ ] 梯度是否同时包含误差和 KL 两个来源？
+- [ ] KL 是否按 1/N（数据点数量）缩放，并与数据损失的求和／平均方式一致？
+- [ ] 绘制不确定性时，蒙特卡洛样本数是否足够（50-100）？
 
 ---
 
-## What's From the Paper vs. Our Additions
+## 论文内容与本项目补充
 
-| Concept | Source |
+| 概念 | 来源 |
 |---------|--------|
-| Gaussian weight distributions | Paper |
-| KL divergence as complexity cost | Paper |
-| Bits back argument | Paper |
-| MDL = variational free energy | Paper |
-| Reparameterization trick | Kingma & Welling (2014) |
-| Softplus parameterization | Modern practice |
-| Monte Carlo uncertainty | Modern practice |
-| Gap experiment | Our addition |
-| All exercises | Our additions |
+| 高斯权重分布 | 论文 |
+| 以 KL 散度作为复杂度代价 | 论文 |
+| 比特回收论证 | 论文 |
+| MDL 与变分自由能的联系 | 论文 |
+| 本实现采用的重参数化形式 | Kingma 与 Welling（2014） |
+| Softplus 参数化 | 现代实践 |
+| 蒙特卡洛不确定性估计 | 现代实践 |
+| 缺口实验 | 本项目补充 |
+| 所有练习 | 本项目补充 |
 
 ---
 
-*For paper details, see [paper_notes.md](paper_notes.md). For implementation guide, see [README.md](README.md).*
+*论文详情见 [paper_notes.md](paper_notes.md)，实现指南见 [README.md](README.md)。*

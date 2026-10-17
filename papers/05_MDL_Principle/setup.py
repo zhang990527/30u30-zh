@@ -1,8 +1,8 @@
 """
-Day 5: MDL (Minimum Description Length) Principle
+第 5 天：最小描述长度（Minimum Description Length，MDL）原理
 ==================================================
 
-Setup and utility functions for the MDL implementation.
+MDL 实现的环境设置与工具函数。
 """
 
 from setuptools import setup, find_packages

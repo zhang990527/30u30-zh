@@ -1,130 +1,140 @@
-# Day 18: Pointer Networks
+# 第 18 天：指针网络（Pointer Networks）
 
-> Vinyals, Fortunato, Jaitly (2015) — [Original Paper](https://arxiv.org/abs/1506.03134)
+> Vinyals、Fortunato、Jaitly（2015）— [原论文](https://arxiv.org/abs/1506.03134)
 
-**Time:** 4-5 hours  
-**Prerequisites:** PyTorch, LSTM intuition, Attention mechanisms  
-**Code:** PyTorch (Implementation + Visualization)
-
----
-
-## What This Paper Is Actually About
-
-Vinyals et al. (2015) solve the "variable output space" problem (Section 1). In traditional Seq2Seq models, you predict tokens from a fixed list (like an English dictionary). But what if you need to output indices that correspond to your input? 
-
-For example, if you are sorting [0.7, 0.2, 0.9], your output isn't a "word" — it's a choice of which input to pick first. The **Pointer Network** uses the attention mechanism to "point" directly at input elements, allowing the output vocabulary to grow and shrink exactly with the input size.
+**用时：**4–5 小时  
+**前置知识：**PyTorch、对 LSTM 的直观理解、注意力机制  
+**代码：**PyTorch（实现与可视化）
 
 ---
 
-## The Core Idea
+## 这篇论文究竟研究什么
 
-The paper's core contribution is the repurposing of the attention mechanism (Section 2.3). Instead of using attention to "blend" inputs into a single context vector (which is then used by a fixed softmax layer), the Pointer Network uses the attention distribution itself as the output.
+Vinyals 等人（2015）解决“输出空间可变”的问题（第 1 节）。传统序列到序列（Seq2Seq）模型从固定列表（如英语词典）中预测词元。但如果需要输出与输入对应的索引，该怎么办？
 
-This enables the model to map an input sequence to an output sequence of pointers. Because it points rather than classifies, it can handle any number of inputs at test time, even if that number differs from what was seen during training.
-
----
-
-## What Authors Actually Showed
-
-The authors demonstrated that Pointer Networks can learn to solve discrete geometric and combinatorial problems simply by observing examples (Section 4):
-- **Convex Hull** (Section 4.2): Finding the points that form the boundary of a set of coordinates. Ptr-Net achieved 72.6% accuracy and 99.9% area coverage for n=50 (Table 1).
-- **Delaunay Triangulation** (Section 4.3): Computing the triangulation of a point set where no point lies inside any triangle's circumscribed circle. 80.7% accuracy for n=5, dropping to 22.6% for n=10.
-- **TSP (Traveling Salesman Problem)** (Section 4.4): Finding an approximate shortest tour through a set of cities. Achieved near-optimal tour lengths for small n (Table 2).
-
-Critically, they showed that a single Ptr-Net model trained on n=5 to 50 generalized to n=500 for Convex Hull with satisfactory results (Table 1), indicating the model learned a reusable algorithm rather than just memorizing input-output pairs.
-
-Note: Our implementation uses sorting as the demonstration task since it's simpler to set up than the geometric problems while still exercising the core pointer mechanism.
+例如，对 [0.7, 0.2, 0.9] 排序时，输出并不是一个“单词”，而是选择先取哪一个输入。**指针网络（Pointer Network）**用注意力机制直接“指向”输入元素，使输出词表的大小随输入规模一同增减。
 
 ---
 
-## The Architecture
+## 核心思想
 
-### Pointer Attention (Equation 3)
-The model treats position-wise attention weights as output probabilities:
+论文的核心贡献是改变注意力机制的用途（第 2.3 节）。传统方法用注意力将输入混合成单个上下文向量，再送入固定大小的 softmax 层；指针网络则直接把注意力分布作为输出。
+
+这样，模型可以将输入序列映射为指针序列。因为输出是指向输入位置，所以结构上可以处理不同数量的测试输入，包括与训练时数量不同的输入。
+
+> 译注：可接收不同长度输入是架构性质，不保证在任意长度上都有良好的预测质量。
+
+---
+
+## 作者实际展示了什么
+
+作者展示了指针网络可以仅通过观察样例，学习求解离散几何与组合问题（第 4 节）：
+
+- **凸包（Convex Hull，第 4.2 节）：**找出构成点集边界的点。原仓库报告，n=50 时 Ptr-Net 的准确率为 72.6%，面积覆盖率为 99.9%（表 1）。
+- **德洛内三角剖分（Delaunay Triangulation，第 4.3 节）：**构造三角剖分，使任意三角形外接圆内部都没有其他输入点。n=5 时准确率为 80.7%，n=10 时降至 22.6%。
+- **旅行商问题（Traveling Salesman Problem，TSP，第 4.4 节）：**寻找经过所有城市的近似最短巡回路径。n 较小时得到接近最优的路径长度（表 2）。
+
+一个关键结果是：同一个在 n=5 到 50 上训练的 Ptr-Net，在 n=500 的凸包任务上仍有较好的表现（表 1）。这为模型学到可复用规则而非仅记忆输入输出对提供了证据。
+
+**说明：**本章以排序作为演示任务。它比几何问题更容易搭建，同时仍能训练核心指针机制。
+
+> 核验状态：上述实验数值来自原仓库，原论文正文在当前环境中尚未成功获取，未独立核实；本章排序实验不能被视为对这些几何结果的复现。
+
+---
+
+## 架构
+
+### 指针注意力（公式 3）
+
+模型将各位置的注意力权重视为输出概率：
 
 $$u_j^i = v^T \tanh(W_1 e_j + W_2 d_i)$$
 $$p(C_i | C_1, ..., C_{i-1}, P) = softmax(u^i)$$
 
-- **Encoder**: An LSTM that processes the input sequence (e.g., coordinates).
-- **Decoder**: An LSTM that generates a "query" for each output step.
-- **Pointer Head**: Computes the additive attention scores between the current query and all encoder states.
+- **编码器：**LSTM，用于处理输入序列，例如坐标。
+- **解码器：**LSTM，在每个输出步骤生成一个“查询”。
+- **指针头：**计算当前查询与全部编码器状态之间的加性注意力分数。
 
-### Masking
-For permutations (like TSP), once an item is picked, it is "masked" (score set to $-\infty$) so the model doesn't select it again in the same sequence.
+### 掩码
 
----
-
-## Implementation Notes
-
-The implementation in `implementation.py` follows the PyTorch `nn.Module` pattern for the encoder-decoder setup.
-
-Key decisions:
-- **Teacher Forcing**: Feeding the ground-truth pointer's embedding during training to speed up convergence.
-- **Gradient Clipping**: Standard practice for LSTMs to prevent the "exploding gradient" problem.
-- **Masking Mechanism**: Fully implemented to support sampling without replacement.
-
-Things that will bite you:
-- **Broadcasting**: Projecting encoder states once ($W_1 e_j$) and then adding the decoder query ($W_2 d_i$) via broadcasting is far more efficient than re-calculating everything at each step.
-- **Padding**: Ensure attention masks ignore padding tokens if training on variable-length batches.
+对于 TSP 等排列任务，某项一旦被选中，就用掩码将其分数置为 $-\infty$，避免模型在同一序列中再次选择它。
 
 ---
 
-## What to Build
+## 实现说明
 
-### Quick Start
+`implementation.py` 的编码器—解码器结构采用 PyTorch 的 `nn.Module` 模式。
+
+关键选择：
+
+- **教师强制（teacher forcing）：**训练时输入真实目标指针对应的嵌入，以加快收敛。
+- **梯度裁剪：**LSTM 的常用做法，用于缓解梯度爆炸。
+- **掩码机制：**用于支持无放回选择。
+
+容易踩坑的地方：
+
+- **广播：**先计算一次编码器投影（$W_1 e_j$），再通过广播加入解码器查询（$W_2 d_i$），比每步重复计算更高效。
+- **填充：**若同一批次包含不同长度序列，注意力掩码必须忽略填充词元。
+
+---
+
+## 动手实现
+
+### 快速开始
 
 ```bash
 python train_minimal.py --seq_len 5 --epochs 50
 ```
 
-### Exercises (in `exercises/`)
+### 练习（位于 `exercises/`）
 
-| # | Task | What You'll Get Out of It |
+| # | 任务 | 学习目标 |
 |:---|:---|:---|
-| 1 | Pointer Head | Implement the additive attention scoring logic (Eq 3) |
-| 2 | Masking | Learn to prevent "sampling with replacement" |
-| 3 | Convex Hull | Format geometric data as pointer targets |
-| 4 | TSP Cost | Analyze combinatorial results in real-space |
-| 5 | Greedy Decoder | Build the full autoregressive selection loop |
+| 1 | 指针头 | 实现加性注意力评分逻辑（公式 3） |
+| 2 | 掩码 | 学会避免“有放回采样” |
+| 3 | 凸包 | 将几何数据格式化为指针目标 |
+| 4 | TSP 代价 | 在实际几何空间中分析组合结果 |
+| 5 | 贪心解码器 | 构建完整的自回归选择循环 |
 
 ---
 
-## Going Further: [Our Implementation: Going Beyond]
+## 进一步探索：本仓库的延伸
 
-While the paper focuses on coordinates and small sets, Ptr-Nets are also useful for:
-- **Summarization**: Copying rare words (names, dates) directly from source text.
-- **Data Structuring**: Building trees or graphs where nodes "point" to other nodes in the input.
+虽然论文关注坐标与小规模集合，指针思想还可用于：
 
----
-
-## Key Takeaways
-
-1. **Attention as Output**: Attention distribution can replace a fixed-size softmax layer [OK].
-2. **Dynamic Vocabulary**: Native support for variable-length inputs and outputs.
-3. **Algorithmic Learning**: The model learns to approximate discrete algorithms (like sorting) from raw data.
+- **摘要：**直接从源文本复制罕见词，例如姓名和日期。
+- **数据结构构建：**构建树或图，使节点“指向”输入中的其他节点。
 
 ---
 
-## Files in This Directory
+## 要点
 
-| File | What It Is |
+1. **以注意力为输出：**注意力分布可以代替固定大小的 softmax 输出层。
+2. **动态词表：**架构支持可变长度输入与输出。
+3. **算法学习：**模型可以从原始数据学习近似离散算法，例如排序。
+
+---
+
+## 本目录文件
+
+| 文件 | 内容 |
 |:---|:---|
-| `implementation.py` | Core PointerNetwork and Attention modules |
-| `train_minimal.py` | Training script for the sorting task |
-| `visualization.py` | Generates attention heatmaps |
-| `notebook.ipynb` | Interactive sorting demo |
-| `paper_notes.md` | Detailed math and ELI5 |
-| `CHEATSHEET.md` | Quick reference and parameter guide |
-| `exercises/` | Five exercises covering pointer attention, masking, and decoding |
+| `implementation.py` | 核心 `PointerNetwork` 与 `Attention` 模块 |
+| `train_minimal.py` | 排序任务训练脚本 |
+| `visualization.py` | 注意力热图生成 |
+| `notebook.ipynb` | 交互式排序演示 |
+| `paper_notes.md` | 详细数学说明与通俗解释 |
+| `CHEATSHEET.md` | 速查与参数指南 |
+| `exercises/` | 涵盖指针注意力、掩码与解码的五个练习 |
 
 ---
 
-## Further Reading
+## 延伸阅读
 
-- [Pointer Networks (Original ArXiv)](https://arxiv.org/abs/1506.03134)
-- [Get to the Point: Summarization with Pointer-Generator Networks](https://arxiv.org/abs/1704.04368)
+- [《指针网络》（Pointer Networks，原始 arXiv 论文）](https://arxiv.org/abs/1506.03134)
+- [《直入要点：使用指针生成网络进行摘要》（Get to the Point: Summarization with Pointer-Generator Networks）](https://arxiv.org/abs/1704.04368)
 
 ---
 
-**Previous:** [Day 17 — Neural Turing Machines](../17_neural_turing_machines/)  
-**Next:** [Day 19: Relational Reasoning](../19_relational_reasoning/)
+**上一章：**[第 17 天：神经图灵机](../17_neural_turing_machines/)  
+**下一章：**[第 19 天：关系推理](../19_relational_reasoning/)

@@ -1,93 +1,112 @@
-# Paper Notes: Neural Turing Machines (NTM)
+# 论文笔记：神经图灵机（Neural Turing Machines，NTM）
 
-## ELI5 (Explain Like I'm 5)
+## 通俗解释（ELI5）
 
-### The Scratchpad Metaphor
-Imagine you're trying to do a really complex long-division problem in your head. It's hard because you have to remember the numbers while you're also doing the subtraction and the next division. Your "internal memory" (the hidden state in an RNN) gets overwhelmed.
+### 草稿纸的比喻
 
-The Neural Turing Machine (NTM) is like giving your brain a **scratchpad**. Instead of holding everything in your head, you can write intermediate numbers down, look at them when you need them, and erase them when they're no longer useful. 
+想象你要心算一道复杂的长除法。你既要记住数字，又要完成减法和下一轮除法，因此很吃力。“内部记忆”（RNN 的隐藏状态）会不堪重负。
 
-**Wait, isn't that just an LSTM?**
-No. An LSTM's "memory" is a single vector of a fixed size. If you want to remember more, you have to make the whole network bigger. An NTM's memory is a separate "bank" (like a spreadsheet). You can make the spreadsheet bigger without changing how the network itself works.
+神经图灵机（NTM）就像给大脑一张**草稿纸**。不用把所有东西都记在脑中，可以写下中间结果，需要时查看，不再有用时擦掉。
 
-> **Note:** This analogy is ours, not Graves'. Graves uses the more formal "Turing's Metaphor" (human with pen and paper) described below.
+**等等，这不就是 LSTM 吗？**
 
----
+不是。LSTM 的“记忆”是固定大小的向量。想记住更多，就得增大网络。NTM 的存储则是独立的“存储器”（类似电子表格）：可以扩展表格，而不改变控制器本身的工作方式。
 
-## What the Paper Actually Says (Traceability)
-
-The paper **"Neural Turing Machines" (Graves et al., 2014)** introduces a new architecture that couples a neural network "controller" to an external memory bank.
-
-### 1. Turing's Metaphor (Section 1)
-Graves starts by referencing Alan Turing's 1948 description of a human "calculating machine" who has a pen, paper, and an "effective procedure." Turing's point was that human "intelligence" often involves a brain interacting with external symbols. The NTM is the neural equivalent of this interaction.
-
-### 2. The Architecture (Section 2)
-The system is divided into two parts:
-- **The Controller:** Usually an LSTM. It "thinks" and decides what to do.
-- **The Heads:** The interface between the Controller and the Memory.
-
-### 3. Differentiable Addressing (Section 3.3.1)
-This is the most critical technical contribution. How does a neural network "point" to a specific memory location without breaking the ability to use gradient descent? 
-- In a normal computer, an address is a discrete number (e.g., "Address 42"). This is **not** differentiable.
-- In an NTM, an address is a **weighting vector** (e.g., "0.9 on Address 42 and 0.1 on Address 43"). This "blurry" focus allows the model to be trained via backpropagation.
-
-**The Four-Step Addressing Pipeline:**
-1. **Content Addressing (Eq 5):** The controller emits a key vector and compares it against all memory rows via cosine similarity. [Our Addition: Analogy - like saying "find me something that looks like X."]
-2. **Interpolation (Eq 7):** A gate $g_t$ blends the new content weighting with the previous weighting. [Our Addition: Analogy - deciding whether to use the new search result or stay at the previous location.]
-3. **Convolutional Shift (Eq 8):** A shift distribution $s_t$ performs circular convolution over the weighting, enabling relative movement. [Our Addition: Analogy - like saying "move one slot to the right."]
-4. **Sharpening (Eq 9):** To prevent the focus from becoming *too* blurry over time, the model "squeezes" the weights to pick a clear winner.
-
-### 4. Reading and Writing (Section 3.1 & 3.2)
-- **Reading:** Does a weighted sum of memory locations.
-- **Writing:** This is a two-step process. First, it **erases** (Eq 3) by multiplying memory by a "forget" vector, then it **adds** (Eq 4) new information. [Our Addition: Analogy] This resembles how conventional RAM performs write operations, but here every step is differentiable.
+> **说明：**这个类比由本仓库作者提供，不是 Graves 的表述。Graves 使用的是下文更正式的“图灵比喻”（拿着纸笔的人）。严格地说，LSTM 同时具有隐藏状态与细胞状态；扩展外部存储也会增加寻址计算量。
 
 ---
 
-## The Experiments: What the NTM Learned
+## 论文实际说了什么（可追溯性）
 
-The paper tests the model on five tasks. These experiments are significant because they show the NTM learning *algorithms*, not just patterns.
+**《神经图灵机》（Neural Turing Machines，Graves 等，2014）**提出将神经网络“控制器”与外部存储器连接的新架构。
 
-### 1. The Copy Task (Section 4.1)
-- **Task:** See a sequence, then repeat it back.
-- **Result:** The NTM learns to write the sequence into memory sequentially and then read it back. The paper shows it **generalizes** to sequences longer than those seen in training. An LSTM usually fails here because its memory is "fixed."
+### 1. 图灵比喻（第 1 节）
 
-### 2. Repeat Copy (Section 4.2)
-- **Task:** See a sequence and a number $N$, then repeat the sequence $N$ times.
-- **Result:** [Our Addition: Analogy] The NTM's behavior resembles a loop - it stores the sequence once and then repeatedly reads it back, keeping a counter in its controller.
+Graves 首先引用 Alan Turing 在 1948 年对人类“计算机器”的描述：一个人拥有纸、笔和一套“有效过程”。图灵的意思是，人类的“智能”常常涉及大脑与外部符号的交互。NTM 是这一交互过程的神经网络对应形式。
 
-### 3. Associative Recall (Section 4.3)
-- **Task:** See a list of (key, value) pairs. Then see a key and output the corresponding value.
-- **Result:** The NTM learns to use its Content Addressing to "query" the memory.
+### 2. 架构（第 2 节）
 
-### 4. Dynamic N-Grams (Section 4.4)
-- **Task:** Predict the next bit in a sequence generated by a specific probability table.
-- **Result:** The NTM learns to update its own memory to keep track of the count of occurrences (Section 4.4). [Our Addition: Analogy - in effect, it "programs" its own statistics table.]
+系统分为两个部分：
 
-### 5. Priority Sort (Section 4.5)
-- **Task:** Sort a list of vectors by a scalar "priority" value.
-- **Result:** The NTM learns to use its memory to store vectors and then use its addressing mechanism to find the one with the highest priority next.
+- **控制器：**通常采用 LSTM，负责“思考”和决定操作。
+- **读写头：**控制器与存储器之间的接口。
 
----
+### 3. 可微寻址（第 3.3.1 节）
 
-## What the Paper Doesn't Cover (Section 5)
+这是最关键的技术贡献。神经网络怎样在仍可使用梯度下降的情况下，“指向”特定存储位置？
 
-- **Alternative Topologies:** The paper focus solely on a 2D memory matrix. It doesn't explore stacks, queues, or other data structures.
-- **Large-scale benchmarks:** The experiments are restricted to toy algorithmic tasks. 
-- **Training Stability:** Although it mentions gradient clipping, it does not provide a comprehensive analysis of why NTMs can be difficult to train compared to standard LSTMs.
+- 普通计算机中的地址是离散数字，例如“地址 42”，无法直接对其求导。
+- NTM 的地址是**权重向量**，例如“地址 42 上为 0.9，地址 43 上为 0.1”。这种“模糊”关注方式让模型可以通过反向传播训练。
 
----
+**四步寻址流程：**
 
-## Our Additions (Not from the Paper)
+1. **内容寻址（公式 5）：**控制器产生键向量，用余弦相似度将其与所有存储行比较。[本仓库补充的类比：好比说“帮我找到看起来像 X 的内容”。]
+2. **插值（公式 7）：**门 $g_t$ 混合新的内容权重与之前的权重。[本仓库补充的类比：决定采用新检索结果，还是留在之前的位置。]
+3. **卷积移位（公式 8）：**移位分布 $s_t$ 对权重做循环卷积，实现相对移动。[本仓库补充的类比：好比说“向右移动一个槽位”。]
+4. **锐化（公式 9）：**为了避免关注范围随时间变得*过于*模糊，模型收紧权重分布，使较大的权重更加突出。
 
-### Practical Implementation Details
-While the paper presents Equations 1-9 as a complete system, training them in PyTorch requires subtle numerical stability tricks that aren't explicitly detailed:
-1. **Softplus for Positivity:** Parameters like $\beta$ (key strength) and $\gamma$ (sharpening) must be positive. We use `1 + F.softplus(x)` instead of a raw ReLU to prevent dead units.
-2. **Epsilon Values:** When normalizing weights (Eq 9), adding a small constant ($1e-8$) is essential to prevent `ZeroDivisionError` when a head is initially uninitialized.
-3. **The "Copy" Delimiter:** In Section 4.1, the paper mentions a "delimiter flag." In our implementation, we explicitly use an $(N+1)$-th bit to represent this flag, which is a common practical convention not strictly mandated in the text.
+### 4. 读取与写入（第 3.1、3.2 节）
 
-### Evolutionary Context (Where NTM stands now)
-The NTM was a direct precursor to the **Differentiable Neural Computer (DNC)** (Nature, 2016). While the NTM used a simple circular shift for location addressing, the DNC added "Dynamic Memory Allocation" (like a real OS) and "Temporal Linkage" (keeping track of the order of writes automatically).
+- **读取：**对存储位置求加权和。
+- **写入：**分两步进行。先将存储内容与“遗忘”向量相乘来**擦除**（公式 3），再**添加**新信息（公式 4）。[本仓库补充的类比]这类似传统 RAM 的写入操作，但这里每一步都可微。
 
 ---
 
-**Next:** [Day 18 - Pointer Networks](../18_pointer_networks/)
+## 实验：NTM 学到了什么
+
+论文在五项任务上测试模型。这些实验的意义在于展示 NTM 学习*算法*而非仅学习模式的能力。
+
+### 1. 复制任务（第 4.1 节）
+
+- **任务：**观察一个序列，然后复现它。
+- **结果：**NTM 学会将序列顺序写入存储器，再读出。论文展示其可以**泛化**到比训练中更长的序列。LSTM 的记忆容量固定，在此类长序列设置下通常更困难。
+
+### 2. 重复复制（第 4.2 节）
+
+- **任务：**观察一个序列和数字 $N$，然后将序列重复 $N$ 次。
+- **结果：**[本仓库补充的类比]NTM 的行为类似循环：只存储一次序列，然后反复读出，并在控制器中维护计数。
+
+### 3. 联想回忆（第 4.3 节）
+
+- **任务：**原仓库将其概括为观察一组（键、值）对，再根据键输出对应值。
+- **结果：**NTM 学会通过内容寻址“查询”存储器。
+
+> 译注：上述是原仓库的简化描述。论文中的联想回忆以项目序列和查询项目构造任务；不能把这里的类比当作原论文的完整数据协议。原论文正文在本次环境中尚未成功获取，细节仍需按第 4.3 节核验。
+
+### 4. 动态 N 元语法（Dynamic N-Grams，第 4.4 节）
+
+- **任务：**预测由特定概率表生成的序列中的下一个比特。
+- **结果：**NTM 学会更新自己的存储器来跟踪出现次数（第 4.4 节）。[本仓库补充的类比：实际上相当于为自己“编写”统计表。]
+
+### 5. 优先级排序（第 4.5 节）
+
+- **任务：**根据标量“优先级”对向量列表排序。
+- **结果：**NTM 学会用存储器存放向量，再通过寻址机制查找下一个优先级最高的向量。
+
+---
+
+## 论文未覆盖的内容（第 5 节）
+
+- **替代拓扑：**论文只关注二维存储矩阵，没有探索栈、队列或其他数据结构。
+- **大规模基准：**实验局限于小型算法任务。
+- **训练稳定性：**虽然提到梯度裁剪，但没有全面分析为什么 NTM 比标准 LSTM 更难训练。
+
+---
+
+## 本仓库补充内容（不出自论文）
+
+### 实践中的实现细节
+
+虽然论文用公式 1–9 给出完整系统，在 PyTorch 中训练时仍需要一些未被详细说明的数值稳定性技巧：
+
+1. **用 Softplus 保证约束：**$\beta$（键强度）必须为正，$\gamma$（锐化参数）必须不小于 1。原文建议 `1 + F.softplus(x)`，而不是直接使用 ReLU，以避免失活单元；实际代码对 beta 使用 `F.softplus`，对 gamma 使用 `1 + F.softplus`。
+2. **Epsilon：**归一化权重时（公式 9）加入很小的常数（$1e-8$），有助于避免初始状态下分母为零。原文称会触发 `ZeroDivisionError`；PyTorch 张量运算通常产生非有限值，而非抛出该 Python 异常。
+3. **复制任务的分隔符：**论文第 4.1 节提到“分隔标志”。本实现明确使用第 $(N+1)$ 个比特表示该标志；这是常见实践约定，并非论文强制要求的形式。这里的 $N$ 指数据宽度，不应与存储槽位数混淆。
+
+### 演进背景：NTM 所处的位置
+
+NTM 是**可微神经计算机（Differentiable Neural Computer，DNC）**（Nature，2016）的直接前身。NTM 用简单的循环移位进行位置寻址，DNC 则增加了“动态存储分配”（类似操作系统）和“时间链接”（自动跟踪写入顺序）。
+
+---
+
+**下一章：**[第 18 天：指针网络](../18_pointer_networks/)

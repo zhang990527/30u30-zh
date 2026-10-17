@@ -5,7 +5,7 @@ from implementation import RelationalRNN
 from exercise_04_nth_farthest import generate_nth_farthest_batch
 
 def train():
-    # Hyperparameters
+    # 超参数
     seq_len = 10
     dim = 16
     slots = 4
@@ -14,40 +14,40 @@ def train():
     epochs = 500
     batch_size = 32
     
-    # TODO: Initialize the RelationalRNN model
-    # Use the hyperparameters above. Output size == dim (regression)
-    model = # YOUR CODE HERE
+    # TODO：初始化 RelationalRNN 模型
+    # 使用上面的超参数；输出大小 == dim（回归）
+    model = # 在此填写代码
     
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
     criterion = nn.MSELoss()
     
-    print("Starting Training...")
+    print('开始训练……')
     
     for step in range(epochs):
-        # TODO: Generate a batch of data
-        inputs, targets = # YOUR CODE HERE
+        # TODO：生成一批数据
+        inputs, targets = # 在此填写代码
         
         optimizer.zero_grad()
         
-        # TODO: Forward pass
-        output = # YOUR CODE HERE
+        # TODO：前向传播
+        output = # 在此填写代码
         
-        # TODO: Calculate loss and backprop
-        loss = # YOUR CODE HERE
+        # TODO：计算损失并反向传播
+        loss = # 在此填写代码
         loss.backward()
         optimizer.step()
         
         if step % 50 == 0:
-            print(f"Step {step}: Loss = {loss.item():.6f}")
+            print(f"步数 {step}：损失 = {loss.item():.6f}")
 
-    print("\nTraining Complete!")
+    print('\n训练完成！')
     
-    # Verification
+    # 验证
     model.eval()
     with torch.no_grad():
         inputs, targets = generate_nth_farthest_batch(1, seq_len, dim)
         output = model(inputs)
-        print(f"Final Loss: {criterion(output, targets).item():.6f}")
+        print(f"最终损失：{criterion(output, targets).item():.6f}")
 
 if __name__ == "__main__":
     train()

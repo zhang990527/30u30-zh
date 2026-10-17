@@ -10,10 +10,10 @@ class RelationalMemoryStep(nn.Module):
         self.mem_size = mem_size
         self.num_heads = num_heads
         
-        # 1. Input Projector: Input -> Memory Size
+        # 1. 输入投影：输入 -> 记忆大小
         self.input_proj = nn.Linear(input_size, mem_size)
         
-        # 2. Attention Projections
+        # 2. 注意力投影
         feature_dim = 2 * mem_size
         self.q_proj = nn.Linear(feature_dim, mem_size)
         self.k_proj = nn.Linear(feature_dim, mem_size)
@@ -22,21 +22,21 @@ class RelationalMemoryStep(nn.Module):
         self.output_proj = nn.Linear(mem_size, mem_size)
         self.layer_norm = nn.LayerNorm(mem_size)
         
-        # 3. Gating (LSTM style)
+        # 3. 门控（LSTM 风格）
         self.gate_f = nn.Linear(feature_dim, mem_size)
         self.gate_i = nn.Linear(feature_dim, mem_size)
         
     def forward(self, input_step, memory_state):
         batch_size = input_step.size(0)
         
-        # Project input and tile it
+        # 投影并复制输入
         input_proj = self.input_projector(input_step) if hasattr(self, 'input_projector') else self.input_proj(input_step)
         input_tiled = input_proj.unsqueeze(1).expand(-1, self.mem_slots, -1)
         
-        # Concatenate memory and tiled input
+        # 拼接记忆与复制后的输入
         memory_aug = torch.cat([memory_state, input_tiled], dim=-1)
         
-        # Perform Multi-Head Attention
+        # 执行多头注意力
         q = self.q_proj(memory_aug)
         k = self.k_proj(memory_aug)
         v = self.v_proj(memory_aug)
@@ -55,18 +55,18 @@ class RelationalMemoryStep(nn.Module):
         output = self.output_proj(attended)
         m_attended = self.layer_norm(output + memory_state)
         
-        # Gating Update
+        # 门控更新
         f_gate = torch.sigmoid(self.gate_f(memory_aug))
         i_gate = torch.sigmoid(self.gate_i(memory_aug))
         
-        candidate = torch.tanh(output) # New information
+        candidate = torch.tanh(output) # 新信息
         
         next_memory = f_gate * memory_state + i_gate * candidate
         
         return next_memory
 
 def test_rmc_step():
-    print("Testing One RMC Step...")
+    print('正在测试 RMC 单步更新……')
     batch, slots, mem_dim, input_dim = 2, 4, 32, 10
     rmc = RelationalMemoryStep(slots, mem_dim, input_dim)
     
@@ -76,7 +76,7 @@ def test_rmc_step():
     m_new = rmc(x, m)
     
     assert m_new.shape == (batch, slots, mem_dim)
-    print("Test Passed!")
+    print('测试通过！')
 
 if __name__ == "__main__":
     test_rmc_step()

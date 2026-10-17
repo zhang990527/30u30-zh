@@ -1,56 +1,64 @@
-# Day 19 Exercises: Relational Reasoning
+# 第 19 天练习：关系推理
 
-Test your understanding of Relation Networks (Santoro et al., 2017).
-
----
-
-## Exercise 1: Pairwise Broadcasting
-**File:** `exercise_01_pair_generator.py`  
-**Difficulty:** Medium  
-**Goal:** Implement efficient $N^2$ pair generation without loops.
-
-## Exercise 2: The Relation Function (g_theta)
-**Files:** `exercise_02_g_theta.py`  
-**Difficulty:** Easy  
-**Goal:** Implement the MLP that processes each pair.
-
-## Exercise 3: Permutation Invariance
-**File:** `exercise_03_permutation.py`  
-**Difficulty:** Medium  
-**Goal:** Prove that shuffling inputs doesn't change the output.
-
-## Exercise 4: Contextual Questions (Sort-of-CLEVR)
-**File:** `exercise_04_sort_of_clevr.py`  
-**Difficulty:** Hard  
-**Goal:** Inject a question vector into every pair to condition the reasoning.
-
-## Exercise 5: Coordinate Injection
-**File:** `exercise_05_coordinates.py`  
-**Difficulty:** Easy  
-**Goal:** Append (x, y) coordinates to object features.
-
-## Exercise 6: Relational Masking
-**File:** `exercise_06_masking.py`  
-**Difficulty:** Hard  
-**Goal:** Mask out self-relations (diagonal) before aggregation.
-
-## Exercise 7: Counting Bias
-**File:** `exercise_07_counting.py`  
-**Difficulty:** Advanced  
-**Goal:** Prove that `sum` aggregation allows counting, while `mean` does not.
-
-
+检验你对关系网络（Santoro 等，2017）的理解。
 
 ---
 
-## Instructions
+## 练习 1：成对广播
 
-1.  Open the `exercise_XX.py` file.
-2.  Complete the `TODO` sections.
-3.  Run the file – it contains a test function that will tell you if your implementation is correct.
-4.  Compare with `solutions/solution_XX.py`.
+**文件：**`exercise_01_pair_generator.py`  
+**难度：**中等  
+**目标：**不使用循环，高效生成 $N^2$ 个对象对。
 
-## Common Issues
-- **Memory Growth**: $N^2$ pairs can explode memory on large sets.
-- **In-place Operations**: Avoid modifying tensors in-place during the pair generation phase, as it breaks the calculation of gradients.
-- **Aggregation Choice**: If the model can't count, verify you aren't using `mean()` (which averages out counts).
+## 练习 2：关系函数（g_theta）
+
+**文件：**`exercise_02_g_theta.py`  
+**难度：**入门  
+**目标：**实现处理每个对象对的 MLP。
+
+## 练习 3：排列不变性
+
+**文件：**`exercise_03_permutation.py`  
+**难度：**中等  
+**目标：**验证打乱输入不会改变输出。
+
+## 练习 4：带上下文的问题（Sort-of-CLEVR）
+
+**文件：**`exercise_04_sort_of_clevr.py`  
+**难度：**较难  
+**目标：**给每个对象对加入问题向量，让推理以问题为条件。
+
+## 练习 5：注入坐标
+
+**文件：**`exercise_05_coordinates.py`  
+**难度：**入门  
+**目标：**在对象特征后拼接 (x, y) 坐标。
+
+## 练习 6：关系掩码
+
+**文件：**`exercise_06_masking.py`  
+**难度：**较难  
+**目标：**聚合前屏蔽自身关系（对角线）。
+
+## 练习 7：计数偏置
+
+**文件：**`exercise_07_counting.py`  
+**难度：**进阶  
+**目标：**比较 `sum` 聚合可以保留计数信息，而 `mean` 不可以的情形。
+
+---
+
+## 操作说明
+
+1. 打开对应的 `exercise_XX.py`。
+2. 完成 `TODO` 部分。
+3. 运行文件；其中的测试函数会检查你的实现。
+4. 与 `solutions/solution_XX.py` 对照。
+
+> 说明：有限样例的程序测试用于检查实现，不等价于对所有输入的数学证明。
+
+## 常见问题
+
+- **内存增长：**在大集合中，$N^2$ 个对象对可能耗尽内存。
+- **原地操作：**生成对象对时，避免原地修改参与梯度计算的张量，以免破坏自动求导。
+- **聚合选择：**如果模型无法计数，检查是否使用了 `mean()`，它会将计数信息平均掉。

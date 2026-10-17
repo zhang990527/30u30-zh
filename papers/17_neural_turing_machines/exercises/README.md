@@ -1,18 +1,23 @@
-# Exercises: Neural Turing Machines
+# 练习：神经图灵机
 
-These exercises focus on the mechanics of differentiable addressing and memory updates.
+这些练习关注可微寻址和存储更新的具体机制。
 
-## Exercise 1: Content-based Addressing
-Implement the content-based weighting formula. Given a key $k$ and a memory matrix $M$, calculate the cosine similarity and applying the softmax with strength $\beta$.
+## 练习 1：基于内容的寻址
 
-## Exercise 2: Circular Convolution (The Shift)
-NTMs move their focus by shifting. Implement a circular convolution that takes a weighting $w$ and a shift vector $s$ (size 3) and returns the shifted weighting.
+实现基于内容的权重公式。给定键 $k$ 和存储矩阵 $M$，计算余弦相似度，再用强度 $\beta$ 调整并应用 softmax。
 
-## Exercise 3: Memory Erase and Add
-In implementation.py, the write operation is split into Erase and Add. Implement a function that takes the current memory, a weighting, an erase vector, and an add vector, and returns the updated memory.
+## 练习 2：循环卷积（移位）
 
-## Exercise 4: Controller Input Concatenation
-The NTM controller needs to see both the external input AND the previous read vectors. Implement the logic to concatenate the input $x$ with $n$ read vectors from the previous time step.
+NTM 通过移位移动关注位置。实现循环卷积：输入权重 $w$ 和大小为 3 的移位向量 $s$，返回移位后的权重。
 
-## Exercise 5: Sharpening Mechanism
-Why do we need sharpening? Implement the sharpening formula $w^\gamma / \sum w^\gamma$ and observe what happens to a blurry weighting as $\gamma$ increases from 1 to 5.
+## 练习 3：存储擦除与添加
+
+`implementation.py` 将写入操作分为擦除与添加。实现函数，接收当前存储、权重、擦除向量和添加向量，返回更新后的存储。
+
+## 练习 4：控制器输入拼接
+
+NTM 控制器需要同时获得外部输入与上一时刻的读取向量。实现将输入 $x$ 与前一时间步的 $n$ 个读取向量拼接的逻辑。
+
+## 练习 5：锐化机制
+
+为什么需要锐化？实现公式 $w^\gamma / \sum w^\gamma$，观察 $\gamma$ 从 1 增加到 5 时，模糊权重分布会发生什么变化。

@@ -1,155 +1,155 @@
-# Day 15: Bahdanau Attention
+# 第 15 天：Bahdanau 注意力
 
-> Dzmitry Bahdanau, Kyunghyun Cho, Yoshua Bengio (2014) - [Original Paper](https://arxiv.org/abs/1409.0473)
+> Dzmitry Bahdanau、Kyunghyun Cho、Yoshua Bengio（2014）——[原论文](https://arxiv.org/abs/1409.0473)
 
-**Time:** 4-5 hours  
-**Prerequisites:** Day 2 (LSTMs/GRUs), Sequence-to-Sequence intuition  
-**Code:** PyTorch
-
----
-
-## What This Paper Is Actually About
-
-Bahdanau et al. (2014) introduce the **attention mechanism** for neural machine translation.
-
-They solve the "bottleneck" problem: previous models tried to compress a whole sentence into one fixed-size vector. This paper demonstrates that translation improves dramatically if the model is allowed to "look back" at specific parts of the input sentence while generating each word of the output.
-
-[Our Retrospective: This paper introduced ideas that influenced later attention-based architectures, including the Transformer (Vaswani et al. 2017).]
+**用时：**4-5 小时  
+**预备知识：**第 2 天（LSTM/GRU）、序列到序列模型的直观理解  
+**代码：**PyTorch
 
 ---
 
-## What the Authors Actually Showed
+## 这篇论文究竟研究什么
 
-Bahdanau et al. evaluated their model (RNNsearch) against a standard encoder-decoder (RNNencdec) on the WMT'14 English-to-French translation task.
+Bahdanau 等（2014）将**注意力机制（attention mechanism）**引入神经机器翻译。
 
-The results were decisive:
-- **Long Sentences**: While the standard encoder-decoder's performance (BLEU score) plummeted as sentences exceeded 20 words, the attention-based model maintained high accuracy even for sentences of 50+ words.
-- **BLEU Scores**: On sentences with no unknown words, RNNsearch-50 achieved **34.16 BLEU**, significantly outperforming RNNencdec-50's **26.71 BLEU**.
-- **Alignment Visualization**: They showed that the attention weights correlate with human intuition about word alignment, successfully handling languages with different word orders.
+他们研究“瓶颈”问题：此前的模型试图把整个句子压缩成一个固定维度的向量。这篇论文表明，如果允许模型在生成每个输出词时“回看”输入句子的特定部分，翻译质量就能显著改善。
+
+【仓库回顾：这篇论文提出的思想影响了后来的注意力架构，包括 Transformer（Vaswani 等，2017）。】
 
 ---
 
-## The Core Idea
+## 作者具体展示了什么
 
-**Task:** Instead of a single context vector for the whole sentence, compute a different context vector at every single step of the decoder.
+Bahdanau 等在 WMT'14 英译法任务上，将其模型 RNNsearch 与标准编码器—解码器 RNNencdec 进行了比较。
+
+原仓库将结果概括如下：
+- **长句：**当句子超过 20 个词时，标准编码器—解码器的 BLEU 分数明显下降；基于注意力的模型在超过 50 个词的句子上仍保持较好的表现。这里的“高准确率”是原仓库的笼统说法，应结合具体 BLEU 评估理解。
+- **BLEU 分数：**在不含未知词的句子上，RNNsearch-50 得到 **34.16 BLEU**，显著高于 RNNencdec-50 的 **26.71 BLEU**。
+- **对齐可视化：**注意力权重与人对词语对齐的直觉相关，也能处理语言间的词序差异。
+
+---
+
+## 核心思想
+
+**任务：**不再用一个上下文向量表示整个句子，而是在解码器的每一步计算不同的上下文向量。
 
 ```
-Input:  [The] [cat] [sat] [on] [the] [mat]
+输入：[The] [cat] [sat] [on] [the] [mat]
                                     
-        [h1]  [h2]  [h3]  [h4]  [h5]  [h6]  (Encoder States)
+        [h1]  [h2]  [h3]  [h4]  [h5]  [h6]  （编码器状态）
 
-                     (Alignment / Attention weights)
+                     （对齐／注意力权重）
 
-           Decoder Step i: "chat" -> Focus on [h2] ("cat")
+           解码器第 i 步："chat" -> 关注 [h2]（"cat"）
 ```
 
-To predict well, the model learns an "alignment" function-a small neural network that decides which input words are most relevant to the word currently being translated.
+为了准确预测，模型学习一个“对齐（alignment）”函数：由小型神经网络判断哪些输入词与当前要翻译的词最相关。
 
 ---
 
-## The Architecture
+## 架构
 
-### 1. Bidirectional Encoder (Section 3.2)
-The encoder reads the sentence twice - once forward and once backward. This ensures that every encoder hidden state $h_j$ knows the context of the entire sentence, not just what came before it.
-- **Forward GRU**: Summarizes context from $x_1$ to $x_j$.
-- **Backward GRU**: Summarizes context from $x_T$ to $x_j$.
-- **Annotation ($h_j$)**: The concatenation of both directions.
+### 1. 双向编码器（第 3.2 节）
+编码器读取句子两遍：一遍正向，一遍反向。这样每个编码器隐藏状态 $h_j$ 都能包含整个句子的上下文，而不只是此前出现的内容。
+- **正向 GRU**：概括从 $x_1$ 到 $x_j$ 的上下文。
+- **反向 GRU**：概括从 $x_T$ 到 $x_j$ 的上下文。
+- **标注向量（annotation，$h_j$）**：将两个方向的状态拼接得到的表示。
 
-### 2. Additive Attention (Section 3.1)
-The model computes an alignment score between the current decoder state and every encoder state using a learned weight matrix:
+### 2. 加性注意力（第 3.1 节）
+模型用学习到的权重矩阵，计算解码器状态与每个编码器状态之间的对齐分数：
 
 ```
 e_ij = v_a^T * tanh(W_a * s_{i-1} + U_a * h_j)
 ```
 
-**Variables & Dimensions:**
-- `s_{i-1}` (hidden): The previous hidden state of the decoder.
-- `h_j` (encoder_dim): The $j$-th encoder annotation.
-- `W_a`, `U_a`: Weight matrices that project states into the "attention space."
-- `v_a`: A weight vector that collapses the attention space into a single scalar score.
+**变量与维度：**
+- `s_{i-1}`（hidden）：解码器上一步的隐藏状态。
+- `h_j`（encoder_dim）：第 $j$ 个编码器标注向量。
+- `W_a`、`U_a`：将状态投影到“注意力空间”的权重矩阵。
+- `v_a`：将注意力空间压缩为单个标量分数的权重向量。
 
-### 3. Attention-Based Decoder (Section 3.1)
-The decoder is a GRU that receives a unique context vector $c_i$ at every step:
-- **Weights ($\alpha_{ij}$)**: Softmax applied over scores $e_{ij}$ (Section 3.1, Eq 6).
-- **Context ($c_i$)**: A weighted sum $\sum \alpha_{ij} h_j$.
-- **Next State ($s_i$)**: Computed using $s_{i-1}$, the previous output $y_{i-1}$, and the new context $c_i$.
-
----
-
-## Implementation Notes
-
-When implementing Bahdanau attention, pay attention to these details:
-
-- **The Alignment MLP**: The attention scores are computed by a small Feed-Forward network. This is different from the dot-product attention used in later papers (like Luong or Transformer).
-- **Masking**: You MUST mask the attention scores for padding tokens. Set them to `-1e9` or `-inf` before the softmax so the model doesn't waste focus on empty padding.
-- **Batch Matrix Multiplication**: Use `torch.bmm` or `@` to compute the weighted sum of encoder states efficiently across the entire batch.
-- **Initial Hidden State**: The decoder's initial hidden state $s_0$ is traditionally computed by passing the final backward encoder state through a linear layer and a `tanh` activation (Section 3.2).
-
-**Things that will bite you:**
-- **Squeezing/Unsqueezing**: Attention involves many dimension changes (adding/removing the sequence dimension). If you get a "broadcast error," check your `unsqueeze(1)` calls.
-- **Softmax Dimension**: Ensure you apply `softmax` over the *source* sequence dimension, not the batch dimension.
-- **Vanishing Gradients**: While attention helps, the underlying RNNs can still suffer. Use gradient clipping (threshold of 1.0-5.0).
+### 3. 基于注意力的解码器（第 3.1 节）
+解码器是一个 GRU，每一步接收各自的上下文向量 $c_i$：
+- **权重（$\alpha_{ij}$）**：在分数 $e_{ij}$ 上应用 softmax（第 3.1 节，公式 6）。
+- **上下文（$c_i$）**：加权和 $\sum \alpha_{ij} h_j$。
+- **下一状态（$s_i$）**：由 $s_{i-1}$、上一步输出 $y_{i-1}$ 和新上下文 $c_i$ 共同计算。
 
 ---
 
-## What to Build
+## 实现说明
 
-### Quick Start
+实现 Bahdanau 注意力时，请注意以下细节：
+
+- **对齐多层感知机（MLP）**：注意力分数由小型前馈网络计算。这与 Luong 注意力或 Transformer 等后续工作中的点积注意力不同。
+- **屏蔽**：必须屏蔽填充词元的注意力分数。在 softmax 之前将它们设为 `-1e9` 或 `-inf`，避免模型将注意力浪费在填充位置上。
+- **批量矩阵乘法**：用 `torch.bmm` 或 `@` 高效计算整个批次中编码器状态的加权和。
+- **初始隐藏状态**：传统做法是将反向编码器的最终状态经过线性层和 `tanh` 激活，得到解码器初始隐藏状态 $s_0$（第 3.2 节）。
+
+**容易踩的坑：**
+- **压缩／扩展维度**：注意力涉及许多维度变换，例如增加或删除序列维度。如果遇到“广播错误”，请检查 `unsqueeze(1)` 调用。
+- **Softmax 维度**：确保在*源序列*维度上应用 `softmax`，而非批次维度。
+- **梯度消失**：注意力有帮助，但底层 RNN 仍可能出现此问题。原仓库同时建议采用阈值为 1.0-5.0 的梯度裁剪；请注意裁剪主要处理梯度爆炸，不能消除梯度消失。
+
+---
+
+## 要构建什么
+
+### 快速开始
 
 ```bash
-# Install dependencies
+# 安装依赖
 python setup.py
 
-# Train on sequence reversal task
+# 在序列反转任务上训练
 python train_minimal.py --task reversal --epochs 20
 ```
 
-### Exercises (in `exercises/`)
+### 练习（位于 `exercises/`）
 
-| # | Task | What You'll Get Out of It |
+| # | 任务 | 你将学到什么 |
 |---|------|--------------------------|
-| 1 | Implement Additive Attention | Understand the $\tanh$ alignment scoring mechanism |
-| 2 | Build Bidirectional Encoder | Handle forward/backward GRU passes and concatenation |
-| 3 | Build Attention Decoder | Learn how to integrate the context vector into the GRU step |
-| 4 | Sequence Reversal Task | Verify alignment works on a synthetic benchmark |
-| 5 | Attention Visualization | Create heatmaps showing what the model focuses on |
+| 1 | 实现加性注意力 | 理解 $\tanh$ 对齐评分机制 |
+| 2 | 构建双向编码器 | 处理正向／反向 GRU 传播与拼接 |
+| 3 | 构建注意力解码器 | 学习如何把上下文向量融入 GRU 步骤 |
+| 4 | 序列反转任务 | 在合成基准上验证对齐机制 |
+| 5 | 注意力可视化 | 绘制热力图，展示模型关注的位置 |
 
-Solutions are in `exercises/solutions/`. Try to get stuck first.
-
----
-
-## Key Takeaways
-
-1.  **Fixed-length vectors are a bottleneck.** Compressing a sentence to a single vector is fundamentally limited.
-2.  **Attention allows dynamic focus.** The decoder "searches" the input for relevant information at each step.
-3.  **Alignments emerge automatically.** We don't need to tell the model that "cat" matches "chat"; it learns this by being forced to predict the next word correctly.
-4.  **[Our Retrospective] This is a direct ancestor of the Transformer.** The core idea - letting the decoder dynamically attend to encoder states - carried into the Transformer (Vaswani et al. 2017), though the mechanism evolved from additive scoring over RNNs to scaled dot-product self-attention.
+参考解答位于 `exercises/solutions/`。先自己尝试，遇到困难再查看。
 
 ---
 
-## Files in This Directory
+## 要点回顾
 
-| File | What It Is |
+1. **固定长度向量构成瓶颈。**将整个句子压缩为单个向量存在固有限制。
+2. **注意力允许动态聚焦。**解码器每一步都在输入中“搜索”相关信息。
+3. **对齐自动形成。**无需告诉模型“cat”对应“chat”；模型在学习正确预测下一个词时学会这种对应关系。
+4. **【仓库回顾】这是 Transformer 的直接先驱。**让解码器动态关注编码器状态的核心思想延续到了 Transformer（Vaswani 等，2017），而机制从基于 RNN 的加性评分演变为缩放点积注意力及自注意力。Transformer 的编码器—解码器注意力仍属于交叉注意力，不能与自注意力混为一谈。
+
+---
+
+## 本目录文件
+
+| 文件 | 内容 |
 |------|-----------|
-| `implementation.py` | Complete Seq2Seq with Bahdanau Attention in PyTorch |
-| `train_minimal.py` | Training script with CLI args |
-| `setup.py` | Installation and verification script |
-| `requirements.txt` | Dependency list |
-| `visualization.py` | Attention heatmaps and analysis tools |
-| `notebook.ipynb` | Step-by-step walkthrough of the mechanism |
-| `exercises/` | 5 implementation exercises |
-| `paper_notes.md` | Deep dive into the math and results |
-| `CHEATSHEET.md` | Quick ref for equations and dimensions |
+| `implementation.py` | 带 Bahdanau 注意力的完整 PyTorch Seq2Seq 教学实现 |
+| `train_minimal.py` | 带命令行参数的训练脚本 |
+| `setup.py` | 安装与验证脚本 |
+| `requirements.txt` | 依赖列表 |
+| `visualization.py` | 注意力热力图与分析工具 |
+| `notebook.ipynb` | 机制的分步讲解 |
+| `exercises/` | 5 个实现练习 |
+| `paper_notes.md` | 数学原理与结果详解（实际文件为 `PAPER_NOTES.md`） |
+| `CHEATSHEET.md` | 公式与维度速查 |
 
 ---
 
-## Further Reading
+## 延伸阅读
 
-- [Bahdanau et al. (2014)](https://arxiv.org/abs/1409.0473) - The original paper
-- [Luong et al. (2015)](https://arxiv.org/abs/1508.04025) - Multiplicative attention (a faster variant)
-- [Visualizing NMT](https://jalammar.github.io/visualizing-neural-machine-translation-mechanics-of-seq2seq-models-with-attention/) - Jay Alammar's excellent guide
-- [Neural Machine Translation (PyTorch Tutorial)](https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html)
+- [Bahdanau 等（2014）](https://arxiv.org/abs/1409.0473)——原论文
+- [Luong 等（2015）](https://arxiv.org/abs/1508.04025)——乘性注意力（一种更快的变体）
+- [神经机器翻译可视化](https://jalammar.github.io/visualizing-neural-machine-translation-mechanics-of-seq2seq-models-with-attention/)——Jay Alammar 的讲解
+- [神经机器翻译（PyTorch 教程）](https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html)
 
 ---
 
-**Next:** [Day 16 - Pointer Networks (Order Matters)](../16_order_matters/)
+**下一章：**[第 16 天——指针网络（顺序很重要）](../16_order_matters/)

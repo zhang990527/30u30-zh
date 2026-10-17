@@ -2,16 +2,16 @@ import torch
 
 def generate_pairs_via_broadcasting(objects: torch.Tensor) -> torch.Tensor:
     """
-    Solution 1: Pairwise object concatenation using broadcasting.
+    解答 1：通过广播实现成对对象拼接。
     """
     batch_size, num_objects, object_dim = objects.size()
     
-    # Expand objects for Cartesian product
+    # 扩展对象以构造笛卡尔积
     o_i = objects.unsqueeze(2).repeat(1, 1, num_objects, 1)
     o_j = objects.unsqueeze(1).repeat(1, num_objects, 1, 1)
     
-    # Concatenate pairs
+    # 拼接对象对
     pairs = torch.cat([o_i, o_j], dim=-1)
     
-    # Flatten N x N grid into N^2 sequence
+    # 将 N x N 网格展平为 N^2 序列
     return pairs.view(batch_size, num_objects * num_objects, -1)

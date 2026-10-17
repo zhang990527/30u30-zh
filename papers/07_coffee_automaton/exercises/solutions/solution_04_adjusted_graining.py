@@ -1,6 +1,4 @@
-"""
-Solution 4: Adjusted Coarse-Graining (Section 6)
-"""
+"""解答 4：调整后的粗粒化（第 6 节）"""
 
 import sys
 import os
@@ -13,10 +11,8 @@ from implementation import (
 
 
 def row_majority_adjust(thresholded: np.ndarray) -> np.ndarray:
-    """
-    Row-majority adjustment from Section 6.1.
-    Snap cells within 1 bucket of the row majority value.
-    """
+    """第 6.1 节的行众数调整。
+将与该行众数相差不超过 1 个分箱的格点归并到众数。"""
     adjusted = thresholded.copy()
     for i in range(adjusted.shape[0]):
         row = adjusted[i]
@@ -28,7 +24,7 @@ def row_majority_adjust(thresholded: np.ndarray) -> np.ndarray:
 
 
 def measure_with_method(grid, grain_size, num_buckets, use_adjustment):
-    """Measure complexity with specified coarse-graining method."""
+    """使用指定的粗粒化方法测量复杂度。"""
     coarse = coarse_grain(grid, grain_size)
     discrete = threshold_array(coarse, num_buckets)
     if use_adjustment:
@@ -37,7 +33,7 @@ def measure_with_method(grid, grain_size, num_buckets, use_adjustment):
 
 
 if __name__ == '__main__':
-    print("Adjusted Coarse-Graining Experiment (Section 6)")
+    print("调整后的粗粒化实验（第 6 节）")
     print("=" * 50)
 
     grid_size = 50
@@ -45,7 +41,7 @@ if __name__ == '__main__':
     num_snapshots = 50
 
     for model in ['interacting', 'non_interacting']:
-        print(f"\n{model.replace('_', '-').title()} model:")
+        print(f"\n{model.replace('_', '-').title()} 模型：")
 
         ca = CoffeeAutomaton(grid_size, model, seed=42)
         steps_per = total_steps // num_snapshots
@@ -63,7 +59,7 @@ if __name__ == '__main__':
             cx_3bucket.append(c3)
             cx_7adjusted.append(c7)
 
-        print(f"  3-bucket peak: {max(cx_3bucket)}")
-        print(f"  7-bucket adjusted peak: {max(cx_7adjusted)}")
+        print(f"  3 分箱峰值：{max(cx_3bucket)}")
+        print(f"  调整后的 7 分箱峰值：{max(cx_7adjusted)}")
 
-    print("\nNon-interacting 7-bucket adjusted should be much lower — artifacts removed.")
+    print("\n无相互作用模型调整后的 7 分箱结果应显著更低，说明伪影已消除。")

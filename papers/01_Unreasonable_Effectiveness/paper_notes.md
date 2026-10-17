@@ -1,73 +1,92 @@
-# Paper Notes: The Unreasonable Effectiveness of RNNs
+<a id="paper-notes-the-unreasonable-effectiveness-of-rnns"></a>
 
-## ELI5 (Explain Like I'm 5)
+# 原文笔记：循环神经网络令人惊叹的有效性
 
-### The Story
+<a id="eli5-explain-like-im-5"></a>
 
-Imagine you're learning to write by copying books, one letter at a time. At first, you just copy random letters. But after copying millions of letters, you start picking up patterns:
+## 通俗解释（ELI5）
 
-You begin to understand:
-- Which letters usually come after others ('q' is followed by 'u')
-- How to spell words correctly
-- How sentences are structured
-- Even the writing style of different authors
+<a id="the-story"></a>
 
-**That's the core idea behind character-level RNNs.** They learn to predict the next character by seeing tons of examples. And in learning to predict, they learn the structure of whatever text you feed them.
+### 一个类比
 
-Note: This analogy is ours, not Karpathy's. But it captures his main point — that prediction forces understanding of structure.
+想象你正通过抄书学习写作，每次抄一个字母。最初，你只会写出随机字母；但抄过数百万个字母后，就开始注意到一些模式：
 
----
+- 哪些字母通常相邻，例如英语中的 'q' 后面接 'u'。
+- 如何正确拼写单词。
+- 句子如何组织。
+- 不同作者各自的写作风格。
 
-## What the Post Actually Covers
+**这就是字符级 RNN 的核心思想。** 它们通过大量样例学习预测下一个字符；在学习预测时，也学到了输入文本的结构。
 
-Karpathy's blog post (May 2015) isn't a research paper — it's a practitioner's demo. He trains character-level language models on several datasets and shows that a surprisingly simple setup (predict the next character) learns rich structural patterns.
-
-**Important detail he states upfront:** All experiments use **LSTMs**, not vanilla RNNs. He presents the vanilla RNN equations for simplicity, then says "I will use the terms RNN/LSTM interchangeably but all experiments in this post use an LSTM." Our implementation uses vanilla RNN for pedagogical reasons, but his results come from LSTMs.
+注意：这个类比来自本教程，而不是 Karpathy 的原文。它试图说明的要点是，做好预测需要掌握数据结构。
 
 ---
 
-## The Core Idea (From the Post)
+<a id="what-the-post-actually-covers"></a>
 
-**The Task:** Given a sequence of characters, predict the next one.
+## 原文实际讨论了什么
 
-Karpathy uses the example of training on the string "hello" with vocabulary "h, e, l, o":
+Karpathy 于 2015 年 5 月发表的这篇文章是技术博客，不是研究论文。作者在多个数据集上训练字符级语言模型，展示了一个简单目标——预测下一个字符——如何促使模型学到丰富的结构模式。
+
+**原文开头明确说明的重要细节：所有实验都采用 LSTM，而不是基本 RNN。** 作者为了便于解释先介绍基本 RNN 的方程，随后说明会交替使用 RNN／LSTM 这两个名称，但文中所有实验都使用 LSTM。本章出于教学目的采用基本 RNN，原文的实验结果则来自 LSTM。
+
+---
+
+<a id="the-core-idea-from-the-post"></a>
+
+## 核心思想（来自原文）
+
+**任务：** 给定一个字符序列，预测下一个字符。
+
+Karpathy 使用字符串 "hello" 和词表 "h, e, l, o" 举例：
 
 ```
-Feed 'h' → model should predict 'e'
-Feed 'e' → model should predict 'l'
-Feed 'l' → model should predict 'l'
-Feed 'l' → model should predict 'o'
+输入 'h' → 模型应预测 'e'
+输入 'e' → 模型应预测 'l'
+输入 'l' → 模型应预测 'l'
+输入 'l' → 模型应预测 'o'
 ```
 
-He explains that this is trained using one-hot encoding, softmax output, and cross-entropy loss. The RNN processes one character at a time, using its hidden state to remember what came before.
+训练采用独热编码、softmax 输出与交叉熵损失。RNN 每次处理一个字符，通过隐藏状态保留此前的信息。
 
-**His key observation:** To predict the next character well, the model must implicitly learn spelling, grammar, formatting, and domain structure. Nobody programs these rules in — they emerge from the prediction task.
+**核心观察：** 为了预测好下一个字符，模型需要隐式学会拼写、语法、排版和特定领域的结构。没有人把这些规则写进程序，它们是在预测任务中学到的。
 
-He also links to his [min-char-rnn.py](https://gist.github.com/karpathy/d4dee566867f8291f086) — about 100 lines of Python/NumPy that implements the core idea. Our implementation is based on this.
+原文还链接到 [min-char-rnn.py](https://gist.github.com/karpathy/d4dee566867f8291f086)，用约 100 行 Python／NumPy 实现核心思想。本章实现基于该代码。
 
 ---
 
-## The Experiments (All Six)
+<a id="the-experiments-all-six"></a>
 
-Karpathy trains on six different datasets. This is the heart of the post.
+## 六组实验
 
-### 1. Paul Graham Essays (~1MB)
+Karpathy 在六种数据集上训练，这是博文的主体。
 
-**Setup:** 2-layer LSTM, 512 hidden nodes, dropout 0.5.
+<a id="1-paul-graham-essays-1mb"></a>
 
-The model generates text that sounds like Paul Graham writing about startups — sentence structure, vocabulary, even the habit of citing numbered references like [2]. It's not coherent, but it captures the *style*.
+### 1. Paul Graham 随笔（约 1MB）
 
-**Temperature demo (from this section):** He shows what happens at different temperatures:
-- Low temperature: "is that they were all the same thing that was a startup is that they were all the same thing that was a startup" — gets stuck in a loop, always picking the highest-probability next character.
-- Higher temperature: More variety but more spelling mistakes.
+**设置：** 2 层 LSTM，512 个隐藏单元，dropout 0.5。
 
-This is the only place in the post where he discusses temperature in detail.
+生成文本带有 Paul Graham 讨论创业公司时的风格：句式、词汇，甚至 [2] 这样的编号引用习惯。含义并不连贯，但捕捉到了*文风*。
 
-### 2. Shakespeare (4.4MB)
+**本节中的温度演示：**
 
-**Setup:** 3-layer RNN, 512 hidden nodes per layer.
+- 低温时，模型不断重复 “is that they were all the same thing that was a startup is that they were all the same thing that was a startup”，即反复生成关于创业公司的同一句话，陷入循环。
+- 温度更高时，文本更多样，但拼写错误也更多。
 
-Generated output:
+原文在这一部分详细讨论了温度。
+
+> 核对注：原笔记将低温采样描述为“总是选择概率最高的下一个字符”。有限正温度下仍是随机采样，只是概率更加集中；不能等同于严格的贪心解码。
+
+<a id="2-shakespeare-44mb"></a>
+
+### 2. 莎士比亚作品（4.4MB）
+
+**设置：** 3 层循环网络，每层 512 个隐藏单元；按原文统一说明，实际使用 LSTM。
+
+以下保留模型生成的英文原样，以便观察拼写和排版：
+
 ```
 PANDARUS:
 Alas, I think he shall be come approached and the day
@@ -76,39 +95,50 @@ And who is but a chain and subjects of his death,
 I should not sleep.
 ```
 
-What it learned (without being told):
-- Character names in ALL CAPS followed by colons
-- Dialogue indentation
-- Period-appropriate vocabulary
-- Rough iambic rhythm
+在没有显式规则的情况下，模型学会了：
 
-What it gets wrong: "srain" isn't a word, the meaning is incoherent. It learned the **form** of Shakespeare, not the **content**. Karpathy notes: "I can barely recognize these samples from actual Shakespeare."
+- 角色名全部大写，后接冒号。
+- 对话缩进。
+- 带有时代风格的词汇。
+- 大致的抑扬格节奏。
 
-He also explicitly verifies the samples are NOT memorized by computing nearest-neighbor on the training set.
+它也有错误："srain" 不是单词，文本含义并不连贯。模型学到了莎士比亚的**形式**，而非**内容**。Karpathy 打趣说，这些样本让他几乎难以与真正的莎士比亚作品区分。
 
-### 3. Wikipedia (100MB, Hutter Prize dataset)
+作者还对训练集进行最近邻比较，检查生成样本是否只是记忆并复制训练文本。
 
-**Setup:** Following Graves et al., trained overnight.
+<a id="3-wikipedia-100mb-hutter-prize-dataset"></a>
 
-The model learns:
-- Markdown formatting (headings, bullet lists, `[[wiki links]]`)
-- XML structure (proper tag opening/closing, nesting)
-- Plausible-looking URLs (that don't actually exist — Karpathy notes the model "hallucinated" a yahoo URL)
-- Cite journal templates
+### 3. 维基百科（100MB，Hutter Prize 数据集）
 
-It switches between generating prose, structured markdown, and raw XML — each with correct formatting conventions.
+**设置：** 参考 Graves 等人的设置，训练一夜。
 
-### 4. Algebraic Geometry LaTeX (16MB)
+模型学到了：
 
-**Setup:** Trained with his labmate Justin Johnson.
+- 标题、项目列表、`[[wiki links]]` 等格式。
+- XML 结构，包括成对标签与嵌套。
+- 看似合理但实际不存在的 URL；Karpathy 指出模型“幻觉”出了一个 yahoo URL。
+- 期刊引用模板。
 
-The generated LaTeX "almost compiles." After manual fixes, it produces plausible-looking math with proper equation environments, theorem/lemma structures, and mathematical notation. Common error: opening `\begin{proof}` but closing with `\end{lemma}` — the dependency is too long-term for the model to track.
+生成过程会在散文、结构化标记和原始 XML 之间切换，并体现相应的格式习惯。
 
-### 5. Linux Source Code (474MB)
+> 核对注：原笔记将维基格式统称为 Markdown；`[[wiki links]]` 等属于维基标记，不能与 Markdown 语法完全等同。
 
-**Setup:** All source and header files from the Linux GitHub repo. 3-layer LSTM, ~10 million parameters, trained over several days.
+<a id="4-algebraic-geometry-latex-16mb"></a>
 
-Generated output:
+### 4. 代数几何 LaTeX（16MB）
+
+**设置：** 与同实验室的 Justin Johnson 一同训练。
+
+生成的 LaTeX“几乎能够编译”。人工修正后，它可以呈现貌似合理的数学内容，包括公式环境、定理／引理结构和数学符号。常见错误是以 `\begin{proof}` 开头，却用 `\end{lemma}` 结束：这种较远距离的配对关系超出了模型可靠跟踪的能力。
+
+<a id="5-linux-source-code-474mb"></a>
+
+### 5. Linux 源代码（474MB）
+
+**设置：** 取 Linux GitHub 仓库中的源文件与头文件。使用 3 层 LSTM、约 1000 万参数，训练数天。
+
+生成样本原样保留：
+
 ```c
 /*
  * Increment the size file of the new incorrect UI_FILTER group information
@@ -131,132 +161,162 @@ static int indicate_policy(void)
 }
 ```
 
-What it gets right: brackets, indentation, semicolons, pointer notation, kernel macros, comments, `#include` statements, even the GPL license header character by character.
+它能模仿括号、缩进、分号、指针写法、内核宏、注释、`#include`，甚至逐字符模仿 GPL 许可头。
 
-What it gets wrong: Uses undefined variables, declares variables it never uses, returns values from `void` functions, compares `tty == tty` (vacuously true). Karpathy says explicitly: "I don't think it compiles."
+错误包括使用未定义变量、声明后不使用的变量、从 `void` 函数返回值，以及比较 `tty == tty` 这样的恒真条件。Karpathy 明确表示，他不认为这些代码能够编译。
 
-He also notes the model sometimes "decides it's time to sample a new file" and generates a full GPL header, includes, macros, then dives into code.
+有时模型仿佛“决定开始生成一个新文件”，先输出完整 GPL 许可头、包含语句与宏，再开始正文代码。
 
-### 6. Baby Names (8000 names)
+<a id="6-baby-names-8000-names"></a>
 
-A fun small experiment. The model generates plausible new names: "Rudi", "Levette", "Berice", "Lussa". About 90% of generated names don't exist in the training data. Karpathy jokes it could be "useful inspiration when naming a new startup."
+### 6. 婴儿名字（8000 个名字）
 
----
-
-## Understanding What's Going On
-
-This section of the post is often overlooked but is genuinely interesting.
-
-### Training Evolution (War and Peace)
-
-Karpathy shows how samples evolve during training:
-
-- **Iteration 100:** Random jumbles, but starts learning that words are separated by spaces
-- **Iteration 300:** Gets the idea about quotes and periods
-- **Iteration 500:** Spells short common words ("we", "He", "His", "and")
-- **Iteration 700:** More English-like, but still many misspellings
-- **Iteration 1200:** Quotation marks, question marks, longer words
-- **Iteration 2000:** Properly spelled words, names, quotations
-
-**His observation:** "First the model discovers the general word-space structure, then starts to learn words (short ones first, then longer). Topics and themes that span multiple words start to emerge only much later."
-
-This progression is worth understanding — it shows how the model builds up structure hierarchically.
-
-### Hidden State Visualization
-
-He visualizes individual neurons in the LSTM's hidden state while processing Wikipedia text. Most neurons aren't interpretable, but about 5% learn specific, interesting functions:
-
-1. **URL detector neuron** — activates inside URLs, turns off outside them
-2. **Wiki link detector** — activates inside `[[ ]]` markup, but notably waits for the *second* `[` before activating (the first `[` alone isn't enough)
-3. **Position tracker** — varies linearly across `[[ ]]` scope, giving the model a sense of how far through the link text it is
-4. **"www" counter** — turns off after the first "w" in "www", likely helping the model know when to stop emitting "w"s
-
-He also found a **quote detection cell** that tracks whether the model is inside or outside quotation marks.
-
-His key point: "We didn't have to hardcode at any point that if you're trying to predict the next character it might be useful to keep track of whether or not you are currently inside or outside of a quote. We just trained the LSTM on raw data and it decided that this is a useful quantity to keep track of."
+这是一个小实验。模型生成 "Rudi"、"Levette"、"Berice"、"Lussa" 等看似合理的新名字，约 90% 未出现在训练数据中。Karpathy 开玩笑说，它也许能为新创业公司取名提供灵感。
 
 ---
 
-## The Math
+<a id="understanding-whats-going-on"></a>
 
-At each timestep, the vanilla RNN does:
+## 理解模型在做什么
 
-### Hidden State Update
+这部分经常被忽略，但提供了很有价值的观察。
+
+<a id="training-evolution-war-and-peace"></a>
+
+### 训练过程中的变化：《战争与和平》
+
+作者展示了生成样本随训练的演化：
+
+- **迭代 100 次：** 仍是随机字符组合，但开始学会用空格分隔词。
+- **迭代 300 次：** 开始掌握引号与句号的用法。
+- **迭代 500 次：** 可以拼写 "we"、"He"、"His"、"and" 等常见短词。
+- **迭代 700 次：** 更像英语，但仍有许多拼写错误。
+- **迭代 1200 次：** 出现引号、问号与更长的词。
+- **迭代 2000 次：** 出现拼写正确的单词、名字和引语。
+
+**作者的观察：** 模型先发现词与空格的总体结构，再开始学习单词，先短词、后长词；跨越多个词的主题要到更后面才出现。
+
+这一过程体现了模型如何逐步建立不同层次的结构。
+
+<a id="hidden-state-visualization"></a>
+
+### 隐藏状态可视化
+
+处理维基百科文本时，作者可视化 LSTM 隐藏状态中的单个神经元。大多数单元的行为难以解释，但约 5% 学到了具体、有趣的功能：
+
+1. **URL 检测单元：** 在 URL 内部激活，在外部关闭。
+2. **维基链接检测单元：** 在 `[[ ]]` 内部激活，且要等第二个 `[` 出现；单独一个 `[` 还不够。
+3. **位置跟踪单元：** 在 `[[ ]]` 范围内近似线性变化，表示当前已经走过链接文本的多长部分。
+4. **“www”计数单元：** 在 "www" 的第一个 "w" 之后关闭，可能帮助模型判断何时停止输出 "w"。
+
+作者还发现了**引号检测单元**，跟踪当前位置是否位于引号内部。
+
+关键在于：我们没有硬编码“预测下一个字符时，记录自己是否处于引号内可能有用”。只是用原始数据训练 LSTM，模型便自行学到了跟踪这一信息。
+
+---
+
+<a id="the-math"></a>
+
+## 数学表达
+
+基本 RNN 在每个时间步进行以下运算。
+
+<a id="hidden-state-update"></a>
+
+### 隐藏状态更新
+
 ```
 h_t = tanh(W_xh * x_t + W_hh * h_{t-1} + b_h)
 ```
 
-- `h_t`: New hidden state at time t
-- `x_t`: Current input (one-hot encoded character)
-- `h_{t-1}`: Previous hidden state
-- `W_xh, W_hh`: Weight matrices (learned)
-- `tanh`: Squashes values to [-1, 1]
+- `h_t`：时间 t 的新隐藏状态。
+- `x_t`：当前输入，即独热编码字符。
+- `h_{t-1}`：上一隐藏状态。
+- `W_xh, W_hh`：需要学习的权重矩阵。
+- `tanh`：将数值压缩到 [-1, 1] 范围。
 
-### Output
+<a id="output"></a>
+
+### 输出
+
 ```
 y_t = W_hy * h_t + b_y
 p_t = softmax(y_t)
 ```
 
-- `y_t`: Raw scores for each possible next character
-- `p_t`: Probability distribution over next character
+- `y_t`：各个可能的下一个字符对应的原始分数。
+- `p_t`：下一个字符的概率分布。
 
-Karpathy presents these same equations in the post. Note: his actual experiments use the LSTM update equations, which are more complex (four gates instead of one tanh). We use vanilla RNN because it's easier to implement from scratch and the core principle is the same.
+Karpathy 在原文中介绍了基本 RNN 的递归更新。实际实验采用更复杂的 LSTM 更新，而本章为便于从零实现而使用基本 RNN。
 
----
-
-## The Title
-
-The title references Eugene Wigner's 1960 essay "The Unreasonable Effectiveness of Mathematics in the Natural Sciences." Wigner's point: math works suspiciously well for describing physics.
-
-Karpathy's parallel: character-level prediction works suspiciously well for learning language structure. The task is dead-simple (predict one character), but the model ends up learning spelling, grammar, formatting, and domain conventions.
+> 核对注：原笔记用“四个门代替一个 tanh”来概括 LSTM，不够准确。常见 LSTM 有输入门、遗忘门、输出门三个门，以及候选细胞状态计算；不能把四个计算分支都叫作门。
 
 ---
 
-## What the Post Gets Right
+<a id="the-title"></a>
 
-- The demo-driven approach is effective: showing Shakespeare, Linux, LaTeX output is more convincing than abstract claims
-- Honest about limitations: he checks for memorization, notes the code doesn't compile, acknowledges the meaning is incoherent
-- The hidden state visualization section is genuine research insight, not just a demo
-- Temperature explanation is practical and grounded
+## 标题的含义
 
-## What the Post Doesn't Cover
+标题呼应 Eugene Wigner 于 1960 年发表的《数学在自然科学中令人惊叹的有效性》（The Unreasonable Effectiveness of Mathematics in the Natural Sciences）：数学在描述物理世界时为何如此有效？
 
-- Why LSTMs work better than vanilla RNNs (he just says they do — that's covered in Colah's post, Day 2)
-- Formal analysis of what the hidden states are computing
-- Quantitative evaluation (no perplexity numbers, no benchmarks)
-- Comparison to n-gram baselines (Yoav Goldberg later did this comparison and showed n-grams can match some of the results)
-- How this connects to word-level models (he briefly mentions "word-level models work better but this is surely a temporary thing")
-- Scaling laws or predictions about future models
+Karpathy 的类比是，字符级预测在学习语言结构时也有效得令人惊讶。任务只是预测一个字符，模型却能学到拼写、语法、排版和领域习惯。
 
 ---
 
-## Looking Back (Our Retrospective, Not in the Post)
+<a id="what-the-post-gets-right"></a>
 
-With 10 years of hindsight, the line from char-RNN to modern LLMs is clear:
+## 原文的优点
 
-| Karpathy's Setup (2015) | Modern LLMs (2024) |
-|--------------------------|---------------------|
-| Character-level | Subword tokens (BPE) |
+- 以演示为主：莎士比亚、Linux 和 LaTeX 输出比抽象宣称更直观。
+- 如实展示局限：检查是否记忆训练数据，指出代码不可编译，并承认语义不连贯。
+- 隐藏状态可视化提供了研究线索，而不仅是效果展示。
+- 温度说明具有实践依据，便于操作。
+
+<a id="what-the-post-doesnt-cover"></a>
+
+## 原文没有深入讨论的内容
+
+- 为什么 LSTM 比基本 RNN 更有效；这留给 Colah 的文章，也就是第 2 天。
+- 对隐藏状态究竟计算什么的形式化分析。
+- 困惑度等定量指标或标准基准结果。
+- 与 n-gram 基线的比较；Yoav Goldberg 后来做了比较，指出某些生成效果也可由 n-gram 达到。
+- 与词级模型的联系；原文只简要提及词级模型效果更好，并认为这可能是暂时现象。
+- 规模定律或对未来模型的预测。
+
+---
+
+<a id="looking-back-our-retrospective-not-in-the-post"></a>
+
+## 回顾：本教程的后见之明，并非原文结论
+
+十年后回看，从字符 RNN 到现代大语言模型的发展脉络更为清楚：
+
+| Karpathy 的设置（2015） | 现代大语言模型（2024，原笔记的概括） |
+|---|---|
+| 字符级 | 子词词元（BPE） |
 | LSTM | Transformer |
-| Hidden states | Attention + KV cache |
-| ~10M parameters | ~100B+ parameters |
-| Single GPU, days | Thousands of GPUs, weeks |
-| Generates form, not meaning | Generates both (mostly) |
+| 隐藏状态 | 注意力与 KV 缓存 |
+| 约 10M 参数 | 约 100B 及以上参数 |
+| 单张 GPU、数天 | 数千张 GPU、数周 |
+| 生成形式，未必有意义 | 原笔记认为通常能兼顾形式和含义 |
 
-The core idea — **learn by predicting the next token** — hasn't changed. But this connection is retrospective. Karpathy wasn't predicting GPT; he was showing that RNNs could do surprising things with character prediction.
+> 核对注：此表是教学性概括，不是所有现代模型的共同配置，也不证明模型“理解”了含义。隐藏状态与 KV 缓存并不构成严格的一一对应。
 
----
-
-## Questions Worth Thinking About
-
-These come from the post itself or directly from the experiments:
-
-1. Why does the model learn to open and close brackets correctly but can't track which *type* of bracket it opened? (LaTeX `\begin{proof}` → `\end{lemma}` error)
-2. The hidden state visualization shows ~5% of neurons learn interpretable functions. What are the other 95% doing?
-3. Karpathy trained on War and Peace and showed the model learns short words first, then long words, then themes. What does this tell us about how sequential structure is encoded?
-4. Yoav Goldberg showed that n-gram models can produce similar-looking outputs for some of these tasks. What does the RNN actually learn that n-grams don't?
+**通过预测下一个词元来学习**这一核心思想仍然存在，但这条联系是回顾性的。Karpathy 并没有在文中预测 GPT，而是在展示 RNN 进行字符预测时的意外能力。
 
 ---
 
-**Next:** [Day 2 - Understanding LSTM Networks](../02_Understanding_LSTM/) - How to make RNNs remember longer sequences.
+<a id="questions-worth-thinking-about"></a>
+
+## 值得思考的问题
+
+以下问题来自原文或其展示的实验：
+
+1. 模型为何能学会打开和关闭括号，却无法始终跟踪配对的具体类型？例如 LaTeX 中的 `\begin{proof}` → `\end{lemma}`。
+2. 约 5% 的可视化单元呈现出可解释功能，其余 95% 在做什么？
+3. 《战争与和平》训练中，模型先学短词，再学长词，最后出现主题，这说明序列结构如何被编码？
+4. 对某些任务，n-gram 模型也能生成外观相似的文本。那么 RNN 学到了哪些 n-gram 不容易捕捉的东西？
+
+---
+
+**下一步：** [第 2 天——理解 LSTM 网络](../02_Understanding_LSTM/)，学习如何让循环网络记住更长的序列。

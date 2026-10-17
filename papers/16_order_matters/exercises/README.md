@@ -1,124 +1,124 @@
-# Day 16 Exercises: Order Matters (Pointer Networks)
+# 第 16 天练习：顺序很重要（指针网络）
 
-Exercises for Day 16.
+第 16 天的配套练习。
 
-These exercises will take you from basic pointer attention to a full working system for set-to-sequence problems.
-
----
-
-## Exercise Structure
-
-Each exercise builds on the previous one:
-
-1. **Exercise 1:** Implement basic pointer attention mechanism
-2. **Exercise 2:** Build order-invariant set encoder
-3. **Exercise 3:** Train model to sort numbers
-4. **Exercise 4:** Solve convex hull problem
-5. **Exercise 5:** Tackle Traveling Salesman Problem (TSP)
+这些练习将带你从基本指针注意力走向可运行的集合到序列问题系统。
 
 ---
 
-## Learning Objectives
+## 练习结构
 
-By completing these exercises, you will:
+各练习逐步递进：
 
-- Understand how pointer attention works
-- Implement order-invariant encoders (sets vs sequences)
-- Train models for combinatorial problems
-- Visualize attention patterns
-- Compare set-aware vs order-aware models
+1. **练习 1：**实现基本指针注意力机制
+2. **练习 2：**构建顺序不变集合编码器
+3. **练习 3：**训练数字排序模型
+4. **练习 4：**求解凸包问题
+5. **练习 5：**处理旅行商问题（TSP）
 
 ---
 
-## Getting Started
+## 学习目标
 
-### Prerequisites
+完成练习后，你将能够：
+
+- 理解指针注意力的工作方式
+- 实现顺序不变编码器，区分集合与序列
+- 为组合问题训练模型
+- 可视化注意力模式
+- 比较面向集合与感知顺序的模型
+
+---
+
+## 开始练习
+
+### 前置依赖
 
 ```bash
 pip install torch numpy matplotlib scipy
 ```
 
-### How to Use
+### 使用方法
 
-1. **Start with Exercise 1** - Each file has `TODO` markers
-2. **Fill in the missing code** - Hints provided in comments
-3. **Run your implementation** - Each file is executable
-4. **Check solutions/** - When you're stuck or want to verify
+1. **从练习 1 开始**——每个文件都有 `TODO` 标记
+2. **补全缺失代码**——注释中有提示
+3. **运行实现**——每个文件都可以执行
+4. **查看 solutions/**——遇到困难或需要核对时再查看
 
-### Running an Exercise
+### 运行练习
 
 ```bash
-# Run exercise 1
+# 运行练习 1
 python exercise_1.py
 
-# With verbose output
+# 显示详细输出
 python exercise_1.py --verbose
 
-# Test your implementation
+# 测试你的实现
 python exercise_1.py --test
 ```
 
 ---
 
-## Exercise Difficulty
+## 练习难度
 
-| Exercise | Difficulty | Time | Key Concepts |
+| 练习 | 难度 | 用时 | 关键概念 |
 |----------|------------|------|--------------|
-| 1 | Easy (2/5) | 30 min | Pointer attention, argmax |
-| 2 | Medium (3/5) | 45 min | Self-attention, order invariance |
-| 3 | Medium (3/5) | 60 min | Training loop, loss functions |
-| 4 | Hard (4/5) | 75 min | Geometric reasoning, convex hull |
-| 5 | Expert (5/5) | 90 min | Combinatorial optimization, TSP |
+| 1 | 简单（2/5） | 30 分钟 | 指针注意力、argmax |
+| 2 | 中等（3/5） | 45 分钟 | 自注意力、顺序不变性 |
+| 3 | 中等（3/5） | 60 分钟 | 训练循环、损失函数 |
+| 4 | 困难（4/5） | 75 分钟 | 几何推理、凸包 |
+| 5 | 专家（5/5） | 90 分钟 | 组合优化、TSP |
 
 ---
 
-## Tips
+## 提示
 
-**Stuck?**
-1. Check the hints in the code comments
-2. Review the main README.md for concepts
-3. Look at the analogies in PAPER_NOTES.md
-4. Run the solution to see expected output
-5. Compare your code with solutions/
+**遇到困难？**
+1. 查看代码注释中的提示
+2. 阅读主 README.md，复习概念
+3. 查看 PAPER_NOTES.md 中的类比
+4. 运行参考解答，了解预期输出
+5. 将你的代码与 solutions/ 中的实现比较
 
-**Common Issues:**
-- **Attention produces NaN:** Check your masking. Inf values before softmax are fine, but check for divide-by-zero
-- **Model doesn't learn:** Try smaller set sizes first (5-10 elements)
-- **Memory issues:** Reduce batch size or use gradient accumulation
-- **Slow training:** Use GPU if available, or reduce hidden_dim
-
----
-
-## What You'll Build
-
-By the end, you'll have:
-- A working pointer network implementation
-- An order-invariant set encoder
-- Models trained on 3 different tasks
-- Visualizations of attention patterns
-- Understanding of when order matters and when it doesn't
+**常见问题：**
+- **注意力产生 NaN：**检查屏蔽逻辑。softmax 前可用无穷值表示屏蔽，但要排查除以零；整行均被屏蔽时也可能产生 NaN。
+- **模型学不动：**先尝试较小集合（5-10 个元素）
+- **内存问题：**减小批大小，或使用梯度累积
+- **训练缓慢：**有 GPU 时使用 GPU，或减小 hidden_dim
 
 ---
 
-## Resources
+## 你将构建什么
 
-- **Paper:** https://arxiv.org/abs/1511.06391
-- **Main README:** ../README.md
-- **Implementation:** ../implementation.py
-- **Training Script:** ../train.py
-
----
-
-## Progress Tracker
-
-Track your progress:
-
-- [ ] Exercise 1: Basic Pointer Attention
-- [ ] Exercise 2: Set Encoder
-- [ ] Exercise 3: Sorting Task
-- [ ] Exercise 4: Convex Hull
-- [ ] Exercise 5: TSP Solver
+完成后，你将得到：
+- 可运行的指针网络实现
+- 顺序不变集合编码器（逐元素输出与聚合表示的区别见主 README）
+- 在 3 种不同任务上训练的模型
+- 注意力模式可视化
+- 对何时顺序重要、何时不重要的理解
 
 ---
 
-Open **exercise_1.py** to begin.
+## 资源
+
+- **论文：**https://arxiv.org/abs/1511.06391
+- **主说明：**../README.md
+- **实现：**../implementation.py
+- **训练脚本：**../train.py
+
+---
+
+## 进度记录
+
+记录你的进度：
+
+- [ ] 练习 1：基本指针注意力
+- [ ] 练习 2：集合编码器
+- [ ] 练习 3：排序任务
+- [ ] 练习 4：凸包
+- [ ] 练习 5：TSP 求解器
+
+---
+
+打开 **exercise_1.py** 开始练习。

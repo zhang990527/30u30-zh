@@ -1,8 +1,8 @@
 """
-Solution 3: Training Pointer Networks for Sorting
+解答 3：训练指针网络进行排序
 ==================================================
 
-Implementation of the training loop for numerical sorting.
+数字排序训练循环的实现。
 """
 
 import torch
@@ -32,7 +32,7 @@ class SortingDataset(Dataset):
 
 
 def compute_loss(log_probs, targets):
-    # Select the log probability assigned to the ground-truth index
+    # 选取真实目标索引对应的对数概率
     target_log_probs = log_probs.gather(1, targets)
     return -target_log_probs.mean()
 
@@ -64,4 +64,4 @@ def train_epoch(model, dataloader, optimizer, device):
     return total_loss / len(dataloader), correct / total
 
 if __name__ == "__main__":
-    print("Sorting Training Solution loaded.")
+    print('排序训练参考解答已加载。')

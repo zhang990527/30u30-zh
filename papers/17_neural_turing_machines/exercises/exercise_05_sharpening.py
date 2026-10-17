@@ -1,36 +1,36 @@
 """
-Exercise 5: Sharpening Mechanism
+练习 5：锐化机制
 ================================
 
-Weightings in NTM addressing often become 'blurry' due to the circular 
-convolution (Eq 8). Sharpening refines the weighting to prevent focus leakage.
+NTM 的寻址权重常因循环卷积（公式 8）变得“模糊”。
+锐化使权重分布更集中，防止关注扩散。
 
-Formula (Graves et al., 2014, Section 3.3.1, Eq 9):
+公式（Graves 等，2014，第 3.3.1 节，公式 9）：
 w_sharp[i] = w[i]^gamma / sum w[j]^gamma
 
-Note:
-- gamma (gamma) should be >= 1.
-- As gamma increases, the weighting becomes more "peaked" or "sharp".
+说明：
+- gamma（锐化因子）应 >= 1。
+- gamma 增大时，权重分布更加“尖锐”，峰值更突出。
 """
 
 import torch
 
 def sharpening(w, gamma):
     """
-    Args:
-        w: Weighting vector [batch_size, N]
-        gamma: Sharpening factor [batch_size, 1]
+    参数：
+        w：权重向量 [batch_size, N]
+        gamma：锐化因子 [batch_size, 1]
         
-    Returns:
-        w_sharp: Sharpened weighting [batch_size, N]
+    返回：
+        w_sharp：锐化后的权重 [batch_size, N]
     """
-    # TODO: Implement Eq 9
-    # 1. Raise w to the power of gamma
-    # 2. Re-normalize along dim 1
+    # TODO：实现公式 9
+    # 1. 对 w 求 gamma 次幂
+    # 2. 沿 dim 1 重新归一化
     pass
 
 if __name__ == "__main__":
-    # Test your implementation
+    # 测试你的实现
     batch, N = 1, 5
     w = torch.tensor([[0.2, 0.3, 0.2, 0.1, 0.2]])
     gamma = torch.tensor([[5.0]])
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     w_sharp = sharpening(w, gamma)
     
     if w_sharp is not None:
-        print(f"Max weight before: {w.max().item():.2f}")
-        print(f"Max weight after:  {w_sharp.max().item():.2f}")
-        assert w_sharp[0, 1] > w[0, 1], "Sharpening should increase the peak value"
-        assert torch.allclose(w_sharp.sum(), torch.tensor(1.0)), "Weighting must sum to 1.0"
+        print(f"锐化前最大权重：{w.max().item():.2f}")
+        print(f"锐化后最大权重：{w_sharp.max().item():.2f}")
+        assert w_sharp[0, 1] > w[0, 1], '锐化后峰值应增大'
+        assert torch.allclose(w_sharp.sum(), torch.tensor(1.0)), '权重总和必须为 1.0'

@@ -1,13 +1,13 @@
 """
-Pointer Networks and Set Processing Implementation
+指针网络与集合处理实现
 ===================================================
 
-This module implements the core components for processing sets with neural networks:
-1. Pointer Networks - for selecting elements from input
-2. Set Encoders - for order-invariant encoding
-3. Read-Process-Write framework
+本模块实现用神经网络处理集合的核心组件：
+1. 指针网络——从输入中选择元素
+2. 集合编码器——原仓库称为顺序不变编码，逐元素输出实际为置换等变，见 README
+3. 读取—处理—写出（Read-Process-Write）框架
 
-Paper: "Order Matters: Sequence to Sequence for Sets"
+论文：《顺序很重要：面向集合的序列到序列学习》（Order Matters: Sequence to Sequence for Sets）
        Vinyals et al. (2015)
        https://arxiv.org/abs/1511.06391
 """
@@ -20,12 +20,12 @@ from typing import Tuple, Optional
 
 class PointerNetwork(nn.Module):
     """
-    Pointer Network for selecting elements from a set.
+    从集合中选择元素的指针网络。
     
-    Instead of generating tokens from a vocabulary, this network "points"
-    to elements in the input sequence.
+    该网络不从固定词表生成词元，而是“指向”
+    输入序列中的元素。
     
-    Key property: The output space is the indices of the input set.
+    关键性质：输出空间由输入集合的索引构成。
     """
     
     def __init__(
@@ -39,7 +39,7 @@ class PointerNetwork(nn.Module):
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         
-        # Encoder: Process the input set
+        # 编码器：处理输入集合
         self.encoder = nn.LSTM(
             input_dim,
             hidden_dim,
@@ -48,11 +48,11 @@ class PointerNetwork(nn.Module):
             dropout=dropout if num_layers > 1 else 0
         )
         
-        # Decoder: Generate pointers
+        # 解码器：生成指针
         self.decoder_cell = nn.LSTMCell(input_dim, hidden_dim)
         
-        # Attention mechanism for pointing
-        # Formula: e_i = v^T tanh(W1*encoder_i + W2*decoder)
+        # 用于指针选择的注意力机制
+        # 公式：e_i = v^T tanh(W1*encoder_i + W2*decoder)
         self.W1 = nn.Linear(hidden_dim, hidden_dim, bias=False)
         self.W2 = nn.Linear(hidden_dim, hidden_dim, bias=False)
         self.v = nn.Linear(hidden_dim, 1, bias=False)
@@ -68,44 +68,44 @@ class PointerNetwork(nn.Module):
         temperature: float = 1.0
     ) -> Tuple[torch.Tensor, torch.Tensor, list]:
         """
-        Forward pass for pointer network.
-        
-        Args:
-            inputs: [batch, seq_len, input_dim] - The input set (possibly padded)
-            input_lengths: [batch] - Actual lengths before padding
-            max_steps: Number of elements to point to
-            teacher_forcing: [batch, max_steps] - Ground truth pointers
-            temperature: Softmax temperature
+        指针网络的前向传播。
+
+        参数：
+            inputs: [batch, seq_len, input_dim]——输入集合（可能已填充）
+            input_lengths: [batch]——填充前的实际长度
+            max_steps: 要指向的元素数量
+            teacher_forcing: [batch, max_steps]——真实目标指针
+            temperature: softmax 温度
             
-        Returns:
-            pointers: [batch, max_steps] - Selected indices
-            log_probs: [batch, max_steps] - Log probabilities
-            attention_weights: List of [batch, seq_len] for visualization
+        返回：
+            pointers: [batch, max_steps]——选中的索引
+            log_probs: [batch, max_steps]——对数概率
+            attention_weights: 用于可视化的 [batch, seq_len] 张量列表
         """
         batch_size = inputs.size(0)
         seq_len = inputs.size(1)
         device = inputs.device
         
-        # Phase 1: Encode
+        # 阶段 1：编码
         encoder_outputs, (hidden, cell) = self.encoder(inputs)
         
-        # Initialize decoder state
+        # 初始化解码器状态
         decoder_hidden = hidden[-1]
         decoder_cell = cell[-1]
         
-        # Start with a zero vector (no previous selection)
+        # 从零向量开始（尚无上一次选择）
         decoder_input = torch.zeros(batch_size, self.input_dim, device=device)
         
-        # Padding mask: 1 = valid, 0 = padding
+        # 填充掩码：1 = 有效，0 = 填充
         mask = torch.arange(seq_len, device=device).unsqueeze(0).expand(batch_size, -1)
         mask = (mask < input_lengths.unsqueeze(1)).float()
         
-        # Phase 2: Decode
+        # 阶段 2：解码
         pointers = []
         log_probs_list = []
         attention_weights_list = []
         
-        # Track selected elements to enable sampling without replacement
+        # 跟踪已选元素，以实现无放回采样
         selection_mask = mask.clone()
         
         for step in range(max_steps):
@@ -114,13 +114,13 @@ class PointerNetwork(nn.Module):
             )
             decoder_hidden = self.dropout(decoder_hidden)
             
-            # Attention Mechanism (Eq 1 in Paper)
+            # 注意力机制（原仓库标注为论文公式 1）
             encoder_proj = self.W1(encoder_outputs)
             decoder_proj = self.W2(decoder_hidden).unsqueeze(1)
             combined = torch.tanh(encoder_proj + decoder_proj)
             scores = self.v(combined).squeeze(-1) / temperature
             
-            # Mask padding and selected elements
+            # 屏蔽填充位置与已选元素
             scores = scores.masked_fill(selection_mask == 0, float('-inf'))
             
             probs = F.softmax(scores, dim=-1)
@@ -146,9 +146,9 @@ class PointerNetwork(nn.Module):
 
 class SetEncoder(nn.Module):
     """
-    Order-invariant encoder for sets.
-    Ensures encoder({a, b}) = encoder({b, a}).
-    Uses self-attention without positional encodings.
+    集合编码器（原仓库称顺序不变；逐元素输出实际为置换等变，见 README）。
+    原仓库声称保证 encoder({a, b}) = encoder({b, a})；该等式需区分逐元素输出与聚合表示。
+    使用不带位置编码的自注意力。
     """
     
     def __init__(
@@ -178,10 +178,10 @@ class SetEncoder(nn.Module):
         x: torch.Tensor,
         mask: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
-        # Embed inputs
+        # 嵌入输入
         x = self.embedding(x)
         
-        # Self-attention without positional encodings creates order invariance
+        # 不带位置编码的自注意力产生置换等变的逐元素输出（原仓库此处称顺序不变）
         x = self.transformer(x, src_key_padding_mask=mask)
         x = self.norm(x)
         
@@ -190,7 +190,7 @@ class SetEncoder(nn.Module):
 
 class ReadProcessWrite(nn.Module):
     """
-    Implementation of the Read-Process-Write framework.
+    读取—处理—写出框架的实现。
     """
     
     def __init__(
@@ -205,9 +205,9 @@ class ReadProcessWrite(nn.Module):
         self.use_set_encoder = use_set_encoder
         
         if use_set_encoder:
-            # Phase 1: READ
+            # 阶段 1：读取
             self.encoder = SetEncoder(input_dim, hidden_dim, **kwargs)
-            # Phase 3: WRITE
+            # 阶段 3：写出
             self.pointer_net = PointerNetwork(hidden_dim, hidden_dim, **kwargs)
         else:
             self.pointer_net = PointerNetwork(input_dim, hidden_dim, **kwargs)
@@ -243,4 +243,4 @@ def accuracy(pointers: torch.Tensor, targets: torch.Tensor) -> float:
 
 
 if __name__ == "__main__":
-    print("Pointer Network implementation loaded.")
+    print('指针网络实现已加载。')

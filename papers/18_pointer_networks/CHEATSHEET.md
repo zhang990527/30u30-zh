@@ -1,151 +1,162 @@
-# Day 18 Cheat Sheet: Pointer Networks
+# 第 18 天速查：指针网络
 
-Quick reference for the Pointer Network (Vinyals et al., 2015).
-
----
-
-## The Big Idea (30 seconds)
-
-Standard sequence models select from a **fixed** dictionary. Pointer Networks select from an **input-dependent** dictionary. The attention mechanism is the output layer. By "pointing" directly at input elements, the model can solve combinatorial problems like Convex Hull, Delaunay Triangulation, and TSP where the output vocabulary is exactly the set of input items.
+指针网络（Vinyals 等，2015）的快速参考。
 
 ---
 
-## Quick Start
+## 核心思想（30 秒）
+
+标准序列模型从**固定**词表中选择；指针网络从**依赖输入**的词表中选择。注意力机制就是输出层。通过直接指向输入元素，模型可以解决凸包、德洛内三角剖分和 TSP 等组合问题；这些问题的输出词表恰好就是输入项集合。
+
+---
+
+## 快速开始
 
 ```bash
-# Train on sample sorting data
+# 用示例排序数据训练
 python train_minimal.py --seq_len 5 --epochs 50
 
-# Visualize attention heatmaps
+# 可视化注意力热图
 python visualization.py
 ```
 
 ---
 
-## Key Hyperparameters
+## 关键超参数
 
-### Paper's Setup (Section 4.1)
-Single layer LSTM, 256 or 512 hidden units, SGD with lr=1.0, batch size 128, weight init uniform [-0.08, 0.08], L2 gradient clipping of 2.0, 1M training examples.
+### 论文设置（第 4.1 节）
 
-### Our Simplified Implementation
+单层 LSTM，256 或 512 个隐藏单元；SGD，lr=1.0；批大小 128；权重从 [-0.08, 0.08] 均匀初始化；L2 梯度裁剪阈值 2.0；100 万个训练样例。
 
-| Parameter | Value | What It Does | Tips |
+> 核验状态：这些数值保留自原仓库，本次未成功获取论文正文核验。
+
+### 本章简化实现
+
+| 参数 | 数值 | 作用 | 提示 |
 |:---|:---|:---|:---|
-| `input_size` | 1-2 | Features per item | 1 for sorting, 2 for (x, y) coords |
-| `hidden_size` | 64-512 | Model capacity | Paper uses 256 or 512 |
-| `seq_len` | 5-100 | Input length | Ptr-Nets generalize to N > train length |
-| `lr` | 0.001 | Update step size | We use Adam; paper uses SGD with lr=1.0 |
+| `input_size` | 1-2 | 每项的特征数 | 排序为 1，(x, y) 坐标为 2 |
+| `hidden_size` | 64-512 | 模型容量 | 论文使用 256 或 512 |
+| `seq_len` | 5-100 | 输入长度 | Ptr-Net 可用于测试 N 大于训练长度的泛化情况 |
+| `lr` | 0.001 | 更新步长 | 本章用 Adam；论文用 lr=1.0 的 SGD |
 
 ---
 
-## Common Issues & Fixes
+## 常见问题与处理
 
-### Infinite Loss
+### 损失无穷大
+
 ```python
-# Fix: Ensure correct masking
+# 处理：确保掩码正确
 scores = scores.masked_fill(mask, float('-inf'))
-# If you mask EVERY item, softmax returns NaN.
+# 若屏蔽所有项，softmax 会返回 NaN。
 ```
 
-### Broadcast Mismatch
+### 广播维度不匹配
+
 ```python
-# Fix: Unsqueeze the decoder state
+# 处理：给解码器状态增加一个维度
 decoder_proj = W2(decoder_hidden).unsqueeze(1) # (B, 1, H)
 combined = torch.tanh(encoder_proj + decoder_proj) # (B, S, H)
 ```
 
 ---
 
-## The Math (Copy-Paste Ready)
+## 数学实现（可复制的代码片段）
 
-### Pointer Probability (Eq 3)
+### 指针概率（公式 3）
+
 ```python
-# 1. Project Query (decoder) and Keys (encoder)
+# 1. 投影查询（解码器）和键（编码器）
 q = self.W2(decoder_hidden).unsqueeze(1)
 k = self.W1(encoder_outputs)
 
-# 2. Additive Attention
+# 2. 加性注意力
 u = self.v(torch.tanh(q + k)).squeeze(-1)
 
-# 3. Softmax is the output
+# 3. softmax 就是输出
 probs = F.softmax(u, dim=-1)
 ```
 
 ---
 
-## Visualization Examples
+## 可视化示例
 
 ```python
 from visualization import plot_attention
 
-# Visualize pointer heatmap
+# 可视化指针热图
 # inputs: [0.7, 0.2, 0.9]
-# attention_probs: shape (3, 3) 
+# attention_probs: 形状 (3, 3)
 plot_attention(inputs, attention_probs, save_path='ptr_viz.png')
 ```
 
 ---
 
-## Experiment Ideas
+## 实验思路
 
-### Easy
-- Train on different sequence lengths (5, 10, 15)
-- Test generalization: train on 5, test on 10
-- Modify temperature in softmax to "sharpen" pointers
+### 入门
 
-### Medium
-- Implement greedy vs. sampling decoding
-- Add "sampling with replacement" toggle
-- Train on a simple TSP dataset with 5 cities
+- 用不同序列长度训练（5、10、15）。
+- 测试泛化：长度 5 上训练，长度 10 上测试。
+- 调整 softmax 的温度，使指针分布更尖锐。
 
-### Advanced
-- Implement the "Pointer-Generator" for text copying
-- Add Beam Search for better combinatorial optimization
-- Compare LSTM encoder vs. Transformer encoder (Self-Attention)
+### 中等
+
+- 实现贪心解码与采样解码并比较。
+- 增加“有放回采样”的开关。
+- 在包含 5 个城市的简单 TSP 数据集上训练。
+
+### 进阶
+
+- 实现用于文本复制的指针生成网络。
+- 增加束搜索，改进组合优化结果。
+- 比较 LSTM 编码器与使用自注意力的 Transformer 编码器。
 
 ---
 
-## File Reference
+## 文件参考
 
-| File | Use It For |
+| 文件 | 用途 |
 |:---|:---|
-| `implementation.py` | Core model and attention logic |
-| `train_minimal.py` | Quick training loop for sorting |
-| `visualization.py` | Plotting heatmaps and pointers |
-| `notebook.ipynb` | Interactive build and demo |
-| `exercises/` | Practice implementing Eq 3 |
+| `implementation.py` | 核心模型与注意力逻辑 |
+| `train_minimal.py` | 排序任务快速训练循环 |
+| `visualization.py` | 热图与指针绘制 |
+| `notebook.ipynb` | 交互式构建与演示 |
+| `exercises/` | 练习实现公式 3 |
 
 ---
 
-## Debugging Checklist
+## 调试清单
 
-- [ ] Input coordinates are projected into hidden space?
-- [ ] Decoder hidden state matches Attention projection size?
-- [ ] Masking prevents model from picking padding tokens?
-- [ ] Softmax dim is set to -1 (across inputs)?
-
----
-
-## Pro Tips
-
-1. **Teacher Forcing**: Always use it during training for sequence construction.
-2. **Masking**: Critical for TSP; set $u_j = -\infty$ for cities already visited.
-3. **Pre-projection**: Raw values should always pass through a Linear layer before the LSTM.
+- [ ] 输入坐标是否已投影到隐藏空间？
+- [ ] 解码器隐藏状态是否匹配注意力投影的维度？
+- [ ] 掩码是否避免选择填充词元？
+- [ ] softmax 的 dim 是否为 -1，即沿输入位置归一化？
 
 ---
 
-## Success Criteria
+## 实践建议
 
-- Attention heatmaps look like a sharp permutation matrix.
-- Sorting accuracy > 95% on sequences of length 5.
-- Model generalizes to sequences slightly longer than training data.
-
----
-
-## Next Day
-
-Day 19: Relational Reasoning
+1. **教师强制：**构建序列时，原仓库建议训练阶段使用教师强制；这并非所有训练策略的必要条件。
+2. **掩码：**TSP 中很重要；对已经访问的城市设置 $u_j = -\infty$。
+3. **预投影：**原仓库建议原始值先通过 `Linear` 层，再送入 LSTM；这是本实现选择，不是 LSTM 的普遍要求。
 
 ---
 
-**Questions?** Check [README.md](README.md) or ask in the community.
+## 成功标准
+
+- 注意力热图接近尖锐的排列矩阵。
+- 长度 5 序列上的排序准确率 > 95%。
+- 对略长于训练序列的输入仍有一定泛化能力。
+
+> 这些是原仓库提出的实验目标，不是本次翻译已经达到的测量结果。
+
+---
+
+## 下一天
+
+第 19 天：关系推理。
+
+---
+
+**有疑问？**查看 [README.md](README.md)，或在社区中提问。

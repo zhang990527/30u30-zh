@@ -1,166 +1,168 @@
-# Exercises: MDL / Bayesian Neural Networks
+# 练习：MDL／贝叶斯神经网络
 
-5 hands-on exercises building on Hinton & van Camp (1993). All exercises are our pedagogical additions — the paper itself is theoretical with a minimal experiment. Exercises 3 and 5 are most directly connected to the paper's core ideas (the complexity-accuracy trade-off and the MDL principle).
+以下 5 个动手练习基于 Hinton 与 van Camp（1993）的思想。全部练习都是本项目的教学补充；原仓库将论文描述为以理论为主、包含一个小型实验。练习 3 和 5 与论文核心思想（复杂度与准确性的权衡、MDL 原理）联系最直接。
 
-**Time estimates:**
-- Medium (20-30 min)
-- Hard (30-40 min)
-
----
-
-## Exercise 1: The Reparameterization Trick [Medium]
-
-**Our addition** — the reparameterization trick is from Kingma & Welling (2014), not the 1993 paper. We use it because it's how you actually train Bayesian NNs with gradient descent.
-
-**File:** `exercise_01_reparameterization.py`
-
-**What you'll learn:**
-- How to sample weights differentiably: $w = \mu + \sigma \cdot \epsilon$
-- Why softplus ensures $\sigma > 0$
-- How to verify sampling with statistical tests
-
-**Tasks:**
-1. Implement `softplus(x)` = $\log(1 + e^x)$
-2. Implement `sample_gaussian(mu, rho, n_samples)` using the reparameterization trick
-3. Verify: sampled mean should be close to $\mu$, sampled std close to $\sigma$
-4. Check: when $\rho = 0$, $\sigma \approx 0.693$ (= $\log 2$)
-
-**Success criteria:**
-- Statistical tests pass (mean within 0.05 of $\mu$, std within 0.05 of $\sigma$)
-- Different $\rho$ values produce different uncertainty levels
+**预计用时：**
+- 中等：20-30 分钟
+- 困难：30-40 分钟
 
 ---
 
-## Exercise 2: The Gap Experiment [Hard]
+## 练习 1：重参数化技巧［中等］
 
-**Our addition** — demonstrates epistemic uncertainty, which is the practical payoff of the paper's ideas.
+**本项目补充**：采用 Kingma 与 Welling（2014）中常见的重参数化形式，并非来自 1993 年论文；它便于使用梯度下降训练贝叶斯神经网络。这不表示该技巧最早由该工作提出。
 
-**File:** `exercise_02_gap_experiment.py`
+**文件：** `exercise_01_reparameterization.py`
 
-**What you'll learn:**
-- Training on data with missing regions reveals what the network doesn't know
-- Monte Carlo forward passes produce uncertainty estimates
-- Epistemic uncertainty (model doesn't know) vs. aleatoric uncertainty (data is noisy)
+**学习内容：**
+- 以可微方式采样权重：$w = \mu + \sigma \cdot \epsilon$。
+- 为什么 softplus 能保证 $\sigma > 0$。
+- 如何用统计检查验证采样。
 
-**Tasks:**
-1. Generate sine wave data with a gap in the middle ($|x| < 1$)
-2. Train the Bayesian network on gappy data
-3. Run 100 forward passes on full range including the gap
-4. Plot mean prediction with uncertainty band
+**任务：**
+1. 实现 `softplus(x)` = $\log(1 + e^x)$。
+2. 使用重参数化技巧实现 `sample_gaussian(mu, rho, n_samples)`。
+3. 验证：样本均值接近 $\mu$，样本标准差接近 $\sigma$。
+4. 检查：$\rho = 0$ 时，$\sigma \approx 0.693$（= $\log 2$）。
 
-**What to look for:**
-- Tight prediction band where data exists
-- Wide uncertainty band in the gap
-- A standard NN would be confidently wrong in the gap; this shows honest uncertainty
+**成功标准：**
+- 统计检查通过：均值与 $\mu$ 相差小于 0.05，标准差与 $\sigma$ 相差小于 0.05。
+- 不同 $\rho$ 值产生不同不确定性水平。
 
 ---
 
-## Exercise 3: Beta Parameter Study [Medium]
+## 练习 2：缺口实验［困难］
 
-**Our addition** — but directly explores the paper's core equation ($\mathcal{L} = \text{error} + \beta \cdot KL$).
+**本项目补充**：展示认知不确定性（epistemic uncertainty），即论文思想的实际用途之一。
 
-**File:** `exercise_03_beta_parameter.py`
+**文件：** `exercise_02_gap_experiment.py`
 
-**What you'll learn:**
-- $\beta$ (kl_weight) controls the complexity-accuracy trade-off from the paper
-- Low $\beta$: overfits (confident but wrong outside training data)
-- High $\beta$: underfits (uncertain but safe)
-- How to measure calibration
+**学习内容：**
+- 在缺失部分区域的数据上训练，观察网络对未知区域的表现。
+- 用蒙特卡洛前向传播估计不确定性。
+- 区分认知不确定性（模型知识不足）与偶然不确定性（aleatoric uncertainty，数据本身含噪）。
 
-**Tasks:**
-1. Train models with different $\beta$ values (0.001, 0.01, 0.1, 0.5, 1.0)
-2. Measure test MSE and prediction uncertainty for each
-3. Find the "sweet spot" where both are reasonable
+**任务：**
+1. 生成中间有缺口的正弦波数据（$|x| < 1$）。
+2. 在带缺口的数据上训练贝叶斯网络。
+3. 对包含缺口的完整范围执行 100 次前向传播。
+4. 绘制预测均值与不确定性带。
 
-**Tuning guide:**
+**观察要点：**
+- 有数据区域的预测带较窄。
+- 缺口处的不确定性带较宽。
+- 原仓库用普通网络可能在缺口处“自信地出错”作对比，希望观察贝叶斯模型能反映未知信息；这是实验假设，并非普遍保证。
 
-| Symptom | Cause | Fix |
+---
+
+## 练习 3：Beta 参数研究［中等］
+
+**本项目补充**：直接探索论文核心形式（$\mathcal{L} = \text{error} + \beta \cdot KL$，error 为误差）。
+
+**文件：** `exercise_03_beta_parameter.py`
+
+**学习内容：**
+- $\beta$（kl_weight）控制复杂度与准确性的权衡。
+- 较小 $\beta$ 可能过拟合，在训练数据之外自信地出错。
+- 较大 $\beta$ 可能欠拟合，通常不确定性更高，但不因此保证安全或校准正确。
+- 如何测量校准程度。
+
+**任务：**
+1. 用不同 $\beta$ 值训练模型（0.001、0.01、0.1、0.5、1.0）。
+2. 测量各模型的测试 MSE 与预测不确定性。
+3. 找到两者都合理的平衡点。
+
+**调参指南：**
+
+| 现象 | 原因 | 处理 |
 |---------|-------|-----|
-| Model predicts flat line | $\beta$ too high | Reduce $\beta$ |
-| No uncertainty in gaps | $\beta$ too low | Increase $\beta$ |
-| Wiggly, overfitting | $\beta$ too low | Increase $\beta$ |
+| 模型预测平线 | $\beta$ 过大 | 减小 $\beta$ |
+| 缺口处没有不确定性 | $\beta$ 可能过小 | 尝试增大 $\beta$ |
+| 曲线波动、过拟合 | $\beta$ 可能过小 | 尝试增大 $\beta$ |
 
 ---
 
-## Exercise 4: Monte Carlo Predictions [Medium]
+## 练习 4：蒙特卡洛预测［中等］
 
-**Our addition** — standard practice for using Bayesian NNs, not discussed in the 1993 paper.
+**本项目补充**：这是使用贝叶斯神经网络的常见实践，原仓库说明 1993 年论文未讨论此练习。
 
-**File:** `exercise_04_monte_carlo.py`
+**文件：** `exercise_04_monte_carlo.py`
 
-**What you'll learn:**
-- In production, you run the network many times and aggregate
-- Uncertainty estimates converge with more samples
-- The Law of Large Numbers in action
+**学习内容：**
+- 实际应用中多次运行网络并汇总预测。
+- 随样本数增加，不确定性估计逐渐收敛。
+- 观察大数定律的作用。
 
-**Tasks:**
-1. Run the network N times with different weight samples
-2. Track how mean and std change as N increases (1, 5, 10, 50, 100)
-3. Visualize convergence
+**任务：**
+1. 用不同权重样本运行网络 N 次。
+2. 记录 N 增加（1、5、10、50、100）时均值与标准差如何变化。
+3. 可视化收敛过程。
 
-**What to look for:**
-- 1 sample: noisy, jagged
-- 10 samples: clearer but still wobbly
-- 100 samples: smooth and stable
-- Rule of thumb: 50-100 samples is usually enough
-
----
-
-## Exercise 5: Pareto Frontier [Hard]
-
-**Our addition** — but directly visualizes the MDL principle from the paper.
-
-**File:** `exercise_05_advanced_mdl.py`
-
-**What you'll learn:**
-- MDL loss = reconstruction loss + KL divergence
-- The Pareto frontier shows you can't improve both simultaneously
-- Compression ratio changes with $\beta$
-
-**Tasks:**
-1. Train models across a range of $\beta$ values
-2. For each, record reconstruction error (MSE) and complexity cost (KL)
-3. Plot the Pareto frontier: x-axis = KL (complexity), y-axis = MSE (error)
-4. Find the "elbow" — often the best practical choice
-
-**What to look for:**
-- The frontier is a smooth curve from upper-left (simple, high error) to lower-right (complex, low error)
-- Points below the frontier are Pareto-optimal
-- The elbow represents the paper's insight: maximum compression with acceptable error
+**观察要点：**
+- 1 个样本：结果含噪、可能不平滑，无法可靠估计方差。
+- 10 个样本：更清晰，但仍可能波动。
+- 100 个样本：通常更平滑、稳定。
+- 经验建议：50-100 个样本通常可作为起点，仍需检查实际收敛。
 
 ---
 
-## Summary
+## 练习 5：帕累托前沿［困难］
 
-| # | Topic | File | Time | Difficulty | Paper Connection |
+**本项目补充**：直观展示论文中的 MDL 原理。
+
+**文件：** `exercise_05_advanced_mdl.py`
+
+**学习内容：**
+- MDL 损失由重构损失与 KL 散度组成。
+- 帕累托前沿表示无法同时改善两个目标的解。
+- 随 $\beta$ 变化，原练习定义的“压缩比”指标也变化；该比值不是实际编码压缩率。
+
+**任务：**
+1. 在一系列 $\beta$ 值下训练模型。
+2. 记录各模型的重构误差（MSE）与复杂度代价（KL）。
+3. 绘制帕累托前沿：x 轴 = KL（复杂度），y 轴 = MSE（误差）。
+4. 寻找“拐点”，它通常是实用的折中选择。
+
+**观察要点：**
+- 前沿预期从左上方（简单、误差高）延伸到右下方（复杂、误差低），有限样本下不一定光滑。
+- **原文勘误：** 原仓库称“前沿以下的点为帕累托最优”；准确说法是可行集中不被其他点支配的点构成帕累托前沿。这里不修改练习算法。
+- 拐点体现 MDL 思想：在可接受误差下寻求更强压缩。
+
+---
+
+## 汇总
+
+| # | 主题 | 文件 | 用时 | 难度 | 与论文的联系 |
 |---|-------|------|------|------------|------------------|
-| 1 | Reparameterization | `exercise_01_*.py` | 20-30 min | Medium | Kingma 2014 technique |
-| 2 | Gap experiment | `exercise_02_*.py` | 30-40 min | Hard | Epistemic uncertainty |
-| 3 | Beta parameter | `exercise_03_*.py` | 20-30 min | Medium | Core equation from paper |
-| 4 | MC predictions | `exercise_04_*.py` | 20-30 min | Medium | Modern practice |
-| 5 | Pareto frontier | `exercise_05_*.py` | 30-40 min | Hard | MDL principle visualization |
+| 1 | 重参数化 | `exercise_01_*.py` | 20-30 分钟 | 中等 | Kingma 2014 中的技术 |
+| 2 | 缺口实验 | `exercise_02_*.py` | 30-40 分钟 | 困难 | 认知不确定性 |
+| 3 | Beta 参数 | `exercise_03_*.py` | 20-30 分钟 | 中等 | 论文核心方程 |
+| 4 | 蒙特卡洛预测 | `exercise_04_*.py` | 20-30 分钟 | 中等 | 现代实践 |
+| 5 | 帕累托前沿 | `exercise_05_*.py` | 30-40 分钟 | 困难 | MDL 原理可视化 |
 
-**Total time:** 2-3 hours
+**总用时：** 2-3 小时
 
 ---
 
-## Running
+## 运行
 
 ```bash
 cd Exercises
 python exercise_01_reparameterization.py
 python exercise_02_gap_experiment.py
-# etc.
+# 其余依此类推。
 ```
 
-Solutions are in `solutions.py` and `solutions_extra.py`. Try the exercises first.
+参考解答位于 `solutions.py` 与 `solutions_extra.py`，请先独立尝试。
+
+> **原有接口问题：** 练习 2-5 导入当前 `implementation.py` 未提供的 `BayesianLinearNetwork`。该问题并非翻译引入；保留 TODO 和原接口，作为另行修复项。
 
 ---
 
-## Related Files
+## 相关文件
 
-- `solutions.py` — Reference solutions with explanations
-- `solutions_extra.py` — Additional solution implementations
-- `../implementation.py` — Full Bayesian NN implementation
-- `../paper_notes.md` — Detailed paper notes
-- `../CHEATSHEET.md` — Quick reference
+- `solutions.py`：带说明的参考解答。
+- `solutions_extra.py`：补充解答实现。
+- `../implementation.py`：完整贝叶斯神经网络实现。
+- `../paper_notes.md`：详细论文笔记。
+- `../CHEATSHEET.md`：速查参考。

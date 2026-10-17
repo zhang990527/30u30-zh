@@ -1,52 +1,59 @@
-# Day 17 Cheat Sheet: Neural Turing Machines (NTM)
+# 第 17 天速查：神经图灵机（NTM）
 
-Quick reference for training and monitoring your NTM.
+训练和监测 NTM 的快速参考。
 
 ---
 
-## Quick Start
+## 快速开始
 
 ```bash
-# Train on the standard Copy Task
-python train.py
+# 训练标准复制任务
+python train_minimal.py
 
-# Visualize results (requires a trained model)
+# 可视化结果（需要已训练模型；以下为原仓库示意命令）
 # python visualization.py --checkpoint ntm_copy_final.pth
 ```
 
----
-
-## Key Hyperparameters (Graves et al., 2014)
-
-| Parameter | Typical Value | What It Does | Rationale (from Paper) |
-|-----------|---------------|--------------|-------------------------|
-| `memory_n` | 128 | Number of addressable slots | Scale independently of weights (Sec 3) |
-| `memory_m` | 20 | Dimension of each slot | Enough precision for bitmask storage |
-| `controller_h` | 100 | Size of RNN hidden state | The "thinking" capacity (Sec 2) |
-| `learning_rate`| 1e-4 | RMSProp step size | Sec 4: RMSProp is recommended for NTM |
-| `grad_clip` | 10.0 | Maximum gradient norm | Sec 4: Essential for training stability |
+> 译注：原文使用不存在的 `train.py`，已改为实际入口。`visualization.py` 当前没有上述命令行接口；请调用其中的绘图函数，不能直接把注释命令当作已支持的功能。
 
 ---
 
-## Common Issues & Fixes
+## 关键超参数（Graves 等，2014）
 
-### Loss is "NaN"
-- **Reason:** Gradients exploded during the circular convolution step (Eq 8).
-- **Fix:** Ensure `nn.utils.clip_grad_norm_` is set to 10.0 or lower in `train.py`.
+| 参数 | 典型值 | 作用 | 原仓库给出的依据 |
+|------|--------|------|------------------|
+| `memory_n` | 128 | 可寻址槽位数 | 可独立于权重规模扩展（第 3 节） |
+| `memory_m` | 20 | 每个槽位的维度 | 足以存储比特掩码 |
+| `controller_h` | 100 | RNN 隐藏状态大小 | “思考”容量（第 2 节） |
+| `learning_rate` | 1e-4 | RMSProp 步长 | 第 4 节：建议为 NTM 使用 RMSProp |
+| `grad_clip` | 10.0 | 最大梯度范数 | 第 4 节：用于提高训练稳定性 |
 
-### Bit Error Rate (BER) doesn't decrease
-- **Reason:** The model failed to learn the "Sharpening" mechanism (Eq 9), resulting in blurry addresses.
-- **Fix:** Check that your `gamma` parameter is properly initialized and constrained to $\gamma \ge 1$ using `1 + F.softplus`.
-
-### Memory focus jumps randomly
-- **Reason:** The Interpolation gate (Eq 7) is not learning to steady the focus.
-- **Fix:** Increase the training iterations; NTMs often take 10,000+ iterations to "stabilize" their pointer logic.
+> 译注：表中的变量名是说明性名称，与 `train_minimal.py` 的局部变量不完全相同；未将这里列出的全部数值宣称为已独立核验的论文设置。
 
 ---
 
-## The Addressing Equations
+## 常见问题与处理
 
-1. **Content:** $w_t^c = \text{Softmax}(\beta_t \cdot \text{CosineSim}(k_t, M_t))$
-2. **Gating:** $w_t^g = g_t w_t^c + (1 - g_t) w_{t-1}$
-3. **Shift:** $w_t^s = w_t^g * s_t$ (Circular Convolution)
-4. **Sharp:** $w_t = (w_t^s)^\gamma / \sum (w_t^s)^\gamma$
+### 损失变为 `NaN`
+
+- **可能原因：**循环卷积步骤（公式 8）发生梯度爆炸。
+- **处理：**检查 `train_minimal.py` 中 `nn.utils.clip_grad_norm_` 的阈值是否为 10.0 或更低；同时检查其他非有限值来源。
+
+### 比特错误率（Bit Error Rate，BER）不下降
+
+- **可能原因：**模型没有学好锐化机制（公式 9），导致地址分布模糊。
+- **处理：**检查 `gamma` 是否恰当初始化，并通过 `1 + F.softplus` 保证 $\gamma \ge 1$。
+
+### 关注的存储位置随机跳动
+
+- **可能原因：**插值门（公式 7）没有学会稳定关注位置。
+- **处理：**增加训练迭代；原仓库提示 NTM 可能需要 10,000 次以上迭代才能稳定指针逻辑。这不是保证收敛的固定阈值。
+
+---
+
+## 寻址公式
+
+1. **内容：**$w_t^c = \text{Softmax}(\beta_t \cdot \text{CosineSim}(k_t, M_t))$
+2. **门控：**$w_t^g = g_t w_t^c + (1 - g_t) w_{t-1}$
+3. **移位：**$w_t^s = w_t^g * s_t$（循环卷积）
+4. **锐化：**$w_t = (w_t^s)^\gamma / \sum (w_t^s)^\gamma$

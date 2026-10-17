@@ -1,119 +1,119 @@
-# Paper Notes: Neural Machine Translation by Jointly Learning to Align and Translate
+# 论文笔记：《联合学习对齐与翻译的神经机器翻译》
 
-## ELI5 (Explain Like I'm 5)
+## 通俗解释（ELI5）
 
-### The Story
+### 一个故事
 
-Imagine you are translating a long book. 
+想象你正在翻译一本很长的书。 
 
-Traditional models work like this: you read a whole sentence, close your eyes, try to remember everything, and then write the translation in another language. For a short sentence like "The cat sat," this is easy. But for a sentence with 40 words, you will likely forget the beginning by the time you reach the end.
+传统模型的做法是：读完整个句子，闭上眼睛，尽力记住所有内容，再用另一种语言写出译文。对于“The cat sat”这样的短句，这很容易；但如果一句话有 40 个词，读到末尾时很可能已经忘了开头。
 
-**The Bahdanau Attention approach works differently.** It's like having an "open-book test." For every word you translate, you are allowed to look back at the original sentence and focus your eyes on the specific words that are most relevant to what you are currently writing. 
+**Bahdanau 注意力采用另一种做法。**它就像“开卷考试”：每翻译一个词，都允许回看原句，并将目光集中在与当前输出最相关的词上。 
 
-Note: This analogy is ours, not the authors'. But it captures the main point-that the decoder has a "flashlight" to focus on specific parts of the source sentence.
-
----
-
-## What the Paper Actually Covers
-
-Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio (2014) address the "bottleneck" problem in sequence-to-sequence (seq2seq) models. Previous architectures compressed the entire input sequence into a single fixed-length vector. This paper introduces the **attention mechanism**, which allows the model to search for relevant parts of a source sentence during decoding.
-
-The researchers demonstrate that this approach significantly improves translation quality, especially for long sentences, and provides a way to visualize the "alignments" between languages that the model learns automatically.
+说明：这个类比由仓库作者补充，并非论文作者所述。但它抓住了要点：解码器有一支“手电筒”，可照向源句子的特定部分。
 
 ---
 
-## The Core Idea (From the Paper)
+## 论文实际涵盖的内容
 
-The fundamental problem with fixed-length vectors is that they cannot capture all the necessary information from a long sequence without loss. The authors propose a "search" process:
+Dzmitry Bahdanau、Kyunghyun Cho 和 Yoshua Bengio（2014）研究序列到序列（seq2seq）模型的“瓶颈”问题。此前的架构将整个输入序列压缩到单个固定长度向量中。论文引入**注意力机制（attention mechanism）**，允许模型在解码时搜索源句子中的相关部分。
 
-1.  **Encode** the source sentence into a sequence of "annotations" (vectors).
-2.  **Align** the current decoder state with these annotations to find what's relevant.
-3.  **Translate** by generating the next word based on a weighted sum of those annotations.
-
-This process is "joint" because the model learns to translate and align at the same time, without needing pre-existing alignment labels (like those used in older statistical machine translation).
+研究者表明，该方法显著改善翻译质量，尤其是长句翻译；同时可将模型自动学到的语言间“对齐”关系可视化。
 
 ---
 
-## The Math
+## 核心思想（来自论文）
 
-### 1. The Alignment Model (Score Function)
-For each decoder step $i$ and encoder position $j$, we compute an "energy" score $e_{ij}$:
+固定长度向量的根本问题在于，难以无损保留长序列中的全部必要信息。作者提出以下“搜索”过程：
+
+1. 将源句子**编码**为一系列“标注向量”（annotations）。
+2. 将当前解码器状态与这些标注向量**对齐**，找出相关内容。
+3. 根据这些标注向量的加权和生成下一个词，完成**翻译**。
+
+这一过程称为“联合”学习，因为模型同时学习翻译与对齐，无需预先提供旧式统计机器翻译中使用的那类对齐标签。
+
+---
+
+## 数学原理
+
+### 1. 对齐模型（评分函数）
+对每个解码步骤 $i$ 和编码器位置 $j$，计算“能量”分数 $e_{ij}$：
 $$e_{ij} = a(s_{i-1}, h_j) = v_a^T \tanh(W_a s_{i-1} + U_a h_j)$$
-- $s_{i-1}$: The previous decoder hidden state.
-- $h_j$: The $j$-th annotation (encoder hidden state).
-- $v_a, W_a, U_a$: Weight matrices/vectors learned during training.
+- $s_{i-1}$：解码器上一步的隐藏状态。
+- $h_j$：第 $j$ 个标注向量（编码器隐藏状态）。
+- $v_a, W_a, U_a$：训练中学习到的权重矩阵／向量。
 
-### 2. Attention Weights
-We normalize these scores using a softmax function to get the attention weights $\alpha_{ij}$:
+### 2. 注意力权重
+用 softmax 函数归一化这些分数，得到注意力权重 $\alpha_{ij}$：
 $$\alpha_{ij} = \frac{\exp(e_{ij})}{\sum_{k=1}^T \exp(e_{ik})}$$
 
-### 3. Context Vector
-The context vector $c_i$ is a weighted sum of all encoder annotations:
+### 3. 上下文向量
+上下文向量 $c_i$ 是所有编码器标注向量的加权和：
 $$c_i = \sum_{j=1}^T \alpha_{ij} h_j$$
 
-### 4. Decoder Hidden State
-The new hidden state $s_i$ is computed using the previous state, the previous output $y_{i-1}$, and the context vector:
+### 4. 解码器隐藏状态
+新隐藏状态 $s_i$ 由上一步状态、上一步输出 $y_{i-1}$ 与上下文向量计算得到：
 $$s_i = f(s_{i-1}, y_{i-1}, c_i)$$
 
 ---
 
-## Key Innovations
+## 关键创新
 
-### Bidirectional Encoder
-The paper uses a bidirectional RNN (BiRNN) to ensure each annotation $h_j$ contains context from both the past and the future of the source sequence.
-- **Forward RNN**: Processes $x_1$ to $x_T$ to get $\overrightarrow{h}_j$.
-- **Backward RNN**: Processes $x_T$ to $x_1$ to get $\overleftarrow{h}_j$.
-- **Annotation**: The concatenation $h_j = [\overrightarrow{h}_j^T ; \overleftarrow{h}_j^T]^T$.
+### 双向编码器
+论文采用双向 RNN（BiRNN），使每个标注向量 $h_j$ 都包含源序列中当前位置前后两个方向的上下文。
+- **正向 RNN**：从 $x_1$ 处理到 $x_T$，得到 $\overrightarrow{h}_j$。
+- **反向 RNN**：从 $x_T$ 处理到 $x_1$，得到 $\overleftarrow{h}_j$。
+- **标注向量**：拼接得到 $h_j = [\overrightarrow{h}_j^T ; \overleftarrow{h}_j^T]^T$。
 
-### Dynamic Alignment
-Unlike previous models that relied on a single vector for the whole sentence, this model produces a unique context vector $c_i$ for every single word generated. This allows the model to handle word reordering (e.g., French adjectives appearing after nouns) by shifting its attention.
-
----
+### 动态对齐
+早期模型用单个向量表示整个句子；此模型则为每个生成词计算各自的上下文向量 $c_i$。通过转移注意力，模型能够处理词序重排，例如法语中形容词出现在名词之后的情况。
 
 ---
 
-## The Experiments (English-to-French Translation)
+---
 
-The authors evaluated the attention mechanism on the WMT'14 English-French translation task using a large-scale training set (348M words).
+## 实验（英译法）
 
-### 1. Setup
-- **Baseline (RNNencdec)**: Standard encoder-decoder with a fixed-length vector.
-- **Proposed (RNNsearch)**: Encoder-decoder with the new attention mechanism.
-- **Lengths**: Evaluated on sentences of up to 30 words and up to 50 words.
+作者在 WMT'14 英法翻译任务上评估注意力机制，使用大规模训练集（348M 个词）。
 
-### 2. Results (BLEU Scores)
-The attention model (RNNsearch) significantly outperformed the baseline, with the gap widening as sentences became longer:
+### 1. 设置
+- **基线（RNNencdec）**：使用固定长度向量的标准编码器—解码器。
+- **提出的方法（RNNsearch）**：加入新注意力机制的编码器—解码器。
+- **长度**：原仓库描述为在最长 30 个词和最长 50 个词的句子上评估；训练长度限制与测试集划分不应混淆，见下方核验注。
 
-| Model | Sentences < 30 words | All Sentences |
+### 2. 结果（BLEU 分数）
+注意力模型 RNNsearch 显著优于基线，且句子越长，差距越明显：
+
+| 模型 | 原仓库列名：少于 30 个词的句子（疑误，见核验注） | 原仓库列名：所有句子 |
 | :--- | :--- | :--- |
-| RNNencdec-50 (Baseline) | 26.71 BLEU | 17.82 BLEU |
-| RNNsearch-50 (Attention) | 34.16 BLEU | 26.75 BLEU |
+| RNNencdec-50（基线） | 26.71 BLEU | 17.82 BLEU |
+| RNNsearch-50（注意力） | 34.16 BLEU | 26.75 BLEU |
 
-Note: These scores are for the filtered test set without unknown words. The key takeaway from Section 4.2 of the paper is that attention effectively solves the performance degradation observed in standard RNN models for long sentences.
+原仓库注：这些分数来自滤除含未知词句子后的测试集；其将论文第 4.2 节的结论概括为注意力有效解决标准 RNN 模型在长句上的性能下降。**译者核验注：**此注与表格本身不一致：README 将 26.71、34.16 标为“不含未知词”条件，而表格将它们标为“少于 30 个词”。因此不能把两列都称为“不含未知词”的结果。数值保留原样，原论文表头与版本尚待一手全文核验。
 
 ---
 
-## Going Beyond the Paper (Our Retrospective)
+## 论文之外的联系（仓库回顾）
 
-| Aspect | Bahdanau Attention (2014) | Transformer (2017) |
+| 方面 | Bahdanau 注意力（2014） | Transformer（2017） |
 | :--- | :--- | :--- |
-| **Foundation** | Gated RNNs (GRU) | Self-Attention (No RNNs) |
-| **Attention Type** | Additive ($v_a^T \tanh(W_s s + W_h h)$) | Scaled Dot-Product ($\frac{QK^T}{\sqrt{d_k}}$) |
-| **Information Flow** | Sequential / Recursive | Parallel / Multi-Head |
-| **Context** | Fixed-size hidden state + Attention | Fully global attention |
-| **Alignment** | Decoder-to-Encoder only | Self-Attention + Cross-Attention |
+| **基础** | 门控 RNN（GRU） | 自注意力（不使用 RNN） |
+| **注意力类型** | 加性（$v_a^T \tanh(W_s s + W_h h)$） | 缩放点积（$\frac{QK^T}{\sqrt{d_k}}$） |
+| **信息流** | 顺序／递归 | 并行／多头 |
+| **上下文** | 固定维度隐藏状态 + 注意力 | 全局注意力（解码器仍受因果掩码约束） |
+| **对齐** | 仅解码器到编码器 | 自注意力 + 交叉注意力 |
 
-[Our Retrospective: Bahdanau's work demonstrated that attention significantly improved neural machine translation, particularly for long sentences. It laid conceptual groundwork for the Transformer (Vaswani et al. 2017), which discarded RNNs entirely while keeping attention as its core mechanism.]
-
----
-
-## Questions Worth Thinking About
-
-1.  **Why bidirectional?** If the encoder only processed the sequence forward, the annotation $h_j$ at the start of the sentence would have zero context from the end of the sentence. Attention is most powerful when keys are context-rich.
-2.  **The Memory Bottleneck**: Even with attention, the decoder still uses a fixed-size GRU state. Does this still create a "memory" problem, or does the context vector solve it completely?
-3.  **Quadratic Cost**: Bahdanau attention requires $O(N \times M)$ computations (every input token vs every output token). How does this scale for book-length inputs?
-4.  **Automatic Alignment**: The model was never given alignment labels (e.g., "cat" matches "chat"). It learned this purely to minimize translation loss. What does this suggest about the "emergence" of internal representations in deep learning?
+【仓库回顾：Bahdanau 的工作表明，注意力显著改善神经机器翻译，尤其是长句翻译。这为 Transformer（Vaswani 等，2017）奠定了概念基础；后者完全舍弃 RNN，同时保留注意力作为核心机制。】
 
 ---
 
-**Next:** [Day 16 - Pointer Networks (Order Matters)](../16_order_matters/)
+## 值得思考的问题
+
+1. **为何使用双向编码？**如果编码器只正向处理序列，句子开头的标注向量 $h_j$ 就无法包含句末上下文。键的上下文越丰富，注意力越能发挥作用。
+2. **记忆瓶颈：**即使有注意力，解码器仍使用固定维度的 GRU 状态。这是否仍会造成“记忆”问题，还是上下文向量已将问题彻底解决？
+3. **二次规模的成本：**Bahdanau 注意力需要 $O(N \times M)$ 次计算（每个输入词元对每个输出词元）。当输入长达一本书时，这种计算如何扩展？
+4. **自动对齐：**模型从未获得“cat”对应“chat”这样的对齐标签，仅为最小化翻译损失就学到了这种关系。这对深度学习内部表示的“涌现”有何启示？
+
+---
+
+**下一章：**[第 16 天——指针网络（顺序很重要）](../16_order_matters/)

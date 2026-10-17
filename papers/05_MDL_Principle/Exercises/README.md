@@ -1,91 +1,95 @@
-# Exercises: MDL Principle
+# 练习：最小描述长度原理
 
-5 exercises implementing concepts from Grünwald (2004). Each exercise maps directly to a section of the paper.
+以下 5 个练习实现 Grünwald（2004）教程相关概念。它们是本项目的教学实现，不是原论文实验的逐项复现。
 
 ---
 
-## Exercise Overview
+## 练习概览
 
-| # | Exercise | Difficulty | Paper Section | Source |
+| # | 练习 | 难度 | 原文对应位置 | 来源 |
 |---|----------|------------|--------------|--------|
-| 1 | Two-Part Code | Easy | Section 3 (crude MDL) | Paper concept, our implementation |
-| 2 | Prequential MDL | Medium | Section 5 (predictive coding) | Paper concept, our implementation |
-| 3 | Model Selection | Medium | Running example (polynomial) | Paper's own example |
-| 4 | NML Complexity | Hard | Section 6 (stochastic complexity) | Paper concept, our implementation |
-| 5 | MDL vs AIC vs BIC | Medium | Section 8 (comparison) | Paper's comparison, our Monte Carlo extension |
+| 1 | 两段式编码 | 简单 | §2.4（粗略 MDL） | 论文概念，本项目实现 |
+| 2 | 预序贯 MDL | 中等 | §2.6.4（预测解释） | 论文概念，本项目实现 |
+| 3 | 模型选择 | 中等 | 多项式贯穿示例 | 论文示例思想，本项目具体实验 |
+| 4 | NML 复杂度 | 困难 | §2.6.1 | 论文概念，本项目教学近似 |
+| 5 | MDL、AIC 与 BIC | 中等 | §2.9 的相关方法讨论 | 本项目比较与蒙特卡洛扩展 |
+
+> 原仓库引用第 3、5、6、8 节，与已读取的 arXiv `math/0406077v1` 不符，现按原文定位。NML 归一化常数的对数是参数复杂度；完整随机复杂度还包括最佳拟合的负对数似然。
 
 ---
 
-## How to Work Through These
+## 学习方法
 
-1. Read `paper_notes.md` for the theory
-2. Check `CHEATSHEET.md` for formulas
-3. Each exercise file has TODO markers — fill them in
-4. Run the file to check against built-in tests
+1. 阅读上级目录的 `paper_notes.md` 了解理论与勘误。
+2. 查阅 `CHEATSHEET.md` 中的公式。
+3. 按各练习文件中的 TODO 标记补全实现。
+4. 运行文件，检查内置测试。
 
 ```bash
 python exercise_01_two_part_code.py
 ```
 
-Passing tests show `[ok] PASSED`. Look at `solutions.py` only after attempting each exercise.
+原测试通过标记为 `[ok] PASSED`，中文提示也可能保留该机器可识别标记。先独立尝试，再查看 `solutions.py`。
 
 ---
 
-## Exercise 1: Two-Part Code [Easy]
+## 练习 1：两段式编码［简单］
 
-**Paper Section 3.** Implement the basic MDL score: L(H) + L(D|H).
+**原文 §2.4。** 实现基本 MDL 得分：L(H) + L(D|H)。
 
-**Tasks:**
-- Compute model description length (parameters x bits)
-- Compute data description length (Gaussian residual code)
-- Select the polynomial degree with minimum total score
-
----
-
-## Exercise 2: Prequential MDL [Medium]
-
-**Paper Section 5.** Implement sequential prediction coding.
-
-**Tasks:**
-- Predict each data point using only previous points
-- Accumulate log-loss (cumulative surprise)
-- Compare to two-part MDL scores
+**任务：**
+- 计算模型描述长度（参数数量 × 每参数比特数）。
+- 计算数据描述长度（高斯残差项）。
+- 选择总得分最低的多项式次数。
 
 ---
 
-## Exercise 3: Model Selection [Medium]
+## 练习 2：预序贯 MDL［中等］
 
-**Paper's running example.** Full polynomial degree selection with MDL.
+**原文 §2.6.4。** 实现顺序预测编码。
 
-**Tasks:**
-- Generate noisy polynomial data (known true degree)
-- Compute MDL scores for degrees 1 through 10
-- Verify MDL selects the true degree
-- Visualize the model-vs-data cost tradeoff
-
----
-
-## Exercise 4: NML Complexity [Hard]
-
-**Paper Section 6.** Compute stochastic complexity.
-
-**Tasks:**
-- Implement approximate NML complexity for Gaussian models
-- Compare NML-based selection with two-part code selection
-- Observe how stochastic complexity scales with sample size and model dimension
+**任务：**
+- 仅用之前的数据预测每个点。
+- 累计对数损失，即累积意外程度。
+- 与两段式 MDL 得分比较。
 
 ---
 
-## Exercise 5: MDL vs AIC vs BIC [Medium]
+## 练习 3：模型选择［中等］
 
-**Paper Section 8.** Head-to-head comparison.
+**论文贯穿示例思想。** 用 MDL 完成多项式次数选择。
 
-**Tasks:**
-- Implement AIC, BIC, and MDL scoring
-- Run polynomial selection with all three criteria
-- Monte Carlo: compare accuracy across many random datasets (our extension)
-- Analyze when the criteria agree and disagree
+**任务：**
+- 生成真实次数已知的含噪多项式数据。
+- 计算 1 至 10 次的 MDL 得分。
+- 检查 MDL 是否选中真实次数；有限样本下不保证每次成功。
+- 可视化模型代价与数据代价的权衡。
 
 ---
 
-Solutions in `solutions.py`.
+## 练习 4：NML 复杂度［困难］
+
+**原文 §2.6.1。** 研究复杂度项。
+
+**任务：**
+- 实现高斯模型的 NML 复杂度教学近似。
+- 比较 NML 近似与两段式编码的选择。
+- 观察复杂度随样本数和模型维数如何变化。
+
+> 需明确归一化常数有限性、参数范围与 Fisher 信息项；本练习近似不等于任意高斯模型的严格 NML。
+
+---
+
+## 练习 5：MDL、AIC 与 BIC［中等］
+
+**联系原文 §2.9。** 直接比较不同准则。
+
+**任务：**
+- 实现 AIC、BIC 与 MDL 评分。
+- 用三种准则进行多项式选择。
+- 蒙特卡洛：在多个随机数据集上比较选中真实次数的比例（本项目扩展）。
+- 分析准则何时一致、何时出现分歧。
+
+---
+
+参考解答位于 `solutions.py`。

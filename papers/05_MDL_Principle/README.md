@@ -1,219 +1,229 @@
-# Day 5: A Tutorial Introduction to the Minimum Description Length Principle
+# 第 5 天：最小描述长度原理导论
 
-> Grünwald (2004) — [arXiv:math/0406077](https://arxiv.org/abs/math/0406077)
+英文标题：A Tutorial Introduction to the Minimum Description Length Principle。
 
-**Time:** 3-4 hours
-**Prerequisites:** Day 4 (Hinton's MDL for neural nets)
-**Code:** NumPy + SciPy
+> Grünwald（2004）——[arXiv:math/0406077](https://arxiv.org/abs/math/0406077)
 
----
-
-## What This Paper Is Actually About
-
-This is an ~80-page tutorial/survey by Peter Grünwald that systematizes the MDL principle — the idea that model selection is code selection, and the best model is the one that compresses data the most.
-
-Day 4 (Hinton & van Camp) used MDL to regularize neural network weights. Today's paper explains the **mathematical foundation** underneath that idea: what "description length" means formally, how to compute it for different model classes, and why minimizing it selects good models.
-
-### The paper covers:
-
-1. **Two-part codes** — the simplest MDL formulation: L(H) + L(D|H)
-2. **Prequential (predictive) codes** — MDL via sequential prediction
-3. **Normalized Maximum Likelihood (NML)** — the minimax-optimal universal code
-4. **Stochastic complexity** — NML codelength as a model complexity measure
-5. **Connection to Kolmogorov complexity** — MDL as a practical approximation of algorithmic complexity
-6. **Comparison with AIC, BIC, cross-validation**
+**用时：** 3-4 小时
+**前置知识：** 第 4 天（Hinton 的神经网络 MDL）
+**代码：** NumPy + SciPy
 
 ---
 
-## The Core Concept: Two-Part Codes
+## 这篇论文究竟研究什么
 
-To communicate data $D$ to someone, you can either send it raw, or send a model plus residuals. If the model captures real structure, the total message is shorter.
+这是 Peter Grünwald 撰写的约 80 页教程／综述，系统阐述最小描述长度（Minimum Description Length，MDL）原理：把模型选择看作编码选择，以更短的总编码描述数据。
 
-**The MDL Principle:**
+第 4 天 Hinton 与 van Camp 将 MDL 用于神经网络权重正则化。今天的论文解释其背后的**数学基础**：描述长度的严格含义、不同模型类中如何计算，以及为什么最小化它有助于选择模型。
+
+> **一手来源核验：** 已读取 arXiv 的 `math/0406077v1`（2004-06-04）[原文 HTML](https://arxiv.org/html/math/0406077)。原仓库将章节简写为第 3、5、6、8、9 节，与该版本不符；下文按实际章节标注。仓库实现为教学近似，不是论文公式的完整数值复现。
+
+### 论文涉及：
+
+1. **两段式编码（two-part code）**：最简单的 MDL 形式，L(H) + L(D|H)。
+2. **预序贯（预测式）编码（prequential code）**：通过顺序预测实现 MDL。
+3. **归一化最大似然（Normalized Maximum Likelihood，NML）**：在归一化常数有限等条件下，具有最小最大遗憾性质的通用编码。
+4. **随机复杂度（stochastic complexity）**：在给定模型类下，数据的 NML 码长。
+5. **与柯尔莫哥洛夫复杂度（Kolmogorov complexity）的联系**：以可计算模型类实现实用的描述长度方法。
+6. **与 AIC、BIC 和交叉验证的比较与联系**。
+
+---
+
+## 核心概念：两段式编码
+
+向他人传达数据 $D$ 时，可以直接发送原始数据，也可以发送模型与残差。如果模型捕捉到真实结构，总消息就会变短。
+
+**MDL 原理：**
 
 $$\text{Best model} = \arg\min_H \left[ L(H) + L(D \mid H) \right]$$
 
-- $L(H)$ = bits to describe the model
-- $L(D \mid H)$ = bits to describe the data given the model (residuals encoded as a code)
+Best model 表示最佳模型。
 
-### Why this prevents overfitting
+- $L(H)$：描述模型所需比特数。
+- $L(D \mid H)$：给定模型后描述数据所需比特数，即残差的编码长度。
 
-| Scenario | L(H) | L(D\|H) | Total |
+### 为什么能抑制过拟合
+
+| 情形 | L(H) | L(D\|H) | 总和 |
 |----------|-------|---------|-------|
-| Too simple | Small | Large (poor fit) | Large |
-| Just right | Moderate | Small (good fit) | **Minimum** |
-| Too complex | Large (many params) | Near zero | Large |
-| Extreme overfit | Exceeds raw data cost | Zero | Worse than no model |
+| 过于简单 | 小 | 大（拟合差） | 大 |
+| 恰当 | 中等 | 小（拟合好） | **最小** |
+| 过于复杂 | 大（参数多） | 接近零 | 大 |
+| 极端过拟合 | 超过原始数据代价 | 零 | 不如不用模型 |
 
-No tuning parameter is needed — the sum automatically finds the balance.
+在选定有效编码之后，求和可自动形成权衡；但具体编码、精度与模型类的选择仍会影响结果。
 
-### Encoding details
+### 编码细节
 
-**Model description** (for parametric models):
+**模型描述**（参数模型的教学近似）：
 $$L(H) = k \cdot b \text{ bits}$$
-where $k$ = number of parameters, $b$ = bits per parameter.
+其中 $k$ 是参数数量，$b$ 是每个参数的比特数，bits 表示比特。
 
-**Data given model** (Gaussian residuals):
+**给定模型后的数据**（高斯残差）：
 $$L(D \mid H) = \frac{n}{2}\log_2(2\pi e \hat{\sigma}^2)$$
+
+> 此式是连续高斯密度在拟合方差下的负对数似然形式。实际离散码长还需指定数据精度；它可以为负，不能直接解释为真实文件的非负比特数。
 
 ---
 
-## Prequential MDL
+## 预序贯 MDL
 
-Instead of describing a model then encoding residuals, predict each point using the previous points:
+不先描述模型再编码残差，而是只使用之前的数据预测每一个点：
 
 $$L_{\text{preq}} = \sum_{i=1}^{n} -\log_2 P(x_i \mid x_1, \ldots, x_{i-1})$$
 
-This is a valid code length (Kraft inequality holds). No model description is needed — the model class's complexity is implicitly penalized through prediction performance.
+若顺序预测概率构成有效分布，就能定义满足 Kraft 不等式的编码长度。不需要单独描述模型，模型复杂度通过预测表现受到隐式约束。
 
-**Advantages over two-part codes:**
-- No arbitrary model encoding scheme
-- Natural for sequential/online data
-- Connected to Bayesian model averaging via the plug-in code
+**相对两段式编码的优点：**
+- 不需显式选择一套模型参数编码。
+- 自然适用于顺序／在线数据。
+- 与贝叶斯通用分布及最大似然代入式编码存在联系。
+
+> 原文 §2.6.3 与 §2.6.4 分别讨论贝叶斯和预序贯解释；贝叶斯混合预测与最大似然代入式预测是不同构造，不应混为一谈。
 
 ---
 
-## Normalized Maximum Likelihood (NML)
+## 归一化最大似然（NML）
 
-The paper's theoretical gold standard. Given model class $\mathcal{M}$:
+给定模型类 $\mathcal{M}$：
 
 $$P_{\text{NML}}(x^n) = \frac{P(x^n \mid \hat{\theta}(x^n))}{\sum_{y^n} P(y^n \mid \hat{\theta}(y^n))}$$
 
-Numerator: best the model can do on this data. Denominator: sum over all possible datasets — measures model flexibility.
+分子是模型类对当前数据能达到的最大似然；分母遍历全部可能数据集求和，衡量模型类的灵活性。连续情形相应使用积分；归一化常数不一定有限。
 
-**Stochastic complexity** (the normalizing constant):
+原仓库给出以下**复杂度近似项**：
 $$\text{COMP}(\mathcal{M}, n) \approx \frac{k}{2}\log\frac{n}{2\pi}$$
 
-This resembles BIC's penalty but is derived from information theory rather than Bayesian approximation.
+> **原文勘误：** COMP 是**参数复杂度（parametric complexity）**，即归一化常数的对数；随机复杂度是完整 NML 码长，包含负对数最大似然与 COMP。上式只保留渐近主项，省略 Fisher 信息体积项等条件，不能视为通用完整公式。对应原文 §1.4、§2.6.1 和式（2.24）。
+
+它与 BIC 的惩罚形式相近，但来自信息论构造。
 
 ---
 
-## MDL vs. AIC vs. BIC
+## MDL、AIC 与 BIC
 
-The paper compares these in detail (Section 8).
+原文 §2.9 讨论 MDL 与其他推断方法的关系；原仓库误指为第 8 节。
 
-| Criterion | Penalty per Parameter | Derivation | Key Property |
+| 准则 | 原仓库列出的每参数惩罚 | 推导 | 关键性质 |
 |-----------|-----------------------|-----------|-------------|
-| AIC | 2 | KL divergence minimization | Efficient but overfits in small samples |
-| BIC | $\log n$ | Laplace approx. to Bayesian marginal likelihood | Consistent (finds true model as $n \to \infty$) |
-| MDL (NML) | $\approx \frac{1}{2}\log\frac{n}{2\pi}$ | Minimax optimal universal code | Consistent; adapts to parameter geometry |
+| AIC | 2 | KL 风险估计 | 以预测效率为目标；有限样本可能偏向复杂模型 |
+| BIC | $\log n$ | 贝叶斯边际似然的拉普拉斯近似 | 在适当条件下具有模型选择一致性 |
+| MDL（NML） | $\approx \frac{1}{2}\log\frac{n}{2\pi}$ | 最小最大遗憾通用编码 | 在适当条件下一致，复杂度涉及参数空间几何 |
 
-**Key differences:**
-- AIC's penalty doesn't grow with $n$ — it systematically overfits for large datasets
-- BIC is close to MDL for regular exponential families
-- MDL's penalty adapts to how parameters are used (a parameter near zero costs fewer bits)
-- MDL doesn't assume a "true model" exists in the class
+> **尺度说明：** AIC/BIC 通常以 `-2 log L` 为似然项，NML 以 `-log L` 为似然项；需统一倍数与对数底才能比较。该表保留原公式，不能据其原始数值直接比较惩罚强弱。
 
----
-
-## Connection to Kolmogorov Complexity
-
-MDL is the practical approximation of Kolmogorov complexity $K(x)$ — the length of the shortest program that produces $x$.
-
-$K(x)$ is uncomputable (halting problem). MDL restricts to a computable model class and minimizes within it. As the model class grows, MDL codelengths approach $K(x)$.
-
-Grünwald is careful to note: MDL captures statistical regularity relative to a model class. It does not claim to find "true understanding" in any philosophical sense. Domain knowledge matters for choosing the model class.
+**关键区别：**
+- AIC 惩罚不随 $n$ 增长，因此在存在真有限维模型等条件下通常不具有模型选择一致性；这不是说它在所有大样本预测任务中都更差。
+- 对正则模型，BIC 与 MDL 的渐近主项接近。
+- MDL 的细化复杂度会反映模型几何；**并不普遍等于“参数接近零就少占比特”**。本实现的固定每参数比特数也没有这种自适应性质。
+- MDL 的压缩解释不要求模型类中一定存在“真实模型”；这也不意味着 AIC 的预测风险解释普遍要求模型正确设定。
 
 ---
 
-## The Architecture
+## 与柯尔莫哥洛夫复杂度的联系
+
+柯尔莫哥洛夫复杂度 $K(x)$ 是生成 $x$ 的最短程序长度，可视为理想化描述长度。
+
+$K(x)$ 不可计算，与停机问题有关。实用 MDL 将描述方法限制在可处理的模型类内，再在其中最小化描述长度。原仓库称随模型类扩大码长便趋近 $K(x)$，但这不能视为一般可计算的收敛保证。
+
+Grünwald 强调：MDL 捕捉的是相对于模型类的统计规律，并不声称找到哲学意义上的“真正理解”。选择模型类需要领域知识。
+
+---
+
+## 方法流程
 
 ```
-MDL Model Selection Pipeline:
+MDL 模型选择流程：
 
-  Input: Data D, Candidate models {H_1, H_2, ..., H_k}
+  输入：数据 D，候选模型 {H_1, H_2, ..., H_k}
 
-  For each model H_i:
-    1. Compute L(H_i)     -- model description length
-    2. Fit H_i to D       -- maximum likelihood
-    3. Compute L(D|H_i)   -- residual code length
-    4. Score = L(H_i) + L(D|H_i)
+  对每个模型 H_i：
+    1. 计算 L(H_i)     -- 模型描述长度
+    2. 用 D 拟合 H_i   -- 最大似然
+    3. 计算 L(D|H_i)   -- 残差码长
+    4. 得分 = L(H_i) + L(D|H_i)
 
-  Output: H* = argmin Score(H_i)
+  输出：H* = argmin Score(H_i)
 ```
 
 ---
 
-## What to Build
+## 实践任务
 
-### Quick Start
+### 快速开始
 
 ```bash
-python train_minimal.py                  # Polynomial degree selection demo
-python train_minimal.py --monte-carlo    # Statistical comparison across trials
+python train_minimal.py                  # 多项式次数选择示例
+python train_minimal.py --monte-carlo    # 多次试验的统计比较
 ```
 
-### Training Script
+### 训练脚本
 
-The demo generates noisy polynomial data (true degree = 3) and uses MDL, AIC, and BIC to select the degree. Expected output: MDL correctly picks degree 3.
+示例生成含噪多项式数据（真实次数 = 3），用 MDL、AIC、BIC 选择次数。教学预期是 MDL 选中 3 次，但有限样本和随机噪声下不保证每次正确。
 
 ---
 
-## Exercises (in `Exercises/`)
+## 练习（位于 `Exercises/`）
 
-| # | Task | What You'll Learn | Source |
+| # | 任务 | 学习内容 | 原文对应 |
 |---|------|-------------------|--------|
-| 1 | Two-Part Code | Basic MDL scoring for polynomials | Paper, Section 3 |
-| 2 | Prequential MDL | Sequential prediction coding | Paper, Section 5 |
-| 3 | Model Selection | Compare polynomial degrees with MDL | Paper, running example |
-| 4 | NML Complexity | Compute stochastic complexity | Paper, Section 6 |
-| 5 | MDL vs AIC vs BIC | Head-to-head comparison | Paper, Section 8 |
+| 1 | 两段式编码 | 多项式的基本 MDL 评分 | §2.4 |
+| 2 | 预序贯 MDL | 顺序预测编码 | §2.6.4 |
+| 3 | 模型选择 | 用 MDL 比较多项式次数 | §1.3、§2.4 的多项式示例 |
+| 4 | NML 复杂度 | 计算复杂度近似 | §2.6.1；注意参数复杂度与随机复杂度的区别 |
+| 5 | MDL、AIC 与 BIC | 逐项比较 | §2.9 相关讨论；具体比较实验由本项目实现 |
 
-All exercises implement concepts directly from the paper. The Monte Carlo robustness test in exercise 5 is our extension.
+练习实现论文相关概念；练习 5 的蒙特卡洛稳健性测试是本项目扩展，不能视为原文实验复现。
 
-Solutions in `solutions.py`.
-
----
-
-## Key Takeaways
-
-1. **MDL = compression-based model selection.** The best model minimizes total description length: model bits + residual bits.
-
-2. **Three formulations, one principle.** Two-part codes (simple), prequential codes (sequential), NML (optimal) — all minimize description length.
-
-3. **MDL adapts its penalty.** Unlike AIC (fixed 2k) or BIC (fixed k·log n), MDL's penalty depends on how parameters are used.
-
-4. **Connection to Kolmogorov complexity.** MDL is the practical, computable approximation of algorithmic complexity.
-
-5. **No "true model" assumption.** MDL works from compression alone — it doesn't assume the data was generated by any model in the class.
+参考解答位于 `solutions.py`。
 
 ---
 
-## Implementation Notes
+## 关键收获
 
-Our code in `implementation.py` provides:
-
-- `two_part_mdl_polynomial()` — the basic MDL score for regression (Section 3)
-- `prequential_mdl_polynomial()` — sequential prediction coding (Section 5)
-- `nml_complexity_polynomial()` — approximate stochastic complexity (Section 6)
-- `PolynomialMDL` — model selection for polynomial regression (paper's running example)
-- `compare_mdl_aic_bic()` — MDL vs AIC vs BIC scoring
-
-The polynomial selection experiment is the paper's own running example throughout. The Monte Carlo comparison (running the experiment many times to compare accuracy across criteria) is our addition.
+1. **MDL 是基于压缩的模型选择。** 两段式形式最小化模型比特与残差比特的总和。
+2. **多种形式，共同原理。** 两段式、预序贯与 NML 使用不同编码构造，都以描述长度为依据。
+3. **细化 MDL 可体现模型几何。** 它不只依赖参数数量，但本仓库固定比特数实现属于粗略 MDL。
+4. **与柯尔莫哥洛夫复杂度相联系。** 实用 MDL 用受限、可处理的描述方法表达学习即压缩的思想。
+5. **不必假设存在真实模型。** MDL 的压缩解释不要求数据一定由类内某个模型生成。
 
 ---
 
-## Files in This Directory
+## 实现说明
 
-| File | What It Is |
+`implementation.py` 提供：
+
+- `two_part_mdl_polynomial()`：回归的基本 MDL 得分（对应 §2.4 的粗略 MDL）。
+- `prequential_mdl_polynomial()`：顺序预测编码（对应 §2.6.4 的解释）。
+- `nml_complexity_polynomial()`：复杂度教学近似，不能等同于完整 NML 随机复杂度。
+- `PolynomialMDL`：多项式回归模型选择，对应论文的贯穿示例思想。
+- `compare_mdl_aic_bic()`：比较 MDL、AIC 与 BIC。
+
+多项式选择是论文中的贯穿示例；多次运行并比较选择正确率的蒙特卡洛实验由本项目补充。
+
+---
+
+## 本目录文件
+
+| 文件 | 内容 |
 |------|-----------|
-| `implementation.py` | MDL computation library: two-part, prequential, NML |
-| `train_minimal.py` | Polynomial degree selection demo + Monte Carlo comparison |
-| `visualization.py` | MDL score plots, fit comparisons, criterion comparison charts |
-| `notebook.ipynb` | Interactive walkthrough |
-| `Exercises/` | 5 exercises covering all three MDL variants |
-| `paper_notes.md` | Detailed notes on Grünwald's tutorial |
-| `CHEATSHEET.md` | Quick reference for MDL formulas |
+| `implementation.py` | MDL 计算库：两段式、预序贯、NML 近似 |
+| `train_minimal.py` | 多项式次数选择示例与蒙特卡洛比较 |
+| `visualization.py` | MDL 得分图、拟合比较、准则比较图 |
+| `notebook.ipynb` | 交互式讲解 |
+| `Exercises/` | 覆盖三种 MDL 形式的 5 个练习 |
+| `paper_notes.md` | Grünwald 教程的详细笔记与勘误 |
+| `CHEATSHEET.md` | MDL 公式速查 |
 
 ---
 
-## Further Reading
+## 延伸阅读
 
-- [Grünwald (2004)](https://arxiv.org/abs/math/0406077) — this paper
-- Grünwald, *The Minimum Description Length Principle* (MIT Press, 2007) — the full textbook
-- Rissanen, *Stochastic Complexity in Statistical Inquiry* (1989) — the original MDL inventor
-- [Hinton & van Camp (1993)](https://www.cs.toronto.edu/~hinton/absps/colt93.pdf) — Day 4, MDL applied to neural networks
+- [Grünwald（2004）](https://arxiv.org/abs/math/0406077)：本篇教程。
+- Grünwald，《最小描述长度原理》（The Minimum Description Length Principle，MIT Press，2007）：完整教材。
+- Rissanen，《统计推断中的随机复杂度》（Stochastic Complexity in Statistical Inquiry，1989）：MDL 创立者的著作。
+- [Hinton 与 van Camp（1993）](https://www.cs.toronto.edu/~hinton/absps/colt93.pdf)：第 4 天，将 MDL 应用于神经网络。
 
 ---
 
-**Next:** [Day 6](../06_Complexodynamics/)
+**下一篇：** [第 6 天](../06_Complexodynamics/)

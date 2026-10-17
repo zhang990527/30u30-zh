@@ -1,71 +1,71 @@
-# LSTM Cheatsheet
+# LSTM 速查表
 
-Quick reference for Understanding LSTM Networks
-
----
-
-## The Big Idea (30 seconds)
-
-LSTMs solve vanishing gradients by adding a **cell state** that allows gradients to flow through time via addition rather than multiplication. Colah's metaphor: the cell state is a "conveyor belt" — information rides along it unchanged unless the LSTM explicitly modifies it through gates.
+《理解 LSTM 网络》（Understanding LSTM Networks）快速参考
 
 ---
 
-## Architecture: The 4 Gates
+## 核心思想（30 秒）
+
+LSTM 增加了**细胞状态（cell state）**，通过加性更新路径传递梯度，从而缓解梯度消失。Colah 将细胞状态比作“传送带”：只要 LSTM 不通过门控主动修改它，信息就可以沿这条路径保留。
+
+---
+
+## 架构：四组变换（三个门与候选状态）
 
 ```
-Forget Gate:    f_t = σ(W_f·[h_{t-1}, x_t] + b_f)    # 0 = forget, 1 = keep
-Input Gate:     i_t = σ(W_i·[h_{t-1}, x_t] + b_i)    # 0 = ignore, 1 = add
-Cell Candidate: C̃_t = tanh(W_C·[h_{t-1}, x_t] + b_C) # New info to add
-Output Gate:    o_t = σ(W_o·[h_{t-1}, x_t] + b_o)    # 0 = hide, 1 = show
+遗忘门：       f_t = σ(W_f·[h_{t-1}, x_t] + b_f)    # 0 = 遗忘，1 = 保留
+输入门：       i_t = σ(W_i·[h_{t-1}, x_t] + b_i)    # 0 = 忽略，1 = 写入
+候选细胞状态： C̃_t = tanh(W_C·[h_{t-1}, x_t] + b_C) # 待加入的新信息
+输出门：       o_t = σ(W_o·[h_{t-1}, x_t] + b_o)    # 0 = 隐藏，1 = 输出
 
-Cell State:     C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t     # The memory
-Hidden State:   h_t = o_t ⊙ tanh(C_t)                 # The output
+细胞状态：     C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t     # 记忆
+隐藏状态：     h_t = o_t ⊙ tanh(C_t)                 # 输出
 ```
 
-**Key insight**: Cell state updates via **addition** → gradients flow freely!
+**关键认识：** 细胞状态通过**加性更新**形成更利于梯度传递的路径。
 
 ---
 
-## Quick Start
+## 快速开始
 
-### Training
+### 训练
 ```bash
-# Train on text file
+# 使用文本文件训练
 python train_minimal.py --data input.txt --epochs 50 --hidden-size 128
 
-# Custom hyperparameters
+# 自定义超参数
 python train_minimal.py --data input.txt --hidden-size 256 --seq-length 100 --lr 0.001
 ```
 
-### Generating
+### 生成
 ```bash
-# Generate text from trained model
+# 使用训练好的模型生成文本
 python train_minimal.py --generate --checkpoint lstm_model.pkl --length 500 --temperature 0.8
 ```
 
-### In Python
+### 在 Python 中使用
 ```python
 from implementation import LSTM
 
-# Create LSTM
+# 创建 LSTM
 lstm = LSTM(input_size=vocab_size, hidden_size=128, output_size=vocab_size)
 
-# Forward pass
+# 前向传播
 loss = lstm.forward(inputs, targets, h_prev, C_prev)
 
-# Backward pass
+# 反向传播
 dh_next, dC_next = lstm.backward()
 
-# Update weights
+# 更新权重
 lstm.update_weights(learning_rate=0.001)
 
-# Sample text
+# 采样文本
 text = lstm.sample(idx_to_char, seed_char_idx, length=200, temperature=0.8)
 ```
 
 ---
 
-## Hyperparameter Guide
+## 超参数指南
 
 | Parameter      | Typical Range | Description                           | Too Low                | Too High               |
 |----------------|---------------|---------------------------------------|------------------------|------------------------|
@@ -75,7 +75,7 @@ text = lstm.sample(idx_to_char, seed_char_idx, length=200, temperature=0.8)
 | `epochs`       | 10-100        | Full passes through dataset           | Underfits              | Overfits, time waste   |
 | `temperature`  | 0.3-1.5       | Sampling randomness (generation only) | Too repetitive         | Too random/nonsensical |
 
-### Good Starting Point
+### 建议起点
 ```python
 hidden_size = 128
 seq_length = 50
@@ -86,100 +86,100 @@ temperature = 0.8  # for sampling
 
 ---
 
-## Common Issues & Fixes
+## 常见问题与处理
 
-### 1. Loss Explodes (NaN)
-**Symptom**: Loss becomes `nan` after few iterations
+### 1. 损失爆炸（NaN）
+**现象：** 迭代几次后，损失变为 `nan`。
 
-**Causes**:
-- Learning rate too high
-- Gradient explosion
+**可能原因：**
+- 学习率过高
+- 梯度爆炸
 
-**Fixes**:
+**处理方法：**
 ```python
-# Reduce learning rate
+# 降低学习率
 learning_rate = 0.0001  # instead of 0.01
 
-# Add gradient clipping (already in implementation.py)
+# 增加梯度裁剪（implementation.py 已包含）
 np.clip(grad, -5, 5)
 ```
 
-### 2. Loss Doesn't Decrease
-**Symptom**: Loss stays high, no improvement
+### 2. 损失不下降
+**现象：** 损失一直很高，没有改善。
 
-**Causes**:
-- Learning rate too low
-- Hidden size too small
-- Forget gate bias not initialized to 1
+**可能原因：**
+- 学习率过低
+- 隐藏状态维度过小
+- 遗忘门偏置没有初始化为 1
 
-**Fixes**:
+**处理方法：**
 ```python
-# Increase learning rate
+# 提高学习率
 learning_rate = 0.001
 
-# Larger hidden size
+# 增大隐藏状态维度
 hidden_size = 256
 
-# Check forget gate bias (should be 1.0 in __init__)
+# 检查遗忘门偏置（__init__ 中应为 1.0）
 self.bf = np.ones(hidden_size)  # Remember by default
 ```
 
-### 3. Generated Text is Repetitive
-**Symptom**: Model generates same characters over and over
+### 3. 生成文本重复
+**现象：** 模型不断生成相同的字符。
 
-**Causes**:
-- Temperature too low
-- Model stuck in local minimum
-- Overtrained on small dataset
+**可能原因：**
+- 温度过低
+- 模型可能停留在局部极小值附近
+- 在小数据集上训练过度
 
-**Fixes**:
+**处理方法：**
 ```python
-# Increase temperature
+# 提高温度
 temperature = 1.0  # instead of 0.5
 
-# Add diversity
+# 增加多样性
 sample = lstm.sample(idx_to_char, seed, length=200, temperature=1.2)
 
-# Train longer or on more data
+# 训练更久，或使用更多数据
 ```
 
-### 4. Training is Slow
-**Symptom**: Each iteration takes too long
+### 4. 训练缓慢
+**现象：** 每次迭代耗时过长。
 
-**Causes**:
-- Hidden size too large
-- Sequence length too long
-- Large vocabulary
+**可能原因：**
+- 隐藏状态维度过大
+- 序列过长
+- 词表过大
 
-**Fixes**:
+**处理方法：**
 ```python
-# Reduce hidden size
+# 减小隐藏状态维度
 hidden_size = 64
 
-# Shorter sequences
+# 缩短序列
 seq_length = 25
 
-# Process data in batches (not in current implementation, but possible)
+# 使用批处理（当前实现尚未提供，但可以扩展）
 ```
 
 ---
 
-## Debugging Checklist
+## 调试检查表
 
-When things go wrong, check:
+出现问题时，检查：
 
-- [ ] **Data loaded correctly?** Print `len(data)`, `vocab_size`
-- [ ] **Shapes match?** `input_size == vocab_size`, `output_size == vocab_size`
-- [ ] **Forget bias = 1?** Check `lstm.bf` (should be all 1s initially)
-- [ ] **Learning rate reasonable?** Try 0.001 first
-- [ ] **Gradients clipped?** Should be in `[-5, 5]` range
-- [ ] **Loss decreasing?** Plot loss curve, should trend downward
-- [ ] **Hidden/cell states reset?** Initialize `h_prev`, `C_prev` to zeros
-- [ ] **Temperature for sampling?** Try 0.7-1.0 range
+- [ ] **数据是否正确加载？** 打印 `len(data)`、`vocab_size`。
+- [ ] **形状是否匹配？** 原文使用 `input_size == vocab_size`、`output_size == vocab_size` 表达输入输出维度约束。
+- [ ] **遗忘门偏置是否为 1？** 检查 `lstm.bf`（初始应全为 1）。
+- [ ] **学习率是否合理？** 先尝试 0.001。
+- [ ] **梯度是否裁剪？** 应位于 `[-5, 5]`。
+- [ ] **损失是否下降？** 绘制损失曲线，检查下降趋势。
+- [ ] **隐藏状态和细胞状态是否重置？** 将 `h_prev`、`C_prev` 初始化为零。
+- [ ] **采样温度是否合适？** 尝试 0.7-1.0。
 
 ---
 
-## Visualization
+## 可视化
 
 ```python
 from visualization import (
@@ -189,22 +189,22 @@ from visualization import (
     analyze_gate_patterns
 )
 
-# Plot what gates are doing
+# 绘制门的行为
 plot_gate_activations(gates_dict, sequence_text)
 
-# See cell state evolution
+# 观察细胞状态演化
 plot_cell_state_evolution(cell_states, sequence_text)
 
-# Compare gradient flow
+# 比较梯度流
 plot_gradient_flow_comparison(lstm_grads, rnn_grads)
 
-# Analyze gate patterns
+# 分析门的模式
 analyze_gate_patterns(gates_dict, sequence_text)
 ```
 
 ---
 
-## When to Use LSTM vs Alternatives
+## 何时选择 LSTM 或其他模型
 
 | Model       | Best For                              | Strengths                        | Weaknesses                  |
 |-------------|---------------------------------------|----------------------------------|-----------------------------|
@@ -217,82 +217,82 @@ analyze_gate_patterns(gates_dict, sequence_text)
 | **Transformer** | Long sequences (100+ steps)       | Parallel processing              | Needs lots of data          |
 |             | State-of-the-art performance          | Attention mechanism              | Memory intensive            |
 
-**Rule of thumb**:
-- Short sequences (<10): Vanilla RNN
-- Medium sequences (10-100): LSTM or GRU
-- Long sequences (100+): Transformer
-- Very long (1000+): Transformer with sparse attention
+**原文的经验建议：**
+- 短序列（<10）：基本 RNN
+- 中等序列（10-100）：LSTM 或 GRU
+- 长序列（100 以上）：Transformer
+- 很长的序列（1000 以上）：采用稀疏注意力的 Transformer
 
 ---
 
-## Tips & Tricks
+## 实用技巧
 
-### 1. Initialization
+### 1. 初始化
 ```python
-# Forget gate bias should be 1 (default to remembering)
+# 遗忘门偏置设为 1（初始倾向于保留信息）
 self.bf = np.ones(hidden_size)
 
-# Other biases can be 0
+# 其他偏置可以为 0
 self.bi = np.zeros(hidden_size)
 self.bc = np.zeros(hidden_size)
 self.bo = np.zeros(hidden_size)
 ```
 
-### 2. Training
-- Start with short sequences, gradually increase
-- Use gradient clipping (prevents explosion)
-- Monitor both loss AND sample quality
-- Save checkpoints regularly
+### 2. 训练
+- 从短序列开始，逐渐增加长度
+- 使用梯度裁剪，防止梯度爆炸
+- 同时观察损失与生成样本质量
+- 定期保存检查点
 
-### 3. Sampling
-- Temperature = 0.5-0.8 for coherent text
-- Temperature = 1.0-1.5 for creative text
-- Try different seed characters
-- Generate longer sequences (500+ chars) to see patterns
+### 3. 采样
+- 可尝试温度 0.5-0.8，以生成更连贯的文本
+- 可尝试温度 1.0-1.5，以增加生成多样性
+- 尝试不同的起始字符
+- 生成较长序列（500 字符以上），观察模式
 
-### 4. Debugging
-- Print gate activations (should be in [0, 1])
-- Check cell state magnitude (shouldn't explode)
-- Visualize loss curve (should decrease)
-- Sample every N iterations to monitor progress
+### 4. 调试
+- 打印门激活值（应位于 [0, 1]）
+- 检查细胞状态的量级（不应爆炸）
+- 绘制损失曲线（应呈下降趋势）
+- 每 N 次迭代进行一次采样，观察进展
 
 ---
 
-## Key Equations Summary
+## 关键方程汇总
 
 ```
-Concatenate input:  concat = [h_{t-1}, x_t]
+拼接输入：         concat = [h_{t-1}, x_t]
 
-Forget gate:        f_t = σ(W_f · concat + b_f)
-Input gate:         i_t = σ(W_i · concat + b_i)
-Cell candidate:     C̃_t = tanh(W_C · concat + b_C)
-Output gate:        o_t = σ(W_o · concat + b_o)
+遗忘门：           f_t = σ(W_f · concat + b_f)
+输入门：           i_t = σ(W_i · concat + b_i)
+候选细胞状态：     C̃_t = tanh(W_C · concat + b_C)
+输出门：           o_t = σ(W_o · concat + b_o)
 
-Update cell:        C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
-Update hidden:      h_t = o_t ⊙ tanh(C_t)
+更新细胞状态：     C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
+更新隐藏状态：     h_t = o_t ⊙ tanh(C_t)
 
-Output:             y_t = softmax(W_y · h_t + b_y)
-Loss:               L = -log(y_t[target])
+输出：             y_t = softmax(W_y · h_t + b_y)
+损失：             L = -log(y_t[target])
 ```
 
-**Remember**: 
-- σ = sigmoid (0 to 1, for gates)
-- tanh = hyperbolic tangent (-1 to 1, for values)
-- ⊙ = element-wise multiplication
+**记住：**
+- σ = sigmoid（取值 0 到 1，用于门）
+- tanh = 双曲正切（取值 -1 到 1，用于候选值等）
+- ⊙ = 逐元素乘法
 
 ---
 
-## Resources
+## 参考资源
 
-- **Paper**: "Understanding LSTM Networks" by Colah
-- **Original**: Hochreiter & Schmidhuber (1997)
-- **Code**: `implementation.py` (our NumPy version)
-- **Exercises**: See `exercises/` folder
-- **Visualizations**: `visualization.py`
+- **博客文章**：Colah 的《理解 LSTM 网络》（Understanding LSTM Networks）
+- **原始论文**：Hochreiter 与 Schmidhuber（1997）
+- **代码**：`implementation.py`（本仓库的 NumPy 版本）
+- **练习**：见 `exercises/` 目录
+- **可视化**：`visualization.py`
 
 ---
 
-## Quick Comparison: LSTM vs RNN
+## 快速比较：LSTM 与 RNN
 
 | Aspect              | Vanilla RNN                | LSTM                           |
 |---------------------|----------------------------|--------------------------------|
@@ -306,4 +306,8 @@ Loss:               L = -log(y_t[target])
 
 ---
 
-That's it. For exercises, see the `exercises/` folder.
+练习见 `exercises/` 目录。
+
+## 原仓库示例核对
+
+上面的 Python 快速示例沿用了原仓库的接口写法，但与当前 `implementation.py` 不匹配：构造函数需要 `vocab_size`、`hidden_size`、`seq_length`；`forward` 返回四项；`backward` 需要 `inputs`、`targets`、`cache`；`update_weights` 接受梯度字典。训练与生成命令的参数由当前脚本支持；生成时还必须能读取训练时的数据文件以重建字符映射。为便于追溯，上述 Python 接口示例未在翻译中静默改写，不能当作已通过运行验证的代码；实际入口以 `python train_minimal.py --help` 和 Notebook 为准。序列长度、速度及参数量比较是经验性简化，具体限制见 README 的技术核对说明。

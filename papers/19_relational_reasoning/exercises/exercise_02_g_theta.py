@@ -3,23 +3,23 @@ import torch.nn as nn
 
 class RelationFunction(nn.Module):
     """
-    TODO: Implement the 'g_theta' MLP.
+    TODO：实现 g_theta MLP。
     
-    As described in Section 2, g_theta is a multi-layer perceptron that processes
-    each pair of objects (and optionally a question embedding).
+    如第 2 节所述，g_theta 是多层感知机，处理
+    每个对象对，以及可选的问题嵌入。
     
-    Architecture:
-    - Input: (2 * object_dim) + question_dim
-    - Hidden: 4 layers of 256 units with ReLU
-    - Output: 256 units
+    架构：
+    - 输入：(2 * object_dim) + question_dim
+    - 隐藏层：4 层，每层 256 个单元，使用 ReLU
+    - 输出：256 个单元
     """
     def __init__(self, input_dim, hidden_dim):
         super().__init__()
-        # YOUR CODE HERE
+        # 在此填写代码
         pass
 
     def forward(self, x):
-        # YOUR CODE HERE
+        # 在此填写代码
         pass
 
 def test_relation_function():
@@ -27,14 +27,14 @@ def test_relation_function():
     hidden_dim = 256
     model = RelationFunction(input_dim, hidden_dim)
     
-    # Test random input
+    # 测试随机输入
     x = torch.randn(10, input_dim)
     try:
         out = model(x)
-        assert out.shape == (10, hidden_dim), f"Expected {(10, hidden_dim)}, got {out.shape}"
-        print("Exercise 2 (Part A): Relation Function [PASS]")
+        assert out.shape == (10, hidden_dim), f"预期 {(10, hidden_dim)}，实际得到 {out.shape}"
+        print('练习 2（A 部分）：关系函数 [PASS]')
     except Exception as e:
-        print(f"Exercise 2 (Part A): [FAIL] {e}")
+        print(f"练习 2（A 部分）：[FAIL] {e}")
 
 if __name__ == "__main__":
     test_relation_function()

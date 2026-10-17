@@ -1,105 +1,105 @@
-# Solutions
+# 参考解答
 
-Complete solutions for all exercises. **Try the exercises first.**
+所有练习的完整参考解答。**请先自己尝试练习。**
 
-## Files
+## 文件
 
-| Solution | Exercise | Description |
+| 解答 | 练习 | 说明 |
 |----------|----------|-------------|
-| `solution_1.py` | Additive Attention | Complete `AdditiveAttention` class |
-| `solution_2.py` | Bidirectional Encoder | Complete `BidirectionalEncoder` class |
-| `solution_3.py` | Attention Decoder | Complete `AttentionDecoder` class |
-| `solution_4.py` | Training Loop | Full training script that achieves >90% |
-| `solution_5.py` | Visualization | Attention heatmaps and analysis |
+| `solution_1.py` | 加性注意力 | 完整的 `AdditiveAttention` 类 |
+| `solution_2.py` | 双向编码器 | 完整的 `BidirectionalEncoder` 类 |
+| `solution_3.py` | 注意力解码器 | 完整的 `AttentionDecoder` 类 |
+| `solution_4.py` | 训练循环 | 原仓库预期准确率 >90% 的完整训练脚本 |
+| `solution_5.py` | 可视化 | 注意力热力图与分析 |
 
-## Running Solutions
+## 运行参考解答
 
 ```bash
-# Test individual components
-python solution_1.py  # Tests attention
-python solution_2.py  # Tests encoder
-python solution_3.py  # Tests decoder
+# 测试各个组件
+python solution_1.py  # 测试注意力
+python solution_2.py  # 测试编码器
+python solution_3.py  # 测试解码器
 
-# Full training
-python solution_4.py  # Trains and evaluates
+# 完整训练
+python solution_4.py  # 训练与评估
 
-# Visualization
-python solution_5.py --demo  # Demo with synthetic data
+# 可视化
+python solution_5.py --demo  # 使用合成数据演示
 ```
 
-## Expected Results
+## 预期结果
 
-After running `solution_4.py`:
+运行 `solution_4.py` 后，原仓库给出以下示例输出（数值是说明性示例，并非本次运行记录）：
 
 ```
-Device: cuda (or cpu)
-Creating datasets...
-Creating model...
-Parameters: ~150,000
+设备：cuda（或 cpu）
+正在创建数据集……
+正在创建模型……
+参数量：约 150,000
 
-Training...
+正在训练……
 ==================================================
-Epoch  5 | Train: 1.2345 | Val: 1.1234 | Acc: 45%
-Epoch 10 | Train: 0.5678 | Val: 0.4567 | Acc: 72%
-Epoch 15 | Train: 0.2345 | Val: 0.2123 | Acc: 85%
-Epoch 20 | Train: 0.1234 | Val: 0.1345 | Acc: 91%
-Epoch 25 | Train: 0.0789 | Val: 0.0912 | Acc: 94%
-Epoch 30 | Train: 0.0567 | Val: 0.0678 | Acc: 96%
+轮次  5 | 训练：1.2345 | 验证：1.1234 | 准确率：45%
+轮次 10 | 训练：0.5678 | 验证：0.4567 | 准确率：72%
+轮次 15 | 训练：0.2345 | 验证：0.2123 | 准确率：85%
+轮次 20 | 训练：0.1234 | 验证：0.1345 | 准确率：91%
+轮次 25 | 训练：0.0789 | 验证：0.0912 | 准确率：94%
+轮次 30 | 训练：0.0567 | 验证：0.0678 | 准确率：96%
 ==================================================
 
-Final Accuracy: 96%
-Success: Model achieves >90% accuracy.
+最终准确率：96%
+成功：模型准确率达到 >90%。
 
-Examples:
-  Input:  [5, 3, 8, 2, 1]
-  Output: [1, 2, 8, 3, 5]
-  Target: [1, 2, 8, 3, 5]
+示例：
+  输入：[5, 3, 8, 2, 1]
+  输出：[1, 2, 8, 3, 5]
+  目标：[1, 2, 8, 3, 5]
 ```
 
-## Key Implementation Details
+## 关键实现细节
 
-### Solution 1: Attention
-- Uses `nn.Linear` without bias for cleaner math
-- Xavier initialization for stable training
-- Proper masking with `-inf` before softmax
+### 解答 1：注意力
+- 使用无偏置的 `nn.Linear`，使数学形式更简洁
+- 使用 Xavier 初始化提高训练稳定性
+- 在 softmax 前用 `-inf` 正确屏蔽
 
-### Solution 2: Encoder
-- Packs sequences for efficient RNN processing
-- Projects bidirectional output to single hidden size
-- Handles variable-length sequences correctly
+### 解答 2：编码器
+- 打包序列，提高 RNN 处理效率
+- 将双向输出投影到单一隐藏维度
+- 正确处理可变长度序列
 
-### Solution 3: Decoder
-- Attention computed BEFORE GRU step (Bahdanau style)
-- Combines hidden + context + embedding for output
-- Supports both step-by-step and full sequence modes
+### 解答 3：解码器
+- 在 GRU 更新之前计算注意力（Bahdanau 风格）
+- 组合隐藏状态、上下文与嵌入来生成输出
+- 支持逐步与完整序列两种模式
 
-### Solution 4: Training
-- CrossEntropyLoss with `ignore_index=0` for padding
-- Gradient clipping with `max_norm=1.0`
-- Greedy decoding for inference
+### 解答 4：训练
+- 使用带 `ignore_index=0` 的 CrossEntropyLoss 忽略填充
+- 使用 `max_norm=1.0` 的梯度裁剪
+- 推理时采用贪心解码
 
-### Solution 5: Visualization
-- Uses matplotlib for heatmaps
-- Computes attention entropy (lower = more focused)
-- Checks for reversed diagonal pattern
+### 解答 5：可视化
+- 使用 matplotlib 绘制热力图
+- 计算注意力熵（越低表示越集中）
+- 检查反对角线模式
 
-## Learning Points
+## 学习要点
 
-After completing all solutions, you should understand:
+完成全部解答后，你应理解：
 
-1. **Why attention works** - Dynamic focus on relevant input parts
-2. **The alignment problem** - Matching output positions to input positions
-3. **Bidirectional encoding** - Context from both directions
-4. **Teacher forcing** - Using ground truth during training
-5. **Attention visualization** - Interpreting what the model learned
+1. **注意力为何有效**——动态关注输入中的相关部分
+2. **对齐问题**——将输出位置与输入位置对应
+3. **双向编码**——来自两个方向的上下文
+4. **教师强制**——训练时使用真实目标
+5. **注意力可视化**——解释模型学到了什么
 
-## Next Steps
+## 后续步骤
 
-Once you've mastered Bahdanau attention:
+掌握 Bahdanau 注意力后：
 
-1. **Try different tasks** - Sorting, copying, arithmetic
-2. **Scale up** - Real translation datasets
-3. **Compare** - Implement Luong attention (dot-product)
-4. **Move forward** - Study the Transformer (self-attention)
+1. **尝试其他任务**——排序、复制、算术
+2. **扩大规模**——使用真实翻译数据集
+3. **比较方法**——实现 Luong 注意力（点积）
+4. **继续学习**——研究 Transformer（自注意力）
 
-That completes Day 15.
+第 15 天的内容到此结束。

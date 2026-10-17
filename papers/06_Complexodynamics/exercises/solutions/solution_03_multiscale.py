@@ -1,6 +1,4 @@
-"""
-Solution 3: Multi-Scale Complexity Analysis
-"""
+"""解答 3：多尺度复杂性分析"""
 
 import numpy as np
 import gzip
@@ -17,7 +15,7 @@ def gzip_size(data: bytes) -> int:
 
 
 def coarse_grain(grid: np.ndarray, block_size: int) -> np.ndarray:
-    """Average grid values over block_size x block_size blocks."""
+    """对 block_size x block_size 块内的网格值求平均。"""
     h, w = grid.shape
     h_new = h // block_size
     w_new = w // block_size
@@ -31,14 +29,14 @@ def coarse_grain(grid: np.ndarray, block_size: int) -> np.ndarray:
 
 
 def coarse_grained_kc(grid: np.ndarray, block_size: int) -> int:
-    """KC of coarse-grained grid."""
+    """粗粒化网格的 KC 近似。"""
     coarse = coarse_grain(grid, block_size)
     quantized = (coarse * 255).astype(np.uint8)
     return gzip_size(quantized.tobytes())
 
 
 def multiscale_analysis(grid: np.ndarray) -> dict:
-    """Compute KC at multiple scales."""
+    """计算多个尺度的 KC 近似。"""
     grid_size = min(grid.shape)
     scales = [2**k for k in range(1, int(np.log2(grid_size)))]
     result = {}
@@ -49,7 +47,7 @@ def multiscale_analysis(grid: np.ndarray) -> dict:
 
 
 def run_multiscale_experiment(grid_size=64, n_steps=20000, swaps_per_step=50):
-    """Run coffee simulation and track multi-scale KC."""
+    """运行咖啡模拟并跟踪多尺度 KC。"""
     np.random.seed(42)
     grid = create_initial_grid(grid_size)
 
@@ -60,7 +58,7 @@ def run_multiscale_experiment(grid_size=64, n_steps=20000, swaps_per_step=50):
 
     measure_interval = max(1, n_steps // 50)
 
-    # Initial measurement
+    # 初始测量
     times.append(0)
     ms = multiscale_analysis(grid)
     for s in scales:
@@ -78,18 +76,18 @@ def run_multiscale_experiment(grid_size=64, n_steps=20000, swaps_per_step=50):
 
 
 if __name__ == "__main__":
-    print("Solution 3: Multi-Scale Complexity Analysis")
+    print('解答 3：多尺度复杂性分析')
     print("=" * 40)
     print()
 
-    print("Running experiment...")
+    print('运行实验……')
     times, scale_data = run_multiscale_experiment()
-    print(f"  Time points: {len(times)}")
-    print(f"  Scales: {sorted(scale_data.keys())}")
+    print(f"  时间点数量：{len(times)}")
+    print(f"  尺度：{sorted(scale_data.keys())}")
 
     for scale, values in sorted(scale_data.items()):
         peak_idx = np.argmax(values)
-        print(f"  Scale {scale}: peak at t={times[peak_idx]:,}, "
+        print(f"  尺度 {scale}：峰值位于 t={times[peak_idx]:,}, "
               f"val={values[peak_idx]}")
 
     try:
@@ -98,10 +96,10 @@ if __name__ == "__main__":
         fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
         for scale, values in sorted(scale_data.items()):
-            axes[0].plot(times, values, label=f"scale={scale}")
-        axes[0].set_xlabel("Total swaps")
-        axes[0].set_ylabel("Compressed bytes")
-        axes[0].set_title("KC at Different Scales")
+            axes[0].plot(times, values, label=f"尺度={scale}")
+        axes[0].set_xlabel('交换尝试总次数')
+        axes[0].set_ylabel('压缩后字节数')
+        axes[0].set_title('不同尺度的 KC')
         axes[0].legend()
         axes[0].grid(True, alpha=0.3)
 
@@ -111,13 +109,13 @@ if __name__ == "__main__":
                            interpolation='bilinear')
         axes[1].set_yticks(range(len(scales_sorted)))
         axes[1].set_yticklabels([str(s) for s in scales_sorted])
-        axes[1].set_title("Multi-Scale Heatmap (Trevisan)")
-        axes[1].set_xlabel("Time index")
-        axes[1].set_ylabel("Scale")
+        axes[1].set_title('多尺度热图（Trevisan）')
+        axes[1].set_xlabel('时间索引')
+        axes[1].set_ylabel('尺度')
         plt.colorbar(im, ax=axes[1])
 
         plt.tight_layout()
         plt.savefig("multiscale_analysis.png", dpi=100)
-        print("Saved: multiscale_analysis.png")
+        print('已保存：multiscale_analysis.png')
     except ImportError:
-        print("(matplotlib not available)")
+        print('（matplotlib 不可用）')

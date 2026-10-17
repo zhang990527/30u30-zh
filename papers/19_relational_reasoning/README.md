@@ -1,118 +1,123 @@
-# Day 19: Relational Reasoning
+# 第 19 天：关系推理（Relational Reasoning）
 
-> Santoro et al. (2017) — [Original Paper](https://arxiv.org/abs/1706.01427)
+> Santoro 等（2017）— [原论文](https://arxiv.org/abs/1706.01427)
 
-**Time:** 3-4 hours
-**Prerequisites:** PyTorch basics, inductive bias intuition
-**Code:** Python + PyTorch
-
----
-
-## What This Paper Is Actually About
-
-Deep Learning excels at pattern recognition (CNNs) and sequence modeling (RNNs), but it struggles with **relational reasoning**—understanding how entities interact in a structured way. Santoro et al. (2017) argue that standard architectures lack the inductive bias needed to reason about sets of objects.
-
-They introduce the **Relation Network (RN)**, a simple module that explicitly forces a model to consider all possible pairs of objects. By bottlenecking information through pairwise interactions, the model learns to infer relationships (e.g., "left of", "same size as") without requiring massive data or complex symbol processing.
+**用时：**3–4 小时  
+**前置知识：**PyTorch 基础、对归纳偏置的直观理解  
+**代码：**Python + PyTorch
 
 ---
 
-## The Core Idea
+## 这篇论文究竟研究什么
 
-The RN operates on a set of objects $O = \{o_1, o_2, ..., o_n\}$. It is defined by a composite function:
+深度学习擅长模式识别（CNN）和序列建模（RNN），但往往难以进行**关系推理（relational reasoning）**，即理解实体如何以有结构的方式相互作用。Santoro 等人（2017）认为，标准架构缺少对对象集合进行推理所需的归纳偏置。
+
+他们提出**关系网络（Relation Network，RN）**：一个简单模块，显式要求模型考虑所有可能的对象对。让信息经过成对交互这一瓶颈，模型就可以学习“在……左边”“大小相同”等关系，而不依赖庞大数据量或复杂的符号处理。
+
+---
+
+## 核心思想
+
+RN 作用于对象集合 $O = \{o_1, o_2, ..., o_n\}$，定义为复合函数：
 
 $$RN(O) = f_{\phi} \left(\sum_{i,j} g_{\theta}(o_i, o_j, q)\right)$$
 
-where:
--   $g_{\theta}$ is an MLP that processes each pair $(o_i, o_j)$.
--   $\sum$ aggregates all pairwise outputs, ensuring the result is independent of order (permutation invariant).
--   $f_{\phi}$ is an MLP that produces the final answer.
+其中：
+
+- $g_{\theta}$ 是处理每个对象对 $(o_i, o_j)$ 的多层感知机（MLP）。
+- $\sum$ 聚合所有成对输出，使结果不依赖对象排列顺序，即具有排列不变性。
+- $f_{\phi}$ 是产生最终答案的 MLP。
 
 ---
 
-## What the Authors Actually Showed
+## 作者实际展示了什么
 
-In Section 5 (Results), the authors demonstrate that the RN achieves state-of-the-art performance on tasks requiring explicit relational reasoning:
+在第 5 节（结果）中，作者展示 RN 在需要显式关系推理的任务上的表现：
 
-1.  **CLEVR (Visual QA)**: 
-    -   **Result**: 95.5% accuracy, surpassing human performance (92.6%).
-    -   **Insight**: Standard CNN+MLP baselines failed (68.5%), proving that the pairwise mechanism was the key factor.
-2.  **Sort-of-CLEVR**:
-    -   **Result**: >94% accuracy on relational questions where baselines plateaued at 63%.
-3.  **bAbI (Text QA)**:
-    -   **Result**: Solved 18/20 tasks, demonstrating that the same module works for language reasoning.
+1. **CLEVR（视觉问答）：**准确率为 95.5%，高于人类的 92.6%。原仓库对照 CNN+MLP 基线的 68.5%，认为成对机制是关键因素。
+2. **Sort-of-CLEVR：**关系问题准确率 >94%，而对照基线停留在 63%。
+3. **bAbI（文本问答）：**解决 20 项任务中的 18 项，展示同一模块也可用于语言推理。
+
+> 核验状态：上述数值保留自原仓库，原论文正文在当前环境中尚未成功获取，未完成独立核验。基线差异是实验支持证据，不能单独构成排除所有混杂因素的“证明”。本章的最远点与计数任务也不等于复现全部论文实验。
 
 ---
 
-## The Architecture (Section 2)
+## 架构（第 2 节）
 
-### 1. Generating Objects
-The input to the RN is always a set of objects.
--   **Images**: A CNN processes the image into a $d \times d$ grid of feature vectors. Each cell in the grid is treated as an object.
--   **Language**: Sentences are processed by an LSTM, where hidden states serve as objects.
+### 1. 生成对象
 
-### 2. Pairwise Function ($g_{\theta}$)
-Each object is paired with every other object. The function $g_{\theta}$ (a 4-layer MLP) analyzes the relationship between the pair. If a question is present (e.g., "Is the red sphere left of the blue cube?"), the question embedding $q$ is appended to every pair.
+RN 的输入始终是对象集合。
 
-### 3. Aggregation
-The outputs of $g_{\theta}$ are summed element-wise. This summation is critical because it makes the model invariant to the order of objects, a necessary property for set reasoning.
+- **图像：**CNN 将图像处理为 $d \times d$ 特征向量网格，每个网格单元视为一个对象。
+- **语言：**LSTM 处理句子，将隐藏状态作为对象。
 
----
+### 2. 成对函数（$g_{\theta}$）
 
-## Implementation Notes
+每个对象与所有其他对象配对。$g_{\theta}$（四层 MLP）分析对象对的关系。如果还给定问题，例如“红色球体是否在蓝色立方体左边？”，就在每个对象对后拼接问题嵌入 $q$。
 
-Our implementation (`implementation.py`) focuses on efficiency and clarity:
+### 3. 聚合
 
--   **Broadcasting**: We avoid Python loops for pair generation. Instead, we use PyTorch broadcasting (`unsqueeze` + `expand`) to generate all $N^2$ pairs in parallel on the GPU.
--   **Coordinate Injection**: As noted in Section 3.1, CNN features lack position info. We manually append $(x, y)$ coordinates to each object vector so the model can learn spatial relations.
--   **Modular Design**: The `RelationNetwork` class is designed to be a plug-and-play module that can be inserted after any feature extractor (CNN or LSTM).
+将 $g_{\theta}$ 的输出按元素求和。求和使模型不受对象顺序影响，这是对集合推理所需要的性质。
 
 ---
 
-## What to Build
+## 实现说明
 
-### Quick Start
+本实现（`implementation.py`）关注效率与清晰性：
+
+- **广播：**不用 Python 循环生成对象对，而是通过 PyTorch 的 `unsqueeze` 和 `expand`，并行生成所有 $N^2$ 个对象对；可在 GPU 上运行。
+- **注入坐标：**第 3.1 节指出，CNN 特征缺少显式位置信息。本章手工为每个对象向量拼接 $(x, y)$ 坐标，使模型能学习空间关系。
+- **模块化设计：**`RelationNetwork` 类可接在 CNN 或 LSTM 等特征提取器后，作为即插即用模块。
+
+---
+
+## 动手实现
+
+### 快速开始
 
 ```bash
-# Verify environment and permutation invariance
+# 验证环境与排列不变性
 python setup.py
 
-# Train on the "furthest point" relational task
+# 训练“最远点”关系任务
 python train_minimal.py --mode furthest --epochs 30
 ```
 
-### Exercises (in `exercises/`)
+### 练习（位于 `exercises/`）
 
-| # | Task | What You'll Get Out of It |
-|---|------|--------------------------|
-| 1 | Pair Generator | Master efficient broadcasting logic for $O(N^2)$ pairing. |
-| 2 | Permutation Proof | Programmatically prove the architectural symmetry of the RN. |
-| 3 | Sort-of-CLEVR | Implement multi-task question conditioning. |
-| 4 | Relational Masking | Learn to handle identity pairs $(o_i, o_i)$ by masking the diagonal. |
-| 5 | Counting Logic | Prove that summation preserves cardinality while averaging destroys it. |
+| # | 任务 | 学习目标 |
+|---|------|----------|
+| 1 | 对象对生成 | 掌握 $O(N^2)$ 配对的高效广播逻辑 |
+| 2 | 排列验证 | 通过程序检查 RN 的架构对称性 |
+| 3 | Sort-of-CLEVR | 实现多任务问题条件化 |
+| 4 | 关系掩码 | 屏蔽对角线，处理自身对象对 $(o_i, o_i)$ |
+| 5 | 计数逻辑 | 比较求和保留基数信息与求均值丢失该信息的情形 |
 
-Solutions are in `exercises/solutions/`. Try to solve them yourself first.
+> 译注：上表保留原 README 的五个主题；实际练习有 7 个，完整编号见 [exercises/README.md](exercises/README.md)。有限样例测试不等于数学证明。
 
----
-
-## Key Takeaways
-
-1.  **Inductive Bias Matters**: The RN succeeds not because it is bigger, but because its structure (pairwise bottleneck) matches the problem (relational reasoning).
-2.  **Permutation Invariance**: Summation aggregators allow models to process sets without imposing an artificial order.
-3.  **Complexity**: The $O(N^2)$ cost is efficient for small sets (like CLEVR objects) but scales poorly to thousands of objects.
+参考解答位于 `exercises/solutions/`，请先自己尝试。
 
 ---
 
-## Files in This Directory
+## 要点
 
-| File | What It Is |
-|------|-----------|
-| `implementation.py` | Core RN module with type hints and optimized pair generation. |
-| `train_minimal.py` | Training script for the "furthest point" and "counting" tasks. |
-| `visualization.py` | Tools to visualize relation weights (heatmaps). |
-| `setup.py` | Diagnostic script to verify dependencies and invariance. |
-| `paper_notes.md` | Detailed notes and mathematical breakdown. |
-| `CHEATSHEET.md` | Quick technical reference. |
+1. **归纳偏置很重要：**RN 的结构（成对交互瓶颈）与关系推理问题相匹配，而不仅是模型更大。
+2. **排列不变性：**求和聚合器可以处理集合，无需施加人为顺序。
+3. **复杂度：**$O(N^2)$ 开销适合小集合（如 CLEVR 对象）；当对象增加到数千时，可扩展性有限。
 
 ---
 
-**Next:** [Day 20 - Relational Recurrent Neural Networks](../20_relational_rnn/)
+## 本目录文件
+
+| 文件 | 内容 |
+|------|------|
+| `implementation.py` | 带类型标注和优化配对逻辑的核心 RN 模块 |
+| `train_minimal.py` | 最远点与计数任务训练脚本 |
+| `visualization.py` | 关系权重热图可视化工具 |
+| `setup.py` | 依赖与不变性诊断脚本 |
+| `paper_notes.md` | 详细笔记与数学拆解 |
+| `CHEATSHEET.md` | 技术速查 |
+
+---
+
+**下一章：**[第 20 天：关系循环神经网络](../20_Relational_RNNs/)

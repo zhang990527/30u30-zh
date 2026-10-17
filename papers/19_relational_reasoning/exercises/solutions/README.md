@@ -1,18 +1,23 @@
-# Exercise Solutions: Relational Reasoning
+# 练习参考解答：关系推理
 
-This directory contains the reference implementations for the Day 19 exercises. 
+本目录包含第 19 天练习的参考实现。
 
-## Solutions List
+## 解答列表
 
-| File | Challenge | Topic |
+| 文件 | 练习 | 主题 |
 |:---|:---|:---|
-| `solution_01_pair_generator.py` | 1 | Efficient N^2 pair generation |
-| `solution_02_g_theta.py` | 2 | Multi-layer Relation Function |
-| `solution_03_sort_of_clevr.py` | 3 | Distance-based relational labels |
-| `solution_04_masking.py` | 4 | Diagonal masking of self-loops |
-| `solution_05_question_context.py` | 5 | Question-conditioned pair logic |
+| `solution_01_pair_generator.py` | 1 | 高效生成 N^2 个对象对 |
+| `solution_02_g_theta.py` | 2 | 多层关系函数 |
+| `solution_03_permutation.py` | 3 | 排列不变性 |
+| `solution_04_sort_of_clevr.py` | 4 | 带问题条件的关系推理 |
+| `solution_05_coordinates.py` | 5 | 坐标特征 |
+| `solution_06_masking.py` | 6 | 对角线自身关系掩码 |
+| `solution_07_counting.py` | 7 | 计数与聚合 |
+
+> 译注：原表列出 5 个解答，其中若干文件名不存在、编号错位。这里按本目录实际的 7 个文件列出映射；没有修改练习算法。
 
 ---
 
-## Usage
-Compare these solutions with your implementations in the `exercises/` folder if you get stuck. Each solution uses the same tensor broadcasting patterns seen in the core `implementation.py`.
+## 使用方法
+
+如果遇到困难，将这些解答与 `exercises/` 中自己的实现比较。各解答采用与核心 `implementation.py` 相同的张量广播模式。

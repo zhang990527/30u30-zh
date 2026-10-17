@@ -1,133 +1,145 @@
-# Day 6: The First Law of Complexodynamics
+<a id="day-6-the-first-law-of-complexodynamics"></a>
+# 第 6 天：复杂动力学第一定律（The First Law of Complexodynamics）
 
-> Scott Aaronson (2011) — [The First Law of Complexodynamics](https://scottaaronson.blog/?p=762)
+> Scott Aaronson（2011）——[《复杂动力学第一定律》（The First Law of Complexodynamics）](https://scottaaronson.blog/?p=762)
 
-**Time:** 3-4 hours
-**Prerequisites:** Basic probability, Kolmogorov complexity intuition (Days 4-5 helpful)
-**Code:** Python + gzip/zlib + NumPy + Matplotlib
-
----
-
-## What This Post Is Actually About
-
-Aaronson's blog post tackles a question that physicists and computer scientists have struggled with for decades: why does "complexity" or "interestingness" increase and then decrease over time, even as entropy increases monotonically?
-
-The question was posed by Sean Carroll at the FQXi "Setting Time Aright" conference (2011, on a cruise from Bergen to Copenhagen). Think of a cup of coffee with cream. At first, the two are separated — simple, low entropy. Then you get intricate tendrils as they mix — complex, intermediate entropy. Finally, everything is uniform beige — simple again, high entropy. The same arc plays out for the universe: Big Bang (simple soup) to galaxies and brains (complex structures) to heat death (uniform radiation).
-
-Entropy goes monotonically up. But "interestingness" goes up, then back down. So what *is* that thing that peaks in the middle? Can we formalize it? Can we prove it must peak?
-
-Aaronson's post proposes a concrete answer: **complextropy**, a resource-bounded version of sophistication (itself a variant of Kolmogorov complexity). He conjectures that complextropy is small at early times, large at intermediate times, and small again at equilibrium. He doesn't prove the conjecture — the post is about defining the right question and the right complexity measure.
-
-This matters for ML because the relationship between compression, structure, and complexity is at the heart of representation learning, and because the practical tools Aaronson discusses (gzip compression as a proxy for Kolmogorov complexity, two-part codes) are directly useful.
+**用时：**3-4 小时
+**预备知识：**基础概率论、对柯尔莫哥洛夫复杂度的直观认识（第 4-5 天的内容有所帮助）
+**代码：**Python + gzip/zlib + NumPy + Matplotlib
 
 ---
 
-## The Core Idea
+<a id="what-this-post-is-actually-about"></a>
+## 这篇博文究竟讨论什么
 
-**Entropy** measures disorder. It goes up. Done.
+Aaronson 的博文讨论了一个困扰物理学家和计算机科学家数十年的问题：为什么即使熵单调增加，“复杂性”或“有趣程度”仍会随时间先增加、后减少？
 
-**Complexity** — the thing we'd like to measure — is different. Both totally ordered states (all black) and totally disordered states (random noise) are simple to describe. The interesting stuff is in between.
+Sean Carroll 在 FQXi 的“Setting Time Aright”会议上提出了这个问题（2011 年，会议在从卑尔根驶向哥本哈根的邮轮上举行）。想象一杯加入奶油的咖啡：起初两者分离，状态简单、熵低；混合时出现精细的卷须状纹理，状态复杂、熵处于中间水平；最后变成均匀的米黄色，状态再次简单，但熵高。宇宙也呈现类似历程：从大爆炸时简单的物质汤，到星系与大脑等复杂结构，再到热寂时的均匀辐射。
+
+熵单调上升，而“有趣程度”先上升、后下降。那么，在中间达到峰值的究竟*是什么*？我们能否形式化地定义它？能否证明它必然出现峰值？
+
+Aaronson 提出了一个具体答案：**复杂熵（complextropy）**，即精致复杂度（sophistication；本身是柯尔莫哥洛夫复杂度的一种变体）的资源受限版本。他猜想，复杂熵在初期较小、中间阶段较大、达到平衡后再次变小。他没有证明这一猜想；这篇博文的重点是恰当地定义问题及复杂性度量。
+
+这与机器学习有关，因为压缩、结构和复杂性之间的关系是表示学习的核心问题，而且 Aaronson 讨论的实用工具（用 gzip 压缩近似柯尔莫哥洛夫复杂度、两段式编码）可以直接使用。
+
+---
+
+<a id="the-core-idea"></a>
+## 核心思想
+
+**熵（entropy）**衡量无序程度。它会上升。这是原文在这里采用的简化说法。
+
+我们希望度量的**复杂性（complexity）**则不同。完全有序的状态（全黑）和完全无序的状态（随机噪声）都可以用简单的统计描述来概括；有趣的结构位于两者之间。
 
 ```
-Low entropy          Intermediate           High entropy
-(simple)             (complex)              (simple)
+低熵                 中间阶段               高熵
+（简单）             （复杂）               （简单）
 ┌──────────┐        ┌──────────┐           ┌──────────┐
 │ BLACK    │  -->   │ ▓░▒▓█▒░▓ │   -->     │ ░░░░░░░░ │
 │ BLACK    │        │ ░▒█▓░▓▒█ │           │ ░░░░░░░░ │
 │ BLACK    │        │ ▓█░▒▓█▓░ │           │ ░░░░░░░░ │
 └──────────┘        └──────────┘           └──────────┘
-entropy: low        entropy: medium         entropy: high
-complexity: low     complexity: HIGH        complexity: low
+熵：低               熵：中                 熵：高
+复杂性：低           复杂性：高             复杂性：低
 ```
 
-The challenge is making "complexity" rigorous. Kolmogorov complexity (KC) alone won't work — a random string has *maximum* KC, but zero structure. We need something that is low for BOTH simple and random things, and high only for things with genuine structure.
+难点在于严格定义“复杂性”。仅靠柯尔莫哥洛夫复杂度（Kolmogorov complexity，KC）不行：随机字符串的 KC *最大*，却没有结构。我们需要一种度量：对简单对象和随机对象都取低值，只对具有实际结构的对象取高值。
 
 ---
 
-## What Aaronson Actually Proposed
+<a id="what-aaronson-actually-proposed"></a>
+## Aaronson 实际提出了什么
 
-### Background: Why KC Alone Fails
+<a id="background-why-kc-alone-fails"></a>
+### 背景：为什么仅靠 KC 不够
 
-For deterministic systems, you can describe the state after t steps with just two things: the initial state and the number t. So KC grows only as O(log t) — it never gets large. Two fixes:
+对确定性系统，只需初始状态和数字 t 就能描述 t 步后的状态。因此，在固定动力学和初始状态的前提下，KC 的增长至多为 O(log t)，不会迅速增大。有两种改进思路：
 
-1. **Probabilistic systems**: KC of the list of possible states can grow polynomially.
-2. **Resource-bounded KC**: Require that the shortest program runs in polynomial time (not just any program).
+1. **概率系统**：可能状态列表的 KC 可以按多项式增长。
+2. **资源受限 KC**：要求最短描述程序在多项式时间内运行，而不是允许任意运行时间。
 
-Both help, but neither captures "interestingness" precisely. A random string has high KC but no structure.
+这两种思路都有帮助，但都无法精确刻画“有趣程度”。随机字符串的 KC 很高，却没有结构。
 
-### Sophistication (Koppel 1988, Gacs-Tromp-Vitanyi)
+<a id="sophistication-koppel-1988-gacs-tromp-vitanyi"></a>
+### 精致复杂度（Sophistication；Koppel，1988；Gács–Tromp–Vitányi）
 
-**Sophistication** separates structure from randomness via a two-part code:
+**精致复杂度**通过两段式编码（two-part code）区分结构与随机性：
 
-> K(S) = length of the shortest program describing a set S such that x is in S and x is "random" within S (i.e., K(x|S) >= log2(|S|) - c).
+> K(S) = 描述集合 S 的最短程序长度；S 必须包含 x，且 x 在 S 内是“随机”的（即 K(x|S) >= log2(|S|) - c）。
 
-Intuitively: find the smallest "model" (the set S) such that x looks like a typical member of S. The complexity of that model is the sophistication.
+直观地说，寻找描述最短的“模型”（集合 S），使 x 看起来像 S 的典型成员。该模型的复杂度就是这里所说的精致复杂度。
 
-- A simple string (all zeros): low sophistication — the model is trivial.
-- A random string: low sophistication — the model is "all strings of length n."
-- A structured string (English text): high sophistication — the model encodes grammar, vocabulary, etc.
+- 简单字符串（全零）：精致复杂度低，模型很简单。
+- 随机字符串：精致复杂度低，模型是“所有长度为 n 的字符串”。
+- 有结构的字符串（英文文本）：精致复杂度高，模型编码了语法、词汇等。
 
-**Problem for dynamics**: For deterministic systems, sophistication hits the same O(log t) wall. For probabilistic systems, the set of reachable states S(t) is specifiable with log(t)+c bits.
+**用于动力学时的问题**：对确定性系统，精致复杂度同样受到 O(log t) 的限制；对概率系统，可达状态集合 S(t) 可以用 log(t)+c 比特来描述。
 
-### Complextropy (Aaronson's Key Proposal)
+<a id="complextropy-aaronsons-key-proposal"></a>
+### 复杂熵（Complextropy；Aaronson 的关键提议）
 
-Aaronson proposes **complextropy** — resource-bounded sophistication. The key idea: impose efficiency constraints on BOTH the sampling algorithm and the reconstruction algorithm.
+Aaronson 提出**复杂熵**，即资源受限的精致复杂度。关键是同时对采样算法和重建算法施加效率限制。
 
-Informally, complextropy of a string x is:
+非正式地说，字符串 x 的复杂熵是：
 
-> "The number of bits in the shortest computer program that runs in n*log(n) time, and outputs a nearly-uniform sample from a set S such that (i) x is in S, and (ii) any computer program that outputs x in n*log(n) time, given an oracle providing independent uniform samples from S, has at least log2(|S|)-c bits."
+> “满足以下条件的最短计算机程序的比特数：程序在 n*log(n) 时间内运行，从集合 S 中输出近似均匀的样本；(i) x 属于 S；(ii) 给定一个提供 S 中独立均匀样本的预言机，任何能在 n*log(n) 时间内输出 x 的计算机程序，都至少需要 log2(|S|)-c 比特。”
 
-The efficiency requirement is what makes this work for dynamical systems. At early times, the state is efficiently describable (low complextropy). At equilibrium, the state looks random within the set of all possible states (low complextropy). At intermediate times — when you have those intricate coffee tendrils — the boundaries between regions carry genuine structural information that resists efficient compression.
+效率要求使这一思路适用于动力学系统。初期状态可以高效描述（复杂熵低）；达到平衡时，状态在所有可能状态的集合内看起来是随机的（复杂熵低）；在中间阶段，咖啡形成精细的卷须状纹理，区域边界携带难以高效压缩的结构信息。
 
-### The Conjecture ("The First Law")
+<a id="the-conjecture-the-first-law"></a>
+### 猜想（“第一定律”）
 
-> **Complextropy is small at initial times, large at intermediate times, and small again after the system reaches equilibrium.**
+> **复杂熵在初期较小、中间阶段较大、系统达到平衡后再次变小。**
 
-Aaronson is explicit: "I don't yet know how to prove this conjecture." The blog post is about defining the question precisely, not answering it. What counts is getting the *definition* right — so that the conjecture is even meaningful.
-
----
-
-## The Model System: Coffee and Milk
-
-Aaronson describes a concrete model for empirical testing:
-
-- **Setup**: A 2D array of black (coffee) and white (milk) pixels. Initially separated: top half black, bottom half white.
-- **Dynamics**: At each step, pick an adjacent pair (one coffee, one milk) uniformly at random and swap them.
-- **Measurement**: Track some complexity measure over time.
-
-This is a random mixing process. Early states are simple (clean boundary). Late states are simple (uniform grey). Intermediate states have complex fractal-like tendrils — exactly the phenomenon Carroll asked about.
-
-Lauren Ouellette, an MIT undergraduate working with Aaronson at the time, began coding crude KC approximations for this system:
-- **gzip compression** of the bitmap as a rough KC proxy
-- **Two-part codes** (coarse-grained description + residual) as a sophistication proxy
-
-This research directly became the Coffee Automaton paper (Day 7, arXiv:1405.6903).
+Aaronson 明确表示：“我还不知道如何证明这个猜想。”这篇博文旨在精确定义问题，而不是给出答案。关键是把*定义*弄对，使猜想本身有明确含义。
 
 ---
 
-## Practical Approaches to Measuring Complexity
+<a id="the-model-system-coffee-and-milk"></a>
+## 模型系统：咖啡与牛奶
 
-### Approach 1: gzip as KC Proxy
+Aaronson 描述了一个用于实证检验的具体模型：
 
-Kolmogorov complexity is uncomputable, but gzip gives a workable upper bound:
+- **设置**：由黑色（咖啡）和白色（牛奶）像素组成的二维数组，初始时分离，上半部分黑、下半部分白。
+- **动力学**：每一步从相邻的异色像素对（一格咖啡、一格牛奶）中均匀随机选一对并交换。
+- **测量**：随时间跟踪某种复杂性度量。
+
+这是一个随机混合过程。初期状态简单（边界清晰），后期在粗粒度下也简单（均匀灰色），中间状态则具有复杂的类分形卷须纹理，正是 Carroll 询问的现象。
+
+当时与 Aaronson 合作的 MIT 本科生 Lauren Ouellette 开始为这一系统编写粗略的 KC 近似方法：
+- 对位图进行 **gzip 压缩**，作为粗略的 KC 代理量。
+- 使用**两段式编码**（粗粒度描述 + 残差），作为精致复杂度代理量。
+
+这项研究后来发展为《咖啡自动机》（The Coffee Automaton）论文（第 7 天，arXiv:1405.6903）。
+
+---
+
+<a id="practical-approaches-to-measuring-complexity"></a>
+## 测量复杂性的实用方法
+
+<a id="approach-1-gzip-as-kc-proxy"></a>
+### 方法 1：用 gzip 作为 KC 代理量
+
+柯尔莫哥洛夫复杂度不可计算，但 gzip 可以提供一个实用的上界估计：
 
 ```python
 import gzip
 
 def gzip_complexity(data: bytes) -> int:
-    """Compressed size as crude KC approximation."""
+    """以压缩后大小粗略近似 KC。"""
     return len(gzip.compress(data, compresslevel=9))
 ```
 
-For a 2D grid, serialize the pixels to bytes and compress. Simple grids (all one color) compress well. Random grids don't compress at all. Structured grids (the tendrils) compress to an intermediate size.
+对二维网格，将像素序列化为字节后压缩。简单网格（单一颜色）容易压缩，随机网格难以压缩；有结构的网格（卷须纹理）的压缩大小介于两者之间。
 
-### Approach 2: Coarse-Grained KC (Sean Carroll's Suggestion)
+<a id="approach-2-coarse-grained-kc-sean-carrolls-suggestion"></a>
+### 方法 2：粗粒化 KC（Sean Carroll 的建议）
 
-Carroll proposed (in the blog comments): blur/coarse-grain the bitmap at some scale, then measure KC of the coarse-grained version. At the right scale, the tendrils create structure that is hard to compress.
+Carroll 在博文评论中建议：在某一尺度模糊或粗粒化位图，再测量粗粒化版本的 KC。在适当尺度上，卷须纹理构成难以压缩的结构。
 
 ```python
 def coarse_grain(grid, block_size):
-    """Average grid values over block_size x block_size blocks."""
+    """对每个 block_size x block_size 块内的网格值求平均。"""
     h, w = grid.shape
     h_new, w_new = h // block_size, w // block_size
     result = np.zeros((h_new, w_new))
@@ -139,112 +151,124 @@ def coarse_grain(grid, block_size):
     return result
 ```
 
-### Approach 3: Two-Part Code (Sophistication Proxy)
+<a id="approach-3-two-part-code-sophistication-proxy"></a>
+### 方法 3：两段式编码（精致复杂度代理量）
 
-Split the description into two parts:
-1. A coarse model (e.g., the blurred image) — this is the "sophistication" part
-2. The residual (difference between coarse model and actual state) — this is the "randomness" part
+将描述分成两部分：
+1. 粗粒度模型（例如模糊后的图像），即“精致复杂度”部分。
+2. 残差（粗粒度模型与实际状态之差），即“随机性”部分。
 
-The size of part 1 is a proxy for sophistication. It should be small at early times (trivial model), large at intermediate times (complex boundaries), and small again at equilibrium (trivial model again).
+第一部分的大小是精致复杂度的代理量。预期它在初期较小（模型简单）、中间阶段较大（边界复杂），达到平衡后再次变小（模型再次简单）。
 
-### Approach 4: Multi-Scale Analysis (Luca Trevisan's Idea)
+<a id="approach-4-multi-scale-analysis-luca-trevisans-idea"></a>
+### 方法 4：多尺度分析（Luca Trevisan 的想法）
 
-Trevisan proposed (in the blog comments): divide the cup into cubes at each scale, compute average content per cube, then track KC at each scale over time. This produces a 3D plot (scale x time x complexity) where the complexity "bump" appears at intermediate scales and intermediate times.
-
----
-
-## The Logical Depth Debate
-
-An important thread in the blog comments involves Charles Bennett's **logical depth** (1988) as an alternative complexity measure:
-
-- **Logical depth**: how long the shortest program for x takes to run. A deep string is one that can be specified concisely but requires long computation to produce.
-- **Bennett's argument**: intermediate coffee cup states ARE logically deep, because any short program to produce them must approximately simulate the physical mixing process, which takes many steps. Equilibrium is logically SHALLOW because you can short-circuit the evolution.
-- **Aaronson's skepticism**: "I don't see any intuitive reason why the depth should become large at intermediate times." Specifying the tendril boundaries is high sophistication (structural complexity) but not necessarily high depth (given the boundaries, sampling is fast).
-
-This debate was unresolved in 2011 and remains an active research question. Day 7 empirically tests some of these measures.
+Trevisan 在博文评论中建议：在各个尺度把杯中空间划分成立方体，计算每个立方体内的平均含量，再随时间跟踪各尺度的 KC。这样得到三维图（尺度 x 时间 x 复杂性），其中复杂性的“隆起”出现在中间尺度与中间时刻。
 
 ---
 
-## Implementation Notes
+<a id="the-logical-depth-debate"></a>
+## 关于逻辑深度的争论
 
-The implementation in `implementation.py` builds the coffee-mixing simulation and complexity measurement tools:
+博文评论中的一条重要讨论线索是 Charles Bennett 提出的**逻辑深度（logical depth）**（1988），它是另一种复杂性度量：
 
-Key decisions:
-- **gzip/zlib for KC**: The standard approach. Not theoretically clean (gzip is not optimal compression) but widely used and reproducible.
-- **NumPy arrays for the grid**: 2D array of 0s (milk) and 1s (coffee). Serialized to bytes for compression.
-- **Multiple complexity measures**: We compute gzip size, coarse-grained gzip, and two-part code sizes. Comparing them is the point — Aaronson's post is partly about which measure is "right."
-- **Random neighbor swaps**: The specific dynamics Aaronson describes. At each step, find adjacent coffee-milk pairs and swap one uniformly at random.
+- **逻辑深度**：生成 x 的最短程序所需的运行时间。这是简化说明；严格定义涉及接近最短描述的程序及显著性参数。深字符串可被简洁描述，但生成它需要很长计算。
+- **Bennett 的论点**：咖啡的中间状态确实具有较大逻辑深度，因为生成它们的任何短程序都必须近似模拟物理混合过程，这需要很多步骤；平衡状态则较“浅”，因为可以绕过实际演化直接生成。
+- **Aaronson 的质疑**：“我看不出任何直观理由，说明深度为什么应该在中间时刻变大。”描述卷须边界需要高精致复杂度（结构复杂性），但未必意味着高逻辑深度（给定边界后，采样很快）。
 
-Things that will bite you:
-- **gzip compression level matters**: Use `compresslevel=9` for consistency. Lower levels give noisier estimates.
-- **Grid serialization**: How you flatten the 2D grid to bytes affects gzip's performance. Row-major (the default for NumPy's `.tobytes()`) is fine; just be consistent.
-- **Coarse-graining artifacts**: Very small block sizes are noisy; very large block sizes blur away all structure. Experiment with block sizes relative to your grid size.
-- **Convergence is slow**: For a 64x64 grid, you need tens of thousands of swaps to see the full complexity arc. Track both swap count and "fraction mixed" to know where you are.
+这场争论在 2011 年尚无定论，仍是研究问题。第 7 天将对其中一些度量进行实证检验。
 
 ---
 
-## What to Build
+<a id="implementation-notes"></a>
+## 实现说明
 
-### Quick Start
+> **本地化核验说明：**本章原始来源是博文而非论文。本次访问作者站点受到网络代理 403 限制，正文、评论编号、历史与截至 2024 年的研究状态尚未独立核实。“复杂熵”“精致复杂度”是本项目采用的译名，不声称为官方中文名称。代码是教学实现：全局像素熵因交换守恒比例而不变；局部熵不保证逐步单调；原始 gzip 大小和边界比例均不保证先升后降；批量交换与均匀选择异色边的精确模型不同；两段式编码残差经过量化，未验证为无损编码。下文保留原有教学论述，并标明这些限制。
+
+`implementation.py` 实现了咖啡混合模拟与复杂性测量工具：
+
+主要选择：
+- **用 gzip/zlib 近似 KC**：常用方法。理论上不精确（gzip 不是最优压缩器），但使用广泛且可复现。
+- **用 NumPy 数组表示网格**：由 0（牛奶）和 1（咖啡）构成的二维数组，序列化为字节后压缩。
+- **多种复杂性度量**：计算 gzip 大小、粗粒化后的 gzip 大小、两段式编码大小。比较它们正是重点：Aaronson 的博文部分地在讨论哪种度量才“合适”。
+- **随机邻居交换**：本章描述的精确动力学在每一步找出所有相邻咖啡—牛奶对，均匀随机选择一对交换。实际主模拟使用的批量实现有所不同，见下方核验说明。
+
+需要注意的问题：
+- **gzip 压缩等级很重要**：统一使用 `compresslevel=9`。较低等级可能得到噪声更大的估计。
+- **网格序列化**：二维网格展开为字节的顺序会影响 gzip 表现。行优先（NumPy `.tobytes()` 的默认方式）即可，但需要保持一致。
+- **粗粒化伪影**：块太小会噪声较多，太大则会抹去全部结构。应相对于网格大小尝试不同块尺寸。
+- **收敛较慢**：原说明建议，对 64x64 网格进行数万次交换以观察完整复杂性变化。应同时记录交换次数与“混合比例”，判断当前阶段；是否出现峰值必须依据实测。
+
+---
+
+<a id="what-to-build"></a>
+## 要实现的内容
+
+<a id="quick-start"></a>
+### 快速开始
 
 ```bash
 cd papers/06_Complexodynamics
 python train_minimal.py --grid-size 64 --steps 50000
 ```
 
-This runs the coffee-mixing simulation and plots complexity (gzip size) over time, showing the characteristic "hump."
+这会运行咖啡混合模拟，并绘制复杂性（gzip 大小）随时间的变化。原说明预期出现特征性的“隆起”，但原始 gzip 大小并不保证出现这种曲线。
 
-### Exercises (in `exercises/`)
+<a id="exercises-in-exercises"></a>
+### 练习（位于 `exercises/`）
 
-| # | Task | What You'll Get Out of It |
+| # | 任务 | 学习目标 |
 |---|------|--------------------------|
-| 1 | KC via gzip (`exercise_01_gzip_complexity.py`) | Build the core KC approximation tool and verify it on known signals |
-| 2 | Coffee mixing simulation (`exercise_02_coffee_mixing.py`) | Implement the 2D grid dynamics Aaronson describes |
-| 3 | Multi-scale analysis (`exercise_03_multiscale.py`) | Coarse-grain at multiple scales, see where complexity lives |
-| 4 | Two-part codes (`exercise_04_two_part_codes.py`) | Build a sophistication proxy and compare to raw gzip |
-| 5 | Complexity measures comparison (`exercise_05_measures_comparison.py`) | Run all measures on same simulation, compare curves |
+| 1 | 用 gzip 近似 KC（`exercise_01_gzip_complexity.py`） | 构建核心 KC 近似工具，并用已知信号验证 |
+| 2 | 咖啡混合模拟（`exercise_02_coffee_mixing.py`） | 实现本章描述的二维网格动力学 |
+| 3 | 多尺度分析（`exercise_03_multiscale.py`） | 在多个尺度粗粒化，观察复杂性分布在哪些尺度 |
+| 4 | 两段式编码（`exercise_04_two_part_codes.py`） | 构建精致复杂度代理量，与原始 gzip 比较 |
+| 5 | 比较复杂性度量（`exercise_05_measures_comparison.py`） | 对同一模拟运行所有度量，比较曲线 |
 
-Solutions are in `exercises/solutions/`. Try to get stuck first.
-
----
-
-## Key Takeaways
-
-1. **Entropy and complexity are different things.** Entropy goes monotonically up. Complexity — if defined correctly — peaks at intermediate times. Random strings have maximum entropy but zero structure. (Aaronson, opening section)
-
-2. **Sophistication separates structure from randomness.** Unlike KC, sophistication is low for BOTH simple and random strings, and high only for genuinely structured ones. Complextropy adds resource-boundedness to make this work for dynamical systems. (Aaronson, defining complextropy)
-
-3. **The "First Law" is a conjecture, not a theorem.** Aaronson explicitly says he cannot prove it. The post's contribution is the precise definition of complextropy and the formulation of a provable (or disprovable) conjecture. (Aaronson, "I don't yet know how to prove this conjecture")
-
-4. **gzip is a useful but crude KC approximation.** It's computable, reproducible, and captures gross structure. But it misses patterns that more sophisticated compressors would catch. This matters for empirical work. (Aaronson, discussion of Lauren Ouellette's experiments)
-
-5. **This directly led to Day 7.** Lauren Ouellette's research project, started from this blog post, became the Coffee Automaton paper (arXiv:1405.6903) with Aaronson and Carroll. The blog post is theory and conjecture; Day 7 is the empirical follow-up.
+参考解答在 `exercises/solutions/`。建议先独立尝试，遇到困难后再查看。
 
 ---
 
-## Files in This Directory
+<a id="key-takeaways"></a>
+## 要点
 
-| File | What It Is |
+1. **熵与复杂性不同。** 在适当物理假设下，熵趋向增加；恰当定义的复杂性则被猜想在中间时刻达到峰值。随机字符串可以具有很高的随机性，却没有结构。（Aaronson，开头部分）
+
+2. **精致复杂度区分结构与随机性。** 与 KC 不同，精致复杂度对简单和随机字符串都低，只对真正具有结构的对象高。复杂熵增加资源限制，使这一思路适用于动力学系统。（Aaronson，定义复杂熵的部分）
+
+3. **“第一定律”是猜想，不是定理。** Aaronson 明确表示尚不能证明。博文的贡献在于给出复杂熵的定义，并提出可以尝试证明或证伪的猜想。（Aaronson：“我还不知道如何证明这个猜想。”）
+
+4. **gzip 是实用但粗略的 KC 近似。** 它可计算、可复现，能捕捉大体结构，但会漏掉更强压缩器能够识别的模式。这会影响实证研究。（Aaronson，讨论 Lauren Ouellette 实验的部分）
+
+5. **这项工作引出了第 7 天。** Lauren Ouellette 从这篇博文出发的研究后来发展为与 Aaronson、Carroll 合作的《咖啡自动机》（arXiv:1405.6903）。博文讨论理论与猜想，第 7 天则介绍后续实证研究。
+
+---
+
+<a id="files-in-this-directory"></a>
+## 本目录文件
+
+| 文件 | 内容 |
 |------|-----------|
-| `implementation.py` | Coffee-mixing simulation, gzip KC, coarse-graining, sophistication proxies |
-| `train_minimal.py` | CLI script — run simulation, measure complexity over time, plot results |
-| `visualization.py` | Complexity curves, multi-scale heatmaps, entropy vs. complexity comparison |
-| `notebook.ipynb` | Interactive walkthrough — build the simulation step by step |
-| `exercises/` | 5 exercises: gzip KC, coffee mixing, multi-scale, two-part codes, comparison |
-| `paper_notes.md` | Detailed notes on Aaronson's blog post |
-| `CHEATSHEET.md` | Quick reference for complexity measures and key results |
+| `implementation.py` | 咖啡混合模拟、gzip KC、粗粒化与精致复杂度代理量 |
+| `train_minimal.py` | 命令行脚本：运行模拟、随时间测量复杂性并绘图 |
+| `visualization.py` | 复杂性曲线、多尺度热图、熵与复杂性比较 |
+| `notebook.ipynb` | 交互式讲解：逐步构建模拟 |
+| `exercises/` | 5 个练习：gzip KC、咖啡混合、多尺度、两段式编码、度量比较 |
+| `paper_notes.md` | Aaronson 博文的详细笔记 |
+| `CHEATSHEET.md` | 复杂性度量与关键结论速查 |
 
 ---
 
-## Further Reading
+<a id="further-reading"></a>
+## 延伸阅读
 
-- [Aaronson's Blog Post](https://scottaaronson.blog/?p=762) — read this first, including the comments (especially Bennett #110, Carroll #6-7, Trevisan #17)
-- [Coffee Automaton Paper (Day 7)](https://arxiv.org/abs/1405.6903) — the empirical follow-up by Aaronson, Carroll, and Ouellette
-- [Sophistication (Gacs, Tromp, Vitanyi)](https://doi.org/10.1016/S0304-3975(00)00171-0) — the formal definition of sophistication
-- [Logical Depth (Bennett 1988)](https://doi.org/10.1007/978-1-4612-4544-3_11) — the time-based alternative to sophistication
-- [Kolmogorov Complexity Textbook (Li & Vitanyi)](https://link.springer.com/book/10.1007/978-3-030-11298-1) — comprehensive reference
+- [Aaronson 的博文](https://scottaaronson.blog/?p=762)：建议先读正文与评论（尤其是 Bennett #110、Carroll #6-7、Trevisan #17；评论编号为原仓库记载，尚未独立核验）。
+- [《咖啡自动机》论文（第 7 天）](https://arxiv.org/abs/1405.6903)：Aaronson、Carroll 与 Ouellette 的后续实证研究。
+- [精致复杂度（Gács、Tromp、Vitányi）](https://doi.org/10.1016/S0304-3975(00)00171-0)：精致复杂度的形式化定义。
+- [逻辑深度（Bennett，1988）](https://doi.org/10.1007/978-1-4612-4544-3_11)：以运行时间为基础、不同于精致复杂度的度量。
+- [柯尔莫哥洛夫复杂度教材（Li 与 Vitányi）](https://link.springer.com/book/10.1007/978-3-030-11298-1)：系统性的参考资料。
 
 ---
 
-**Previous:** [Day 5 — A Tutorial Introduction to the Minimum Description Length Principle](../05_MDL_Principle/)
-**Next:** [Day 7 — The Coffee Automaton](../07_coffee_automaton/)
+**上一章：**[第 5 天——最小描述长度原理教程导论](../05_MDL_Principle/)
+**下一章：**[第 7 天——咖啡自动机](../07_coffee_automaton/)

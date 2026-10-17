@@ -1,22 +1,22 @@
 """
-Exercise 1: The "Reparameterization" Trick (Math → Code)
+练习 1：重参数化技巧（数学 → 代码）
 =========================================================
 
-Goal: Implement the core mechanism of Bayesian Neural Networks.
+目标：实现贝叶斯神经网络的核心机制。
 
-Your Task:
-- Implement the Gaussian sampling method
-- Verify the samples match expected statistics
-- Understand the "Softplus" trick
+任务：
+- 实现高斯采样方法
+- 验证样本与预期统计量一致
+- 理解 Softplus 技巧
 
-Learning Objectives:
-1. How to make randomness differentiable
-2. The reparameterization trick: w = μ + σ * ε
-3. Why Softplus instead of Sigmoid for σ
-4. Monte Carlo approximation
+学习目标：
+1. 如何让随机采样可微
+2. 重参数化技巧：w = μ + σ * ε
+3. 为什么对 σ 使用 Softplus 而非 Sigmoid
+4. 蒙特卡洛近似
 
-Time: 20-30 minutes
-Difficulty: Medium
+用时：20-30 分钟
+难度：中等
 """
 
 import numpy as np
@@ -25,48 +25,48 @@ import matplotlib.pyplot as plt
 
 def softplus(x):
     """
-    Softplus activation: log(1 + exp(x)).
-    Maps (-∞, ∞) → (0, ∞).
-    Used to ensure σ > 0.
+    Softplus 激活函数：log(1 + exp(x))。
+    将 (-∞, ∞) 映射到 (0, ∞)。
+    用于保证 σ > 0。
     """
-    # TODO 1: Implement softplus
-    # Hint: Use np.log1p(np.exp(x)) for numerical stability
+    # TODO 1：实现 softplus
+    # 提示：使用 np.log1p(np.exp(x))；原文称其数值稳定，但大正数下 exp 仍可能溢出
     pass
 
 
 def sample_gaussian(mu, rho, n_samples=10000):
     """
-    Sample weights using the reparameterization trick.
+    通过重参数化技巧采样权重。
     
-    Args:
-        mu: Mean of the distribution (the "learned value")
-        rho: Unconstrained uncertainty parameter
-        n_samples: Number of samples to draw
+    参数：
+        mu：分布均值（“学习到的值”）
+        rho：无约束的不确定性参数
+        n_samples：要抽取的样本数
         
-    Returns:
-        samples: Array of sampled weights
-        sigma: The computed standard deviation
+    返回：
+        samples：权重样本数组
+        sigma：计算得到的标准差
         
-    Formula:
+    公式：
         σ = Softplus(ρ)
         ε ~ N(0, 1)
         w = μ + σ * ε
         
-    Why this trick?
-    - Standard backprop can't differentiate through randomness
-    - By reparameterizing, we move the randomness outside the graph
-    - Now we can backprop through μ and ρ!
+    为什么使用此技巧？
+    - 普通反向传播不能直接对随机抽样操作求导
+    - 重参数化将参数无关的随机性移出待求导路径
+    - 这样就能对 μ 和 ρ 反向传播！
     """
-    # TODO 2: Compute sigma using softplus
+    # TODO 2：使用 softplus 计算 sigma
     # sigma = softplus(rho)
     
-    # TODO 3: Sample epsilon from N(0, 1)
+    # TODO 3：从 N(0, 1) 采样 epsilon
     # epsilon = np.random.randn(n_samples)
     
-    # TODO 4: Compute w = mu + sigma * epsilon
+    # TODO 4：计算 w = mu + sigma * epsilon
     # samples = mu + sigma * epsilon
     
-    # TODO 5: Return samples and sigma
+    # TODO 5：返回 samples 与 sigma
     # return samples, sigma
     
     pass
@@ -74,39 +74,39 @@ def sample_gaussian(mu, rho, n_samples=10000):
 
 def test_gaussian_sampling():
     """
-    Test that our sampling produces correct statistics.
+    测试采样是否产生正确统计量。
     """
-    print("Testing Gaussian Sampling...\n")
+    print('测试高斯采样……\n')
     
-    # Test 1: Basic sampling
+    # 测试 1：基本采样
     mu = 5.0
-    rho = 0.0  # Should give sigma ≈ log(2) ≈ 0.693
+    rho = 0.0  # 应得到 sigma ≈ log(2) ≈ 0.693
     samples, sigma = sample_gaussian(mu, rho, n_samples=100000)
     
-    # TODO 6: Verify the mean is close to mu
+    # TODO 6：验证均值接近 mu
     # sample_mean = np.mean(samples)
-    # assert abs(sample_mean - mu) < 0.05, f"Mean mismatch: {sample_mean} vs {mu}"
+    # assert abs(sample_mean - mu) < 0.05, f"均值不匹配：{sample_mean} 与 {mu}"
     
-    # TODO 7: Verify the std is close to sigma
+    # TODO 7：验证标准差接近 sigma
     # sample_std = np.std(samples)
-    # assert abs(sample_std - sigma) < 0.05, f"Std mismatch: {sample_std} vs {sigma}"
+    # assert abs(sample_std - sigma) < 0.05, f"标准差不匹配：{sample_std} 与 {sigma}"
     
-    print("[ok] Basic sampling test passed")
+    print('[ok] 基本采样测试通过')
     
-    # Test 2: Different rho values
-    print("\nTesting different rho values:")
+    # 测试 2：不同 rho 值
+    print('\n测试不同 rho 值：')
     for rho_val in [-2, 0, 2, 4]:
-        # TODO 8: Sample and compute expected sigma
+        # TODO 8：采样并计算预期 sigma
         # samples, sigma = sample_gaussian(5.0, rho_val, 50000)
         
-        # TODO 9: Plot histogram to visualize
+        # TODO 9：绘制直方图
         # print(f"  ρ={rho_val:2d} → σ={sigma:.3f}")
         
         pass
     
-    # Test 3: Visualization
-    # TODO 10: Create a visualization showing different distributions
-    print("\n[ok] All tests passed.")
+    # 测试 3：可视化
+    # TODO 10：创建图形展示不同分布
+    print('\n[ok] 全部测试通过。')
 
 
 if __name__ == "__main__":

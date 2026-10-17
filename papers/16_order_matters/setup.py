@@ -1,7 +1,7 @@
 """
-Setup script for Day 16: Order Matters (Pointer Networks)
+第 16 天安装脚本：顺序很重要（指针网络）
 
-This handles installation and dependency management.
+负责安装与依赖管理。
 """
 
 from setuptools import setup, find_packages
@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 setup(
     name="pointer-networks",
     version="1.0.0",
-    description="Pointer Networks for set-to-sequence problems",
+    description='用于集合到序列问题的指针网络',
     author="30u30 AI Papers Project",
     python_requires=">=3.8",
     packages=find_packages(),

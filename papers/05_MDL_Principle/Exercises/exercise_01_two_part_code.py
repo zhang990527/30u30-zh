@@ -1,23 +1,23 @@
 """
-Exercise 1: Two-Part Code MDL
+练习 1：两段式编码 MDL
 ==============================
 
-The Two-Part Code is the foundation of MDL:
+两段式编码是 MDL 的基础形式：
     L(total) = L(H) + L(D|H)
 
-Where:
-    L(H)   = bits to describe the MODEL (hypothesis)
-    L(D|H) = bits to describe the DATA given the model
+其中：
+    L(H)：描述模型（假设）的比特数
+    L(D|H)：给定模型后描述数据的比特数
 
-Your task: Implement the two-part code for polynomial regression.
+任务：实现多项式回归的两段式编码。
 
-Coding Analogy (from the paper's Section 3 framework):
+编码类比（原仓库称第 3 节框架；实际对应原文 §2.4）：
 -------------------------------------------------------
-You're sending data to a receiver. You can either:
-1. Send every number individually (naive, expensive)
-2. Send a formula + small corrections (smart, cheap!)
+向接收方发送数据时，可以：
+1. 分别发送每个数字（朴素、代价高）
+2. 发送公式与小修正（更精巧，可能更省）
 
-The two-part code formalizes this: Model + Residuals = Total message.
+两段式编码将其形式化：模型 + 残差 = 总消息。
 """
 
 import numpy as np
@@ -26,53 +26,53 @@ from typing import Tuple
 
 def universal_code_length(n: int) -> float:
     """
-    Compute the universal code length for a positive integer.
+    计算正整数的通用码长。
     
-    This is the "fair" way to encode integers without knowing their range.
-    Uses the log-star function: log(n) + log(log(n)) + ... (positive terms only)
+    无需预先知道整数范围的通用编码方法。
+    使用迭代对数和：log(n) + log(log(n)) + ...，仅保留正项
     
-    Args:
-        n: Positive integer to encode
+    参数：
+        n：需要编码的正整数
         
-    Returns:
-        Code length in bits
+    返回：
+        以比特为单位的码长
         
-    Example:
-        >>> universal_code_length(1)  # Should be small
-        >>> universal_code_length(100)  # Should be larger
+    示例：
+        >>> universal_code_length(1)  # 应较小
+        >>> universal_code_length(100)  # 应较大
     """
-    # TODO: Implement universal integer coding
-    # Hint: Start with log2(c0) where c0 ≈ 2.865
-    # Then add log2(n) + log2(log2(n)) + ... while positive
+    # TODO：实现通用整数编码
+    # 提示：从 log2(c0) 开始，其中 c0 ≈ 2.865
+    # 随后累加 log2(n) + log2(log2(n)) + ...，仅保留正项
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def model_description_length(degree: int, precision_bits: int = 32) -> float:
     """
-    Compute L(H): bits needed to describe a polynomial model.
+    计算 L(H)：描述多项式模型所需的比特数。
     
-    We need to encode:
-    1. The degree of the polynomial
-    2. The coefficients (precision_bits each, plus sign)
+    需要编码：
+    1. 多项式次数
+    2. 系数（每个 precision_bits，再加符号位）
     
-    Args:
-        degree: Polynomial degree (0 = constant, 1 = linear, etc.)
-        precision_bits: Bits per coefficient
+    参数：
+        degree：多项式次数，0 为常数，1 为线性，依此类推
+        precision_bits：每个系数的比特数
         
-    Returns:
-        Total bits for model description
+    返回：
+        模型描述所需总比特数
         
-    Example:
-        >>> model_description_length(0)  # Constant: 1 coefficient
-        >>> model_description_length(2)  # Quadratic: 3 coefficients
+    示例：
+        >>> model_description_length(0)  # 常数：1 个系数
+        >>> model_description_length(2)  # 二次：3 个系数
     """
-    # TODO: Implement model cost computation
-    # Hint: 
-    #   - Degree cost: universal_code_length(degree + 1)
-    #   - Coefficient cost: (degree + 1) * (precision_bits + 1)
+    # TODO：实现模型代价计算
+    # 提示：
+    #   - 次数代价：universal_code_length(degree + 1)
+    #   - 系数代价：(degree + 1) * (precision_bits + 1)
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def data_description_length(
@@ -82,37 +82,37 @@ def data_description_length(
     precision_bits: int = 32
 ) -> float:
     """
-    Compute L(D|H): bits needed to describe data given the model.
+    计算 L(D|H)：给定模型后描述数据的代价。
     
-    After fitting the polynomial, we encode the residuals (errors).
-    Using a Gaussian model, each residual costs approximately:
+    拟合多项式后，对残差（误差）编码。
+    使用高斯模型时，每个残差的代价近似为：
         0.5 * log2(2π σ²) + error² / (2σ² ln(2))
     
-    Args:
-        x: Input values
-        y: Target values
-        degree: Polynomial degree to fit
-        precision_bits: Bits for encoding sigma
+    参数：
+        x：输入值
+        y：目标值
+        degree：要拟合的多项式次数
+        precision_bits：编码 sigma 的比特数
         
-    Returns:
-        Total bits for data description
+    返回：
+        数据描述总代价
         
-    Example:
+    示例：
         >>> x = np.linspace(0, 10, 50)
-        >>> y = 2*x + 1 + np.random.randn(50) * 0.1  # Almost linear
-        >>> data_description_length(x, y, 1)  # Should be small (good fit)
-        >>> data_description_length(x, y, 0)  # Should be larger (poor fit)
+        >>> y = 2*x + 1 + np.random.randn(50) * 0.1  # 近似线性
+        >>> data_description_length(x, y, 1)  # 应较小，拟合好
+        >>> data_description_length(x, y, 0)  # 应较大，拟合差
     """
-    # TODO: Implement data cost computation
-    # Steps:
-    #   1. Fit polynomial: coeffs = np.polyfit(x, y, degree)
-    #   2. Compute predictions: predictions = np.poly1d(coeffs)(x)
-    #   3. Compute residuals: residuals = y - predictions
-    #   4. Estimate sigma: sigma = np.std(residuals)
-    #   5. Compute Gaussian NLL in bits
-    #   6. Add cost to encode sigma
+    # TODO：实现数据代价计算
+    # 步骤：
+    #   1. 拟合多项式：coeffs = np.polyfit(x, y, degree)
+    #   2. 计算预测：predictions = np.poly1d(coeffs)(x)
+    #   3. 计算残差：residuals = y - predictions
+    #   4. 估计 sigma：sigma = np.std(residuals)
+    #   5. 计算以比特为单位的高斯 NLL
+    #   6. 加入编码 sigma 的代价
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 def two_part_mdl(
@@ -122,32 +122,32 @@ def two_part_mdl(
     precision_bits: int = 32
 ) -> Tuple[float, float, float]:
     """
-    Compute the complete Two-Part MDL score.
+    计算完整的两段式 MDL 得分。
     
-    This combines model description length and data description length.
+    合并模型描述长度与数据描述长度。
     
-    Args:
-        x: Input values
-        y: Target values
-        degree: Polynomial degree
-        precision_bits: Precision for encoding
+    参数：
+        x：输入值
+        y：目标值
+        degree：多项式次数
+        precision_bits：编码精度
         
-    Returns:
-        Tuple of (total_mdl, model_cost, data_cost)
+    返回：
+        元组：(total_mdl, model_cost, data_cost)
         
-    Example:
+    示例：
         >>> x = np.linspace(0, 10, 50)
         >>> y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.0
         >>> total, model, data = two_part_mdl(x, y, 2)
-        >>> print(f"Total: {total:.1f} = Model: {model:.1f} + Data: {data:.1f}")
+        >>> print(f"总计：{total:.1f} = 模型：{model:.1f} + 数据：{data:.1f}")
     """
-    # TODO: Combine model and data description lengths
+    # TODO：合并模型与数据描述长度
     
-    pass  # Your code here
+    pass  # 在此编写代码
 
 
 # =============================================================================
-# TEST YOUR IMPLEMENTATION
+# 测试实现
 # =============================================================================
 
 def test_implementation():
@@ -158,7 +158,7 @@ def test_implementation():
     
     np.random.seed(42)
     
-    # Test 1: Universal code length
+    # 测试 1：通用码长
     print("\n1. Testing universal_code_length()...")
     try:
         len_1 = universal_code_length(1)
@@ -174,7 +174,7 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 2: Model description length
+    # 测试 2：模型描述长度
     print("\n2. Testing model_description_length()...")
     try:
         model_0 = model_description_length(0)
@@ -189,14 +189,14 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 3: Data description length
+    # 测试 3：数据描述长度
     print("\n3. Testing data_description_length()...")
     try:
         x = np.linspace(0, 10, 50)
-        y = 3 + 2*x + np.random.randn(50) * 0.5  # Linear with low noise
+        y = 3 + 2*x + np.random.randn(50) * 0.5  # 低噪声线性数据
         
-        data_0 = data_description_length(x, y, 0)  # Constant (bad fit)
-        data_1 = data_description_length(x, y, 1)  # Linear (good fit)
+        data_0 = data_description_length(x, y, 0)  # 常数模型，拟合差
+        data_1 = data_description_length(x, y, 1)  # 线性模型，拟合好
         
         assert data_1 < data_0, "Better fitting model should have lower data cost"
         print(f"   data_cost(degree=0) = {data_0:.2f} (poor fit)")
@@ -205,17 +205,17 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 4: Two-part MDL
+    # 测试 4：两段式 MDL
     print("\n4. Testing two_part_mdl()...")
     try:
         x = np.linspace(0, 10, 50)
-        y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.5  # Quadratic
+        y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.5  # 二次函数
         
         mdl_1, m1, d1 = two_part_mdl(x, y, 1)
         mdl_2, m2, d2 = two_part_mdl(x, y, 2)
         mdl_5, m5, d5 = two_part_mdl(x, y, 5)
         
-        # Degree 2 should have best (lowest) total MDL
+        # 2 次模型应有最低总 MDL，这是该测试的预期
         assert mdl_2 < mdl_1, "True degree (2) should beat underfit (1)"
         assert mdl_2 < mdl_5, "True degree (2) should beat overfit (5)"
         
@@ -226,11 +226,11 @@ def test_implementation():
     except Exception as e:
         print(f"   [FAIL] FAILED: {e}")
     
-    # Test 5: Model selection
+    # 测试 5：模型选择
     print("\n5. Testing model selection...")
     try:
         x = np.linspace(0, 10, 50)
-        y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.5  # True degree = 2
+        y = 3 + 2*x - 0.5*x**2 + np.random.randn(50) * 1.5  # 真实次数 = 2
         
         scores = {d: two_part_mdl(x, y, d)[0] for d in range(6)}
         best_degree = min(scores, key=scores.get)

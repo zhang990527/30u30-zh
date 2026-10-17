@@ -3,52 +3,52 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 """
-NTM Visualization Tools
-Goal: Visualize the differentiable addressing focus (the 'weightings') 
-as the model processes a sequence, similar to Figure 4 in Graves et al. (2014).
+NTM 可视化工具
+目标：在模型处理序列时，将可微寻址的关注分布
+（即权重）可视化，类似 Graves 等人（2014）的图 4。
 """
 
-def plot_memory_weights(weights_list, title="Memory Addressing Weighting (Read Head)"):
+def plot_memory_weights(weights_list, title='存储寻址权重（读头）'):
     """
-    Visualizes how the head focus moves across memory locations over time.
-    X-axis: Timesteps
-    Y-axis: Memory Index (N)
+    可视化读写头的关注位置如何随时间在存储位置间移动。
+    X 轴：时间步
+    Y 轴：存储索引（N）
     """
-    # Extract weights for the first batch item
-    # weights_list is a list of [batch, N] tensors
+    # 提取批次中第一个样本的权重
+    # weights_list 是由形状为 [batch, N] 的张量构成的列表
     weights = torch.stack(weights_list).detach().cpu().numpy()[:, 0, :]
     
     plt.figure(figsize=(12, 6))
     plt.imshow(weights.T, aspect='auto', cmap='hot')
-    plt.xlabel("Timesteps (t)")
-    plt.ylabel("Memory Location Index (i)")
+    plt.xlabel('时间步 (t)')
+    plt.ylabel('存储位置索引 (i)')
     plt.title(title)
-    plt.colorbar(label="Addressing Weight w_t(i)")
+    plt.colorbar(label='寻址权重 w_t(i)')
     plt.tight_layout()
     plt.savefig("papers/17_neural_turing_machines/addressing_focus.png")
     plt.show()
 
-def plot_recall_performance(inputs, targets, outputs, title="Copy Task: Input vs. Recall"):
+def plot_recall_performance(inputs, targets, outputs, title='复制任务：输入与回忆'):
     """
-    Qualitative check: how well does the bitmask recall match the target?
+    定性检查：比特掩码的回忆结果与目标是否一致？
     """
     fig, axes = plt.subplots(3, 1, figsize=(10, 12))
     
-    # Input phase
+    # 输入阶段
     axes[0].imshow(inputs.detach().cpu().numpy().T, aspect='auto', cmap='binary')
-    axes[0].set_title("Input Sequence (with Channel 9 Delimiter)")
+    axes[0].set_title('输入序列（第 9 通道为分隔符）')
     
-    # Target
+    # 目标
     axes[1].imshow(targets.detach().cpu().numpy().T, aspect='auto', cmap='binary')
-    axes[1].set_title("Expected Output (Target)")
+    axes[1].set_title('期望输出（目标）')
     
-    # Preds
+    # 预测
     preds = (outputs > 0).float().detach().cpu().numpy()
     axes[2].imshow(preds.T, aspect='auto', cmap='binary')
-    axes[2].set_title("Actual Model Recall (Predictions)")
+    axes[2].set_title('模型实际回忆（预测）')
     
     for ax in axes:
-        ax.set_ylabel("Bit Index")
+        ax.set_ylabel('比特索引')
     
     plt.tight_layout()
     plt.savefig("papers/17_neural_turing_machines/recall_comparison.png")

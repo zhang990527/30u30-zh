@@ -1,23 +1,23 @@
 """
-Exercise 5: Advanced MDL (Compression Ratio Analysis)
+练习 5：进阶 MDL（压缩比分析）
 ======================================================
 
-Goal: Analyze the full MDL objective and understand the compression frontier.
+目标：分析完整 MDL 目标，理解压缩前沿。
 
-Your Task:
-- Compute data fit loss and KL divergence separately
-- Calculate effective compression ratio
-- Plot the two terms against each other
-- Find the Pareto frontier of compression
+任务：
+- 分别计算数据拟合损失与 KL 散度
+- 计算有效压缩比
+- 绘制两项之间的关系
+- 寻找压缩的帕累托前沿
 
-Learning Objectives:
-1. MDL = -log(data fit) - log(prior knowledge)
-2. Tradeoff: how much accuracy to trade for compression?
-3. Pareto efficiency: can't improve both simultaneously
-4. Real-world applications (edge devices, mobile)
+学习目标：
+1. MDL = -log(data fit) - log(prior knowledge)（原文示意式，严格目标需明确概率定义）
+2. 权衡：愿意牺牲多少准确性来换取压缩？
+3. 帕累托效率：无法同时改善两个目标
+4. 实际应用（边缘设备、移动端）
 
-Time: 30-40 minutes
-Difficulty: Hard
+用时：30-40 分钟
+难度：困难
 """
 
 import numpy as np
@@ -25,49 +25,49 @@ import matplotlib.pyplot as plt
 import sys
 from pathlib import Path
 
-# Add parent directory to path
+# 将父目录加入模块搜索路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from implementation import BayesianLinearNetwork
 
 
 def analyze_loss_components(model, X_test, y_test):
     """
-    Decompose the loss into data fit and regularization terms.
+    将损失分解为数据拟合项和正则化项。
     
-    Args:
-        model: Trained BayesianLinearNetwork
-        X_test: Test inputs
-        y_test: Test targets
+    参数：
+        model：训练好的 BayesianLinearNetwork（该类在当前实现中不存在，原有接口问题保留）
+        X_test：测试输入
+        y_test：测试目标
         
-    Returns:
-        reconstruction_loss: How well does it fit the data?
-        kl_divergence: How far is it from the prior?
-        mdl_loss: Combined loss (lower = better compression)
+    返回：
+        reconstruction_loss：数据拟合程度
+        kl_divergence：与先验的差异程度
+        mdl_loss：组合损失（越低表示该目标越优）
         
-    The MDL principle:
+    MDL 原理：
         L_MDL = L_data + KL_divergence
         
-    This balances two goals:
-        1. L_data: Explain the data well (small residuals)
-        2. KL: Stay close to prior (simple weights)
+    平衡两个目标：
+        1. L_data：充分解释数据（残差小）
+        2. KL：靠近先验（权重简单）
     
-    A good model achieves BOTH!
+    好模型兼顾两者！
     """
     
-    # TODO 1: Forward pass
+    # TODO 1：前向传播
     # predictions = model.forward(X_test)
     
-    # TODO 2: Compute reconstruction loss (MSE)
+    # TODO 2：计算重构损失（MSE）
     # reconstruction_loss = np.mean((predictions - y_test)**2)
     
-    # TODO 3: Compute KL divergence from model parameters
-    # This requires accessing the network's weight distributions
+    # TODO 3：由模型参数计算 KL 散度
+    # 需要访问网络的权重分布
     # kl_divergence = model.compute_kl_divergence()
     
-    # TODO 4: Combine into MDL loss
+    # TODO 4：组合为 MDL 损失
     # mdl_loss = reconstruction_loss + kl_divergence
     
-    # TODO 5: Return components
+    # TODO 5：返回各组成项
     # return reconstruction_loss, kl_divergence, mdl_loss
     
     pass
@@ -75,17 +75,17 @@ def analyze_loss_components(model, X_test, y_test):
 
 def study_pareto_frontier():
     """
-    Train networks with different kl_weights and plot the tradeoff.
+    使用不同 kl_weights 训练网络并绘制权衡关系。
     """
-    print("Generating dataset...")
-    # TODO 6: Create a dataset (sine wave with noise)
+    print('生成数据集……')
+    # TODO 6：创建数据集（含噪正弦波）
     X_train = np.random.uniform(0, 4*np.pi, 200)[:, np.newaxis]
     y_train = np.sin(X_train.flatten()) + np.random.randn(200) * 0.15
     
     X_test = np.linspace(0, 4*np.pi, 500)[:, np.newaxis]
     y_test = np.sin(X_test.flatten())
     
-    # TODO 7: Define kl_weights spanning the compression frontier
+    # TODO 7：定义覆盖压缩前沿的 kl_weights
     kl_weights = [0.0001, 0.001, 0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0]
     
     pareto_data = {
@@ -96,13 +96,13 @@ def study_pareto_frontier():
         'compression_ratio': []
     }
     
-    print("\nTraining models across compression frontier...\n")
+    print('\n跨压缩前沿训练模型……\n')
     
-    # TODO 8: For each kl_weight:
+    # TODO 8：对每个 kl_weight：
     for kl_w in kl_weights:
         print(f"  β = {kl_w:8.5f}", end="", flush=True)
         
-        # TODO 9: Train model
+        # TODO 9：训练模型
         # model = BayesianLinearNetwork(
         #     input_dim=1,
         #     hidden_dims=[64, 32],
@@ -111,29 +111,29 @@ def study_pareto_frontier():
         # )
         # losses = model.train(X_train, y_train, epochs=500, lr=0.01, verbose=False)
         
-        # TODO 10: Analyze loss components
+        # TODO 10：分析损失组成项
         # recon_loss, kl_div, mdl_loss = analyze_loss_components(model, X_test, y_test)
         
-        # TODO 11: Compute compression ratio (lower = better compression)
+        # TODO 11：计算压缩比（原文设定越低越好；此比值不是实际编码压缩率）
         # compression_ratio = kl_div / (recon_loss + 1e-8)
         
-        # TODO 12: Store results
+        # TODO 12：存储结果
         # pareto_data['kl_weights'].append(kl_w)
         # pareto_data['reconstruction_loss'].append(recon_loss)
         # pareto_data['kl_divergence'].append(kl_div)
         # pareto_data['mdl_loss'].append(mdl_loss)
         # pareto_data['compression_ratio'].append(compression_ratio)
         
-        # TODO 13: Print with interpretation
+        # TODO 13：打印并解释结果
         # print(f" → Recon={recon_loss:.4f}, KL={kl_div:.4f}, Ratio={compression_ratio:.2f}")
         
         pass
     
-    # Visualization
-    print("\n\nPlotting Pareto frontier...")
+    # 可视化
+    print('\n\n绘制帕累托前沿……')
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
     
-    # Plot 1: The Pareto frontier (reconstruction vs KL)
+    # 图 1：帕累托前沿（重构损失与 KL）
     ax = axes[0, 0]
     if 'pareto_data' in locals() and pareto_data['reconstruction_loss']:
         ax.scatter(pareto_data['reconstruction_loss'], 
@@ -143,43 +143,43 @@ def study_pareto_frontier():
         for i, (x, y, kl_w) in enumerate(zip(pareto_data['reconstruction_loss'],
                                              pareto_data['kl_divergence'],
                                              pareto_data['kl_weights'])):
-            if i % 2 == 0:  # Label every other point
+            if i % 2 == 0:  # 每隔一个点添加标签
                 ax.annotate(f'β={kl_w:.2e}', (x, y), fontsize=8)
-        ax.set_xlabel('Reconstruction Loss (fit to data)')
-        ax.set_ylabel('KL Divergence (regularization)')
-        ax.set_title('Pareto Frontier: Compression Tradeoff')
+        ax.set_xlabel('重构损失（数据拟合）')
+        ax.set_ylabel('KL 散度（正则化）')
+        ax.set_title('帕累托前沿：压缩权衡')
         ax.grid(True, alpha=0.3)
     
-    # Plot 2: MDL loss across weights
+    # 图 2：不同权重下的 MDL 损失
     ax = axes[0, 1]
     if 'pareto_data' in locals() and pareto_data['mdl_loss']:
         ax.semilogx(pareto_data['kl_weights'], pareto_data['mdl_loss'], 'o-', linewidth=2)
-        ax.set_xlabel('KL Weight (β)')
-        ax.set_ylabel('MDL Loss')
-        ax.set_title('Total Compression Cost (lower = better)')
+        ax.set_xlabel('KL 权重（β）')
+        ax.set_ylabel('MDL 损失')
+        ax.set_title('总压缩代价（越低越好）')
         ax.grid(True, alpha=0.3)
     
-    # Plot 3: Compression ratio
+    # 图 3：压缩比
     ax = axes[1, 0]
     if 'pareto_data' in locals() and pareto_data['compression_ratio']:
         ax.loglog(pareto_data['kl_weights'], pareto_data['compression_ratio'], 's-', 
                   linewidth=2, color='purple')
-        ax.set_xlabel('KL Weight (β)')
-        ax.set_ylabel('Compression Ratio (KL/Recon)')
-        ax.set_title('Model Simplicity vs Data Fit')
+        ax.set_xlabel('KL 权重（β）')
+        ax.set_ylabel('压缩比指标（KL/Recon）')
+        ax.set_title('模型简洁性与数据拟合')
         ax.grid(True, alpha=0.3)
     
-    # Plot 4: Component breakdown
+    # 图 4：组成项分解
     ax = axes[1, 1]
     if 'pareto_data' in locals() and pareto_data['kl_weights']:
         width = 0.35
         x = np.arange(len(pareto_data['kl_weights']))
-        ax.bar(x - width/2, pareto_data['reconstruction_loss'], width, label='Data Fit')
+        ax.bar(x - width/2, pareto_data['reconstruction_loss'], width, label='数据拟合')
         ax.bar(x + width/2, pareto_data['kl_divergence'], width, label='Regularization')
-        ax.set_xlabel('KL Weight (β)')
+        ax.set_xlabel('KL 权重（β）')
         ax.set_ylabel('Loss')
-        ax.set_title('Loss Component Breakdown')
-        # TODO 14: Set xticks to show kl_weights
+        ax.set_title('损失组成项分解')
+        # TODO 14：设置 x 轴刻度以显示 kl_weights
         # ax.set_xticks(x)
         # ax.set_xticklabels([f'{kl_w:.2e}' for kl_w in pareto_data['kl_weights']], 
         #                    rotation=45, fontsize=8)
@@ -188,15 +188,15 @@ def study_pareto_frontier():
     
     plt.tight_layout()
     plt.savefig(Path(__file__).parent.parent / 'pareto_frontier.png', dpi=150, bbox_inches='tight')
-    print("  Saved to: pareto_frontier.png")
+    print('  已保存至：pareto_frontier.png')
     plt.close()
     
-    print("\n[ok] Pareto frontier analysis completed.")
-    print("\nKey insights:")
-    print("  - LEFT side: Underfitting (KL too high)")
-    print("  - RIGHT side: Overfitting (Recon too high)")
-    print("  - MIDDLE: Sweet spot (balanced compression)")
-    print("\nPareto optimal = can't improve both objectives simultaneously!")
+    print('\n[ok] 帕累托前沿分析完成。')
+    print('\n关键认识：')
+    print('  - 左侧：原文标为欠拟合（KL 过高），与横轴定义不一致，需结合图核对')
+    print('  - 右侧：原文标为过拟合（重构损失过高），与横轴定义不一致，需结合图核对')
+    print('  - 中间：压缩与拟合的折中点')
+    print('\n帕累托最优：无法同时改善两个目标！')
 
 
 if __name__ == "__main__":

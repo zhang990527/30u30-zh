@@ -1,220 +1,220 @@
-# Exercise Solutions: Understanding LSTM Networks
+# 练习解答：理解 LSTM 网络
 
-Complete, well-commented solutions for all 5 exercises.
-
----
-
-## How to Use These Solutions
-
-### Try First, Check Later!
-
-These solutions are here to help you **learn**, not to copy-paste. Here's the recommended approach:
-
-1. **Attempt the exercise first** (spend at least 30 minutes)
-2. **Get stuck?** Review the relevant section in README.md
-3. **Still stuck?** Look at just the function you need help with
-4. **Compare your solution** with ours after completing the exercise
-
-**Remember:** Struggling is part of learning.
+5 个练习的解答，附详细注释。
 
 ---
 
-## Solutions Index
+## 如何使用这些解答
 
-### Exercise 1: Build LSTM from Scratch
-**File:** `solution_01_lstm_implementation.py`  
-**Difficulty:** Hard  
-**What's included:**
-- Complete LSTM class with all 4 gates
-- Forward pass with detailed comments
-- Backward pass (BPTT) with gradient flow
-- Weight update with Adagrad
-- Test function to verify implementation
+### 先尝试，再查阅
 
-**Key learning points:**
-- How to implement forget gate with bias = 1
-- Cell state update: C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
-- Gradient flow through cell state (why LSTMs work!)
-- Proper gradient clipping
+这些解答用于帮助你**学习**。建议采用以下方式：
 
-**Lines of code:** ~400 lines  
-**Study time:** 1-2 hours
+1. **先尝试做练习**（至少花 30 分钟）
+2. **遇到困难？** 回顾 README.md 的相关章节
+3. **仍有困难？** 只查看需要帮助的那个函数
+4. 完成练习后，**比较你的解答与这里的实现**
+
+**记住：** 遇到困难也是学习的一部分。
 
 ---
 
-### Exercise 2: Gate Activation Analysis
-**File:** `exercise_02_solution.py`  
-**Difficulty:** Medium  
-**What's included:**
-- `capture_gate_activations()` - capture all gates during forward pass
-- `analyze_gate_patterns()` - statistical analysis with correlations
-- `visualize_gates()` - 4-panel visualization
-- `compare_gates_across_contexts()` - behavior in different scenarios
+## 解答索引
 
-**Key learning points:**
-- When forget gates activate (context switches, sentence boundaries)
-- When input gates activate (new important information)
-- Gate complementarity (negative correlation between forget & input)
-- Pattern recognition in gate behaviors
+### 练习 1：从零构建 LSTM
+**文件：** `solution_01_lstm_implementation.py`  
+**难度：** 高  
+**包含内容：**
+- 含四组变换的完整 LSTM 类
+- 详细注释的前向传播
+- 包含梯度流说明的 BPTT 反向传播
+- 使用 Adagrad 更新权重
+- 用于验证实现的测试函数
 
-**Lines of code:** ~300 lines  
-**Study time:** 1-2 hours
+**学习重点：**
+- 如何实现偏置为 1 的遗忘门
+- 细胞状态更新：C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
+- 细胞状态上的梯度流，以及 LSTM 有效的原因
+- 正确使用梯度裁剪
 
----
-
-### Exercise 3: Ablation Study
-**File:** `exercise_03_solution.py`  
-**Difficulty:** Medium  
-**What's included:**
-- `VanillaRNN` class (baseline)
-- `LSTMNoForgetGate` class (f = 1 always)
-- `LSTMNoInputGate` class (i = 1 always)
-- `LSTMNoOutputGate` class (o = 1 always)
-- `run_ablation_study()` - train all 5 variants
-- `analyze_results()` - performance comparison
-- `visualize_comparison()` - comprehensive 4-panel plots
-
-**Key learning points:**
-- Forget gate is most critical (prevents gradient explosion)
-- Input gate prevents saturation
-- Output gate provides control
-- All gates work together for optimal performance
-
-**Lines of code:** ~500 lines  
-**Study time:** 2-3 hours
+**代码量：** 约 400 行  
+**学习用时：** 1-2 小时
 
 ---
 
-### Exercise 4: Long-Range Dependencies
-**File:** `exercise_04_solution.py`  
-**Difficulty:** Medium  
-**What's included:**
-- `generate_copy_task()` - memorize and reproduce sequences
-- `generate_delayed_xor_task()` - remember two bits over delay
-- `train_on_memory_task()` - training loop
-- `evaluate_memory_capacity()` - test at different delays
-- `analyze_cell_state_evolution()` - track cell state changes
-- `visualize_memory_capacity()` - accuracy vs delay plots
-- `visualize_cell_state()` - cell state heatmaps
+### 练习 2：门激活分析
+**文件：** `exercise_02_solution.py`  
+**难度：** 中  
+**包含内容：**
+- `capture_gate_activations()`：在前向传播时记录所有门值
+- `analyze_gate_patterns()`：统计分析与相关性分析
+- `visualize_gates()`：四面板可视化
+- `compare_gates_across_contexts()`：比较不同情境下的行为
 
-**Key learning points:**
-- LSTM memory capacity limits
-- Cell state stability during retention
-- Performance degrades gracefully with longer delays
-- Why LSTMs handle long-range dependencies better than RNNs
+**学习重点：**
+- 遗忘门何时激活，例如上下文切换或句子边界
+- 输入门何时激活，例如出现重要的新信息时
+- 门的互补性，例如遗忘门与输入门之间的负相关
+- 识别门行为中的模式
 
-**Lines of code:** ~400 lines  
-**Study time:** 2-3 hours
+**代码量：** 约 300 行  
+**学习用时：** 1-2 小时
 
 ---
 
-### Exercise 5: LSTM vs GRU Comparison
-**File:** `exercise_05_solution.py`  
-**Difficulty:** Hard  
-**What's included:**
-- Complete `GRU` class implementation from scratch
-- `compare_lstm_gru()` - side-by-side training
-- `analyze_comparison()` - comprehensive analysis
-- `visualize_comparison()` - 4-panel comparison
-- Performance, speed, and parameter count metrics
+### 练习 3：消融研究
+**文件：** `exercise_03_solution.py`  
+**难度：** 中  
+**包含内容：**
+- `VanillaRNN` 类（基线）
+- `LSTMNoForgetGate` 类（f 始终为 1）
+- `LSTMNoInputGate` 类（i 始终为 1）
+- `LSTMNoOutputGate` 类（o 始终为 1）
+- `run_ablation_study()`：训练 5 种模型
+- `analyze_results()`：比较性能
+- `visualize_comparison()`：综合四面板对比图
 
-**Key learning points:**
-- GRU simplification: 2 gates vs 3, single state vs dual
-- GRU has 25-30% fewer parameters
-- GRU trains 10-20% faster
-- Similar final performance on most tasks
-- When to use each architecture (LSTM for very long sequences, GRU for speed)
+**学习重点：**
+- 原仓库认为遗忘门最关键，能够抑制细胞状态的持续累积；具体重要性需实验验证
+- 输入门控制写入，帮助避免饱和
+- 输出门控制对外暴露的信息
+- 各门协作影响整体性能
 
-**Lines of code:** ~600 lines  
-**Study time:** 3-4 hours
-
----
-
-## Solution Features
-
-All solutions include:
-
-- **Detailed comments** explaining every step
-- **Type hints** in docstrings
-- **Error handling** for edge cases
-- **Test functions** to verify correctness
-- **Print statements** for debugging
-- **Clear variable names** (no single letters)
-- **Mathematical notation** in comments
+**代码量：** 约 500 行  
+**学习用时：** 2-3 小时
 
 ---
 
-## Learning Tips
+### 练习 4：长程依赖
+**文件：** `exercise_04_solution.py`  
+**难度：** 中  
+**包含内容：**
+- `generate_copy_task()`：记住并复现序列
+- `generate_delayed_xor_task()`：跨越延迟记住两个比特
+- `train_on_memory_task()`：训练循环
+- `evaluate_memory_capacity()`：在不同延迟下测试
+- `analyze_cell_state_evolution()`：跟踪细胞状态变化
+- `visualize_memory_capacity()`：准确率与延迟关系图
+- `visualize_cell_state()`：细胞状态热力图
 
-### If You're Comparing Your Solution
+**学习重点：**
+- LSTM 记忆容量的限制
+- 信息保留期间细胞状态的稳定性
+- 延迟增加时性能如何变化
+- LSTM 为什么更擅长处理长程依赖
 
-Look for these aspects:
-
-1. **Correctness** - Does it produce the right output?
-2. **Efficiency** - Are there unnecessary loops?
-3. **Readability** - Would someone else understand your code?
-4. **Comments** - Did you explain the "why", not just the "what"?
-5. **Edge cases** - Did you handle empty inputs, NaNs, etc.?
-
-### Common Mistakes to Check
-
-- Forget gate bias not initialized to 1
-- Mixing up cell state (C) and hidden state (h)
-- Not clipping gradients (causes explosion)
-- Using wrong activation (sigmoid vs tanh)
-- Shape mismatches in matrix operations
-- Not detaching states between sequences
-
----
-
-## Comparison with Your Implementation
-
-### Use this checklist:
-
-- [ ] Does your forward pass match the equations?
-- [ ] Are gradients flowing correctly backward?
-- [ ] Do gate values stay in [0, 1] range?
-- [ ] Is cell state updating via addition (not multiplication)?
-- [ ] Are you clipping gradients to prevent explosion?
-- [ ] Does your model train (loss decreases)?
-- [ ] Can it generate reasonable text?
+**代码量：** 约 400 行  
+**学习用时：** 2-3 小时
 
 ---
 
-## Going Further
+### 练习 5：LSTM 与 GRU 对比
+**文件：** `exercise_05_solution.py`  
+**难度：** 高  
+**包含内容：**
+- 从零实现的完整 `GRU` 类
+- `compare_lstm_gru()`：并列比较训练
+- `analyze_comparison()`：综合分析
+- `visualize_comparison()`：四面板对比
+- 性能、速度与参数量指标
 
-After completing the exercises, try:
+**学习重点：**
+- GRU 的简化：两个门对比三个门，单状态对比双状态
+- 原仓库经验：GRU 参数少 25-30%；总量需按架构计算
+- 原仓库经验：GRU 训练快 10-20%；需按实际实现验证
+- 在不少任务上最终表现接近
+- 如何选择架构，例如重视长程依赖时考虑 LSTM，重视速度时考虑 GRU
 
-1. **Optimize for speed** - Vectorize operations
-2. **Add features** - Peephole connections, layer norm
-3. **Scale up** - Larger hidden size, deeper networks
-4. **Real tasks** - Sentiment analysis, NER, time series
-5. **Compare frameworks** - Implement in PyTorch/TensorFlow
-
----
-
-## Additional Resources
-
-- **Original paper:** Hochreiter & Schmidhuber (1997)
-- **Colah's blog:** "Understanding LSTM Networks" (well-known visualizations)
-- **Day 2 README:** Complete LSTM explanation
-- **Day 2 notebook:** Interactive walkthrough
-
----
-
-## Need Help?
-
-If you're stuck after reviewing the solution:
-
-1. **Re-read the relevant section** in README.md
-2. **Check the notebook** for interactive examples
-3. **Print intermediate values** to debug
-4. **Open an issue** on GitHub with your question
-5. **Join the discussion** to ask the community
+**代码量：** 约 600 行  
+**学习用时：** 3-4 小时
 
 ---
 
-## Solution Status
+## 解答特点
+
+原仓库将解答的特点概括为：
+
+- **详细注释**：解释每一步
+- 文档字符串中的**类型说明**
+- 边界情况的**错误处理**
+- 验证正确性的**测试函数**
+- 用于调试的**打印语句**
+- **清晰的变量名**（原文称不使用单字母）
+- 注释中的**数学表达式**
+
+---
+
+## 学习建议
+
+### 比较自己的解答时
+
+关注以下方面：
+
+1. **正确性**：是否产生正确输出？
+2. **效率**：是否存在不必要的循环？
+3. **可读性**：其他人能否理解代码？
+4. **注释**：是否解释了原因，而不只是描述操作？
+5. **边界情况**：是否处理空输入、NaN 等情况？
+
+### 检查常见错误
+
+- 遗忘门偏置没有初始化为 1
+- 混淆细胞状态（C）与隐藏状态（h）
+- 没有裁剪梯度，可能造成梯度爆炸
+- 混用 sigmoid 与 tanh
+- 矩阵运算形状不匹配
+- 在自动微分实现中没有在序列边界切断状态梯度；本章 NumPy 实现显式管理梯度
+
+---
+
+## 与自己的实现比较
+
+### 使用以下检查表
+
+- [ ] 前向传播是否与方程一致？
+- [ ] 梯度是否正确反向传递？
+- [ ] 门值是否位于 [0, 1]？
+- [ ] 细胞状态是否按加性更新方程计算？
+- [ ] 是否使用梯度裁剪防止爆炸？
+- [ ] 模型能否学习，损失是否下降？
+- [ ] 是否能生成合理文本？
+
+---
+
+## 进一步探索
+
+完成练习后，可以尝试：
+
+1. **优化速度**：使用向量化运算
+2. **添加机制**：窥孔连接、层归一化
+3. **扩大规模**：更大的隐藏状态、更深的网络
+4. **实际任务**：情感分析、命名实体识别、时间序列
+5. **框架对比**：用 PyTorch 或 TensorFlow 实现
+
+---
+
+## 其他资源
+
+- **原始论文：** Hochreiter 与 Schmidhuber（1997）
+- **Colah 博客：**《理解 LSTM 网络》（Understanding LSTM Networks），含常用图解
+- **第 2 天 README：** LSTM 完整说明
+- **第 2 天 Notebook：** 交互式教程
+
+---
+
+## 需要帮助时
+
+阅读解答后仍有困难时：
+
+1. **重读** README.md 的相关章节
+2. **查看 Notebook** 中的交互示例
+3. **打印中间值**以调试
+4. 在 GitHub **创建议题**描述问题
+5. **参与讨论**，向社区提问
+
+---
+
+## 原仓库列出的解答状态
 
 | Exercise | Solution Available | Verified | Study Time |
 |----------|-------------------|----------|------------|
@@ -224,25 +224,25 @@ If you're stuck after reviewing the solution:
 | 4. Long-Range Deps | Available | Tested | 2-3 hours |
 | 5. LSTM vs GRU | Available | Tested | 3-4 hours |
 
-**Total:** All 5 solutions are complete and ready for study!
+**原仓库总结：** 5 份解答均可供学习。上述“已测试”为原文状态，不代表本次汉化已重新运行所有完整实验。
 
 ---
 
-## Completion Checklist
+## 完成检查表
 
-Once you've completed all 5 exercises, you will have:
+完成全部 5 个练习后，你将：
 
-- Built an LSTM from scratch with all 4 gates
-- Analyzed gate behavior and activation patterns
-- Tested component importance via ablation study
-- Measured memory capacity with synthetic tasks
-- Compared LSTM with GRU architectures
-- Understood mathematical foundations deeply
-- Debugged common training issues
-- Visualized internal states and gradients
+- 从零构建含四组变换的 LSTM
+- 分析门行为与激活模式
+- 通过消融研究测试组成部分的重要性
+- 用合成任务测量记忆容量
+- 比较 LSTM 与 GRU 架构
+- 深入理解数学基础
+- 排查常见训练问题
+- 可视化内部状态与梯度
 
-You're ready for Day 3.
+可以继续学习第 3 天。
 
 ---
 
-*Remember: The best way to learn is to struggle through it yourself first. Use these solutions as a guide, not a shortcut!*
+*学习时请先独立尝试，用这些解答引导思考。*

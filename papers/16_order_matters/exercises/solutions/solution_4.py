@@ -1,8 +1,8 @@
 """
-Solution 4: Convex Hull with Pointer Networks
+解答 4：使用指针网络求凸包
 ==============================================
 
-Implementation of a geometry-aware Pointer Network.
+感知几何结构的指针网络实现。
 """
 
 import torch
@@ -55,4 +55,4 @@ def train_convex_hull():
         optimizer.step()
 
 if __name__ == "__main__":
-    print("Convex Hull solution loaded.")
+    print('凸包参考解答已加载。')

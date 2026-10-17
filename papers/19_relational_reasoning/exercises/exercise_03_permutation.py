@@ -3,22 +3,22 @@ from implementation import RelationNetwork
 
 def verify_invariance():
     """
-    TODO: Programmatically prove that the RN is permutation invariant.
-    Section 2.1 states: "RNs are invariant to the order of objects in the set."
+    TODO：通过程序检查 RN 的排列不变性；有限测试不等于数学证明。
+    第 2.1 节原仓库引文：“RN 对集合中对象的顺序保持不变。”
     
-    1. Create a set of random objects (B=1, N=5, D=8).
-    2. Create a RelationNetwork.
-    3. Forward pass objects.
-    4. Shuffle the objects along the N dimension.
-    5. Forward pass shuffled objects.
-    6. Assert that the outputs are identical.
+    1. 创建随机对象集合（B=1、N=5、D=8）。
+    2. 创建 RelationNetwork。
+    3. 对原始对象执行前向传播。
+    4. 沿 N 维打乱对象。
+    5. 对打乱后的对象执行前向传播。
+    6. 断言两次输出一致。
     """
-    # YOUR CODE HERE
+    # 在此填写代码
     pass
 
 if __name__ == "__main__":
     print("-" * 50)
-    print("Exercise 3: Order Invariance Proof")
+    print('练习 3：顺序不变性验证')
     print("-" * 50)
     verify_invariance()
-    print("Exercise 3: [COMPLETE]")
+    print('练习 3：[COMPLETE]')

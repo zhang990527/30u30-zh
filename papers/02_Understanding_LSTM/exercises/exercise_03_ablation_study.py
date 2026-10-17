@@ -1,23 +1,23 @@
 """
-Exercise 3: Ablation Study
+练习 3：消融研究
 ===========================
 
-Goal: Remove each gate one at a time and measure the impact.
+目标：每次移除一个门，并测量影响。
 
-Your Task:
-- Implement 4 LSTM variants (no forget, no input, no output, baseline)
-- Train all 4 on the same task
-- Compare performance metrics
-- Explain which gates are most critical
+你的任务：
+- 实现 4 种 LSTM 变体：无遗忘门、无输入门、无输出门及基线
+- 在相同任务上训练 4 种模型
+- 比较性能指标
+- 解释哪些门最关键
 
-Learning Objectives:
-1. Understand which gates are essential
-2. See how gates complement each other
-3. Learn trade-offs between complexity and performance
-4. Gain intuition for LSTM design choices
+学习目标：
+1. 理解哪些门不可或缺
+2. 观察各门如何互补
+3. 学习复杂度与性能的权衡
+4. 建立对 LSTM 设计选择的直观认识
 
-Time: 1-2 hours
-Difficulty: Medium
+用时：1-2 小时
+难度：中
 """
 
 import numpy as np
@@ -29,56 +29,56 @@ from implementation import LSTM
 
 
 class LSTMNoForget(LSTM):
-    """LSTM with forget gate fixed to 1 (always remember)."""
+    """将遗忘门固定为 1 的 LSTM（始终保留旧状态）。"""
     
     def forward(self, inputs, targets, h_prev, C_prev):
         """
-        Modified forward pass with f_t = 1.
+        将前向传播修改为 f_t = 1。
         
-        TODO 1: Copy the forward method from LSTM but set f_t = np.ones(...)
+        TODO 1：复制 LSTM 的 forward 方法，但令 f_t = np.ones(...)
         """
-        # Your code here
+        # 在此填写代码
         pass
 
 
 class LSTMNoInput(LSTM):
-    """LSTM with input gate fixed to 1 (always add)."""
+    """将输入门固定为 1 的 LSTM（始终写入候选值）。"""
     
     def forward(self, inputs, targets, h_prev, C_prev):
         """
-        Modified forward pass with i_t = 1.
+        将前向传播修改为 i_t = 1。
         
-        TODO 2: Copy the forward method from LSTM but set i_t = np.ones(...)
+        TODO 2：复制 LSTM 的 forward 方法，但令 i_t = np.ones(...)
         """
-        # Your code here
+        # 在此填写代码
         pass
 
 
 class LSTMNoOutput(LSTM):
-    """LSTM with output gate fixed to 1 (always output everything)."""
+    """将输出门固定为 1 的 LSTM（始终输出全部变换后的细胞状态）。"""
     
     def forward(self, inputs, targets, h_prev, C_prev):
         """
-        Modified forward pass with o_t = 1.
+        将前向传播修改为 o_t = 1。
         
-        TODO 3: Copy the forward method from LSTM but set o_t = np.ones(...)
+        TODO 3：复制 LSTM 的 forward 方法，但令 o_t = np.ones(...)
         """
-        # Your code here
+        # 在此填写代码
         pass
 
 
 def train_model(model, text, char_to_idx, num_iterations=1000):
     """
-    Train a model and return loss history.
+    训练模型，返回损失历史。
     
-    Args:
-        model: LSTM model to train
-        text: Training text
-        char_to_idx: Character to index mapping
-        num_iterations: Number of training iterations
+    参数：
+        model：待训练的 LSTM 模型
+        text：训练文本
+        char_to_idx：字符到索引的映射
+        num_iterations：训练迭代次数
     
-    Returns:
-        losses: List of loss values
+    返回：
+        losses：损失值列表
     """
     hidden_size = model.hidden_size
     seq_length = 25
@@ -91,12 +91,12 @@ def train_model(model, text, char_to_idx, num_iterations=1000):
     
     print("Training...")
     for iteration in range(num_iterations):
-        # TODO 4: Implement training loop
-        # - Sample random sequence
-        # - Forward pass
-        # - Backward pass
-        # - Update weights
-        # - Store loss
+        # TODO 4：实现训练循环
+        # - 随机抽取序列
+        # - 前向传播
+        # - 反向传播
+        # - 更新权重
+        # - 存储损失
         
         pass
     
@@ -105,37 +105,37 @@ def train_model(model, text, char_to_idx, num_iterations=1000):
 
 def compare_models(text, char_to_idx, hidden_size=64):
     """
-    Compare all 4 model variants.
+    比较 4 种模型变体。
     
-    TODO 5: Create and train all 4 models:
-    - Baseline LSTM
-    - No Forget Gate
-    - No Input Gate
-    - No Output Gate
+    TODO 5：创建并训练这 4 种模型：
+    - 基线 LSTM
+    - 无遗忘门
+    - 无输入门
+    - 无输出门
     
-    Returns:
-        results: Dictionary mapping model name to loss history
+    返回：
+        results：模型名称到损失历史的映射字典
     """
     vocab_size = len(char_to_idx)
     results = {}
     
-    # TODO 6: Create baseline LSTM
-    print("\n1. Training baseline LSTM...")
+    # TODO 6：创建基线 LSTM
+    print('\n1. 正在训练基线 LSTM……')
     # baseline = LSTM(...)
     # results['Baseline'] = train_model(...)
     
-    # TODO 7: Create and train no-forget LSTM
-    print("\n2. Training LSTM without forget gate...")
+    # TODO 7：创建并训练无遗忘门 LSTM
+    print('\n2. 正在训练无遗忘门的 LSTM……')
     # no_forget = LSTMNoForget(...)
     # results['No Forget'] = train_model(...)
     
-    # TODO 8: Create and train no-input LSTM
-    print("\n3. Training LSTM without input gate...")
+    # TODO 8：创建并训练无输入门 LSTM
+    print('\n3. 正在训练无输入门的 LSTM……')
     # no_input = LSTMNoInput(...)
     # results['No Input'] = train_model(...)
     
-    # TODO 9: Create and train no-output LSTM
-    print("\n4. Training LSTM without output gate...")
+    # TODO 9：创建并训练无输出门 LSTM
+    print('\n4. 正在训练无输出门的 LSTM……')
     # no_output = LSTMNoOutput(...)
     # results['No Output'] = train_model(...)
     
@@ -144,78 +144,78 @@ def compare_models(text, char_to_idx, hidden_size=64):
 
 def plot_comparison(results):
     """
-    Plot loss curves for all models.
+    绘制所有模型的损失曲线。
     
-    TODO 10: Create a plot comparing all 4 models
-    - Use different colors for each
-    - Add legend
-    - Label axes
-    - Add title
+    TODO 10：创建比较 4 种模型的图
+    - 各模型使用不同颜色
+    - 添加图例
+    - 标注坐标轴
+    - 添加标题
     """
     plt.figure(figsize=(12, 6))
     
-    # Your plotting code here
+    # 在此编写绘图代码
     
     plt.show()
 
 
 def analyze_results(results):
     """
-    Analyze and compare final performance.
+    分析并比较最终性能。
     
-    TODO 11: Compute and print:
-    - Final loss for each model
-    - Convergence speed (iterations to reach threshold)
-    - Ranking from best to worst
+    TODO 11：计算并打印：
+    - 各模型的最终损失
+    - 收敛速度：达到阈值所需的迭代次数
+    - 从优到劣的排名
     """
     print("\n" + "=" * 60)
-    print("RESULTS ANALYSIS")
+    print('结果分析')
     print("=" * 60)
     
-    # Your analysis here
+    # 在此进行分析
 
 
 def write_conclusions():
     """
-    Write conclusions about which gates matter most.
+    撰写哪些门最重要的结论。
     
-    TODO 12: Answer these questions:
-    1. Which gate removal hurt performance the most?
-    2. Why do you think that gate is most important?
-    3. Can the LSTM function without any single gate?
-    4. What does this tell you about LSTM design?
+    TODO 12：回答以下问题：
+    1. 移除哪个门对性能影响最大？
+    2. 为什么你认为该门最重要？
+    3. 移除任一单个门后，LSTM 还能工作吗？
+    4. 这对理解 LSTM 的设计有何启发？
     """
     print("\n" + "=" * 60)
     print("CONCLUSIONS")
     print("=" * 60)
     
-    print("\nYour conclusions here...")
+    print('\n在此填写你的结论……')
 
 
 if __name__ == "__main__":
     print(__doc__)
     
-    # Create training data
+    # 创建训练数据
     with open('../data/input.txt', 'r') as f:
         text = f.read()
     
     chars = sorted(list(set(text)))
     char_to_idx = {ch: i for i, ch in enumerate(chars)}
     
-    print(f"Training on {len(text)} characters")
-    print(f"Vocabulary size: {len(chars)}")
+    print(f"正在训练，文本长度为 {len(text)} 个字符")
+    print(f"词表大小：{len(chars)}")
     
-    # Compare models
+    # 比较模型
     results = compare_models(text, char_to_idx)
     
-    # Plot
+    # 绘图
     plot_comparison(results)
     
-    # Analyze
+    # 分析
     analyze_results(results)
     
-    # Conclusions
+    # 结论
     write_conclusions()
     
-    print("\nExercise 3 complete.")
-    print("Compare with solutions/solution_03_ablation_study.py")
+    print('\n练习 3 结束。')
+    print('与 solutions/solution_03_ablation_study.py 比较（原文路径；实际为 exercise_03_solution.py）')

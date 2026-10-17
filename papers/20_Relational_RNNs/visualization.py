@@ -1,12 +1,12 @@
 """
-Day 20: Relational RNNs - Visualization
+第 20 天：关系 RNN 可视化
 ===================================================================
 
-Plots to understand Relational Memory:
-- Attention Heatmaps: See *where* the model looks in its own memory
-- Loss Comparison: RMC vs LSTM learning curves
+用于理解关系记忆的图表：
+- 注意力热图：观察模型关注自身记忆的哪些位置
+- 损失比较：RMC 与 LSTM 学习曲线
 
-Run `train_minimal.py --visualize` to generate these plots.
+运行 train_minimal.py --visualize 生成图表。
 """
 
 import matplotlib.pyplot as plt
@@ -16,26 +16,26 @@ import os
 
 def plot_attention_heatmap(attention_weights, save_path="attention_map.png"):
     """
-    Visualizes the self-attention weights of the RMC over time.
+    可视化 RMC 自注意力权重随时间的变化。
     
-    Args:
+    参数：
         attention_weights: (seq_len, num_heads, mem_slots, mem_slots)
-                           We will plot the average attention over heads.
-        save_path: Path to save the image.
+                           绘制各注意力头的平均权重。
+        save_path：图像保存路径。
     """
-    # Convert to numpy
+    # 转换为 numpy
     if isinstance(attention_weights, torch.Tensor):
         attention_weights = attention_weights.detach().cpu().numpy()
         
     seq_len, num_heads, slots, _ = attention_weights.shape
     
-    # Average over heads for cleaner visualization: (seq_len, slots, slots)
+    # 对注意力头取平均以简化可视化：(seq_len, slots, slots)
     avg_attention = np.mean(attention_weights, axis=1)
     
-    # We want to see how the attention matrix evolves over time.
-    # We'll plot a grid of heatmaps: One for each time step (or a subset).
+    # 观察注意力矩阵随时间的变化。
+    # 绘制热图网格，每个时间步或选定子集对应一张。
     
-    # If sequence is long, limit to first 10 steps or sample
+    # 若序列较长，最多显示前 10 步或抽样
     plot_steps = min(seq_len, 10)
     
     fig, axes = plt.subplots(1, plot_steps, figsize=(2 * plot_steps, 2.5))
@@ -44,35 +44,35 @@ def plot_attention_heatmap(attention_weights, save_path="attention_map.png"):
         
     for t in range(plot_steps):
         ax = axes[t]
-        # Heatmap
+        # 热图
         im = ax.imshow(avg_attention[t], cmap='viridis', vmin=0, vmax=1)
         ax.set_title(f"t={t}")
         ax.axis('off')
         
-    # Add colorbar
+    # 添加色条
     plt.colorbar(im, ax=axes, orientation='horizontal', fraction=0.05, pad=0.1)
-    plt.suptitle("RMC Memory Self-Attention (Avg over Heads) over Time", y=0.85)
+    plt.suptitle('RMC 记忆自注意力随时间的变化（各头平均）', y=0.85)
     
     plt.savefig(save_path)
     plt.close()
-    print(f"Saved attention heatmap to {save_path}")
+    print(f"注意力热图已保存至 {save_path}")
 
 def plot_comparison(rmc_losses, lstm_losses, save_path="comparison.png"):
     """
-    Plots training loss comparison between RMC and LSTM.
+    绘制 RMC 与 LSTM 的训练损失比较。
     """
     plt.figure(figsize=(10, 6))
     
-    # Smooth curves slightly for readability if needed, but raw is honest.
-    plt.plot(rmc_losses, label='RMC (Relational)', alpha=0.8)
-    plt.plot(lstm_losses, label='LSTM (Standard)', alpha=0.8)
+    # 必要时可轻微平滑以便阅读；此处保留原始曲线。
+    plt.plot(rmc_losses, label='RMC（关系记忆）', alpha=0.8)
+    plt.plot(lstm_losses, label='LSTM（标准）', alpha=0.8)
     
-    plt.title("Training Loss: RMC vs. LSTM (N-th Farthest Task)")
-    plt.xlabel("Step")
-    plt.ylabel("MSE Loss")
+    plt.title('训练损失：RMC 与 LSTM（本章距离任务）')
+    plt.xlabel('步数')
+    plt.ylabel('均方误差损失')
     plt.legend()
     plt.grid(True, alpha=0.3)
     
     plt.savefig(save_path)
     plt.close()
-    print(f"Saved comparison plot to {save_path}")
+    print(f"比较图已保存至 {save_path}")

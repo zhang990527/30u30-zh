@@ -1,12 +1,12 @@
-# Day 8: AlexNet - Solutions
+# 第 8 天：AlexNet——参考解答
 
-Complete solutions to all AlexNet exercises.
+所有 AlexNet 练习的完整解答。
 
 ---
 
-## Exercise 1 Solution: GPU Impact Simulator
+## 练习 1 解答：GPU 影响模拟器
 
-**Complete Solution**:
+**完整解答：**
 
 ```python
 import torch
@@ -181,7 +181,7 @@ print(f"AlexNet was split across 2 GPUs due to memory constraints")
 print(f"Modern GPUs: 8GB-80GB, networks use data parallelism instead")
 ```
 
-**Expected Output**:
+**预期输出：**
 ```
 Benchmarking batch size: 32
 GPU time: 0.2341s (136.7 img/s)
@@ -205,17 +205,17 @@ Average speedup: 27.2x faster
 At batch 256: 31.1x faster
 ```
 
-**Key Insights**:
-1. **GPU advantage grows with batch size** - Better parallelization
-2. **30x speedup is realistic** - This made deep learning practical
-3. **Memory constraints mattered in 2012** - Forced dual-GPU design
-4. **Today's solution: larger batches** - Not model splitting
+**关键见解：**
+1. **GPU 优势随批大小增大**——并行更充分
+2. **30 倍加速是现实可行的**——这使深度学习走向实用
+3. **2012 年内存限制很重要**——迫使设计采用双 GPU
+4. **今天的方案：更大批次**——无需拆分模型
 
 ---
 
-## Exercise 2 Solution: ReLU vs Sigmoid
+## 练习 2 解答：ReLU 与 Sigmoid
 
-**Complete Solution**:
+**完整解答：**
 
 ```python
 import torch
@@ -415,7 +415,7 @@ print(f"Sigmoid training time:  {results['Sigmoid']['time']:.2f}s")
 print(f"Tanh training time:     {results['Tanh']['time']:.2f}s")
 ```
 
-**Expected Output**:
+**预期输出：**
 ```
 ============================================================
 KEY FINDINGS: Why ReLU Revolutionized Deep Learning
@@ -433,17 +433,17 @@ Sigmoid training time:  18.76s
 Tanh training time:     15.92s
 ```
 
-**Key Insights**:
-1. **ReLU has 19x larger gradients** than Sigmoid (not vanishing!)
-2. **ReLU trains 50% faster** than Sigmoid
-3. **ReLU achieves better accuracy** with same network
-4. **This simple change was revolutionary** in 2012
+**关键见解：**
+1. **ReLU 的梯度比 Sigmoid 大 19 倍**（没有消失！）
+2. **ReLU 比 Sigmoid 训练快 50%**
+3. 相同网络下，**ReLU 取得更高准确率**
+4. 在 2012 年，**这个简单改变具有革命性**
 
 ---
 
-## Exercise 3 Solution: Learning Rate Scheduling
+## 练习 3 解答：学习率调度
 
-**Complete Solution**:
+**完整解答：**
 
 ```python
 import torch
@@ -675,7 +675,7 @@ for schedule_name, data in results.items():
           f"Final={data['final_acc']:.2f}%")
 ```
 
-**Expected Output**:
+**预期输出：**
 ```
 constant        :  50 epochs to 80%, Final=75.23%
 step            :  28 epochs to 80%, Final=82.45%
@@ -684,18 +684,18 @@ cosine          :  24 epochs to 80%, Final=83.12%
 warmup_cosine   :  20 epochs to 80%, Final=84.01%  ← Best!
 ```
 
-**Key Insights**:
-1. **Constant LR fails to converge** (too aggressive)
-2. **Step decay helps**, but discrete jumps cause instability
-3. **Exponential decay smoother**, but still suboptimal
-4. **Cosine annealing best**, smooth decay to low LR
-5. **Warmup + Cosine optimal**, prevents early learning rate spikes
+**关键见解：**
+1. **恒定学习率无法收敛**（过于激进）
+2. **阶梯衰减有效**，但离散跳变导致不稳定
+3. **指数衰减更平滑**，但仍非最优
+4. **余弦退火最好**，平滑衰减至低学习率
+5. **预热 + 余弦最优**，防止初期学习率突增
 
 ---
 
-## Exercise 4 Solution: Data Augmentation Importance
+## 练习 4 解答：数据增强的重要性
 
-**Complete Solution**:
+**完整解答：**
 
 ```python
 import torch
@@ -925,7 +925,7 @@ print(f"- AlexNet-style: Best test accuracy, minimal overfitting")
 print(f"\nAugmentation is essentially regularization through data variety!")
 ```
 
-**Expected Output**:
+**预期输出：**
 ```
 none            : Accuracy=68.34%, Gap=0.4521  ← High overfitting
 basic           : Accuracy=72.45%, Gap=0.2134
@@ -939,9 +939,9 @@ Conclusion:
 
 ---
 
-## Exercise 5 Solution: Batch Normalization Impact
+## 练习 5 解答：批归一化的影响
 
-**Complete Solution** (continuing in next section due to length)
+**完整解答**（由于篇幅较长，下节继续）
 
 ```python
 import torch
@@ -1209,7 +1209,7 @@ print(f"- BN provides implicit regularization")
 print(f"\nBatch Normalization: One of the most important innovations in deep learning!")
 ```
 
-**Expected Output**:
+**预期输出：**
 ```
 Epochs to Convergence:
   Without BN: 18 epochs
@@ -1227,24 +1227,24 @@ Conclusion:
 
 ---
 
-## Key Takeaways
+## 要点
 
-**AlexNet Innovations That Changed Deep Learning**:
-1. ✅ **GPU acceleration** - Made large-scale training practical
-2. ✅ **ReLU activation** - Solved vanishing gradients (19x better gradients than sigmoid)
-3. ✅ **Aggressive data augmentation** - Regularization through data diversity
-4. ✅ **Learning rate scheduling** - Smooth convergence (2-3x improvement)
-5. ✅ **Dropout** - Regularization technique that works!
+**改变深度学习的 AlexNet 创新：**
+1. ✅ **GPU 加速**——使大规模训练走向实用
+2. ✅ **ReLU 激活**——解决梯度消失（梯度比 sigmoid 好 19 倍）
+3. ✅ **强数据增强**——通过数据多样性实现正则化
+4. ✅ **学习率调度**——平稳收敛（提高 2-3 倍）
+5. ✅ **随机失活**——有效的正则化技术！
 
-**Modern Improvements** (Exercises shown how):
-1. Batch Normalization (AlexNet didn't have this)
-2. Better learning rate schedules (warmup + cosine)
-3. Stronger augmentation strategies
-4. Skip connections (ResNets, coming next!)
+**现代改进**（练习中已展示方法）：
+1. 批归一化（AlexNet 当时没有）
+2. 更好的学习率调度（预热 + 余弦）
+3. 更强的数据增强策略
+4. 跳跃连接（下一章的 ResNet！）
 
-**Historical Context**:
-- AlexNet (2012) won ImageNet by a huge margin (84.7% vs 73.8%)
-- Made deep learning practical with GPU acceleration
-- Every technique here is still used in 2024!
+**历史背景：**
+- AlexNet（2012）以巨大优势赢得 ImageNet（84.7% 对 73.8%）
+- 借助 GPU 加速使深度学习走向实用
+- 这里的每项技术在 2024 年仍然使用！
 
-🚀 **You now understand why AlexNet was revolutionary!**
+🚀 **现在你已经理解 AlexNet 为何具有革命性！**

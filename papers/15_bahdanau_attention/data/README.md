@@ -1,54 +1,54 @@
-# Data Directory
+# 数据目录
 
-This folder contains data for the Bahdanau Attention experiments.
+本目录说明 Bahdanau 注意力实验所用的数据。
 
-## Toy Dataset: Sequence Reversal
+## 玩具数据集：序列反转
 
-For learning attention, we use a synthetic **sequence reversal** task:
+为了学习注意力，我们采用合成的**序列反转**任务：
 
 ```
-Input:  [5, 3, 8, 2, 1]
-Output: [1, 2, 8, 3, 5]
+输入：[5, 3, 8, 2, 1]
+输出：[1, 2, 8, 3, 5]
 ```
 
-### Why This Task?
+### 为何使用这个任务？
 
-1. **Easy to verify** - You can check correctness instantly
-2. **Clear attention pattern** - Should form a reversed diagonal
-3. **No external data needed** - Generated on-the-fly
-4. **Fast training** - Converges in ~30 epochs
+1. **易于验证**——可以立即检查是否正确
+2. **注意力模式清晰**——应形成反对角线
+3. **无需外部数据**——即时生成
+4. **训练较快**——原仓库预期约 30 轮收敛，具体需运行验证
 
-### Special Tokens
+### 特殊词元
 
-| Token | ID | Purpose |
+| 词元 | ID | 用途 |
 |-------|-----|---------|
-| PAD   | 0   | Padding for batching |
-| SOS   | 1   | Start of sequence |
-| EOS   | 2   | End of sequence |
-| Data  | 3+  | Actual sequence values |
+| PAD   | 0   | 为批处理填充 |
+| SOS   | 1   | 序列开始 |
+| EOS   | 2   | 序列结束 |
+| Data  | 3+  | 实际序列取值 |
 
-## Real-World Datasets
+## 真实数据集
 
-For actual machine translation, consider:
+对于实际机器翻译，可考虑：
 
-### Small (For Learning)
-- **Multi30k** - 30k English-German sentence pairs
-- **Tatoeba** - Community-translated sentences
-- **IWSLT** - TED talk translations
+### 小型数据集（用于学习）
+- **Multi30k**——30k 个英德句对
+- **Tatoeba**——社区翻译的句子
+- **IWSLT**——TED 演讲翻译
 
-### Large (For Research)
-- **WMT** - Workshop on Machine Translation datasets
-- **Europarl** - European Parliament proceedings
-- **OpenSubtitles** - Movie subtitles
+### 大型数据集（用于研究）
+- **WMT**——机器翻译研讨会数据集
+- **Europarl**——欧洲议会议事记录
+- **OpenSubtitles**——电影字幕
 
-## Generating Data
+## 生成数据
 
-The training script generates data automatically:
+训练脚本自动生成数据：
 
 ```python
 from train import ReversalDataset
 
-# Create dataset
+# 创建数据集
 dataset = ReversalDataset(
     num_samples=5000,
     min_len=4,
@@ -56,18 +56,18 @@ dataset = ReversalDataset(
     vocab_size=50
 )
 
-# Get a sample
+# 获取一个样本
 src, trg = dataset[0]
-print(f"Source: {src.tolist()}")
-print(f"Target: {trg.tolist()}")
+print(f"源序列：{src.tolist()}")
+print(f"目标序列：{trg.tolist()}")
 ```
 
-## Data Format
+## 数据格式
 
-Each sample is a tuple of:
-- `src`: Source sequence tensor (without special tokens)
-- `trg`: Target sequence tensor (with SOS and EOS)
+每个样本是包含以下内容的元组：
+- `src`：源序列张量（不含特殊词元）
+- `trg`：目标序列张量（含 SOS 和 EOS）
 
-The collate function handles:
-- Padding to equal lengths
-- Creating source length tensor for packing
+批次整理函数负责：
+- 填充至相同长度
+- 创建用于序列打包的源长度张量

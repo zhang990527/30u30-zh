@@ -1,167 +1,175 @@
-# Day 16: Order Matters: Sequence to Sequence for Sets
+# 第 16 天：顺序很重要：面向集合的序列到序列学习
 
-> Vinyals, Bengio, Kudlur (2015) - [Original Paper](https://arxiv.org/abs/1511.06391)
+> Vinyals、Bengio、Kudlur（2015）——[原论文：Order Matters: Sequence to Sequence for Sets](https://arxiv.org/abs/1511.06391)
 
-**Time:** 4-5 hours  
-**Prerequisites:** PyTorch, LSTM intuition, Linear Algebra, Attention mechanisms  
-**Code:** PyTorch (Implementation + Visualization)
-
----
-
-## What This Paper Is Actually About
-
-Vinyals et al. (2015) address the "bottleneck" of input ordering in sequence-to-sequence models (Section 1). Traditional RNN encoders are sensitive to the sequence in which elements appear, which is problematic for tasks where the input is a set (e.g., sorting, geometry).
-
-The paper introduces the **Read-Process-Write** framework. It ensures the representation of the input set is invariant to its permutation by using an attention-based encoder without positional encodings (Section 3). This allows the model to map unordered sets to ordered sequences effectively.
+**用时：**4-5 小时  
+**预备知识：**PyTorch、LSTM 的直观理解、线性代数、注意力机制  
+**代码：**PyTorch（实现与可视化）
 
 ---
 
-## What the Authors Actually Showed
+## 这篇论文究竟研究什么
 
-The authors demonstrated significant improvements in generalization compared to standard LSTMs (Section 4):
-- **Sorting (Section 4.1)**: On a dataset of random numbers, the Read-Process-Write model generalizes to sequence lengths much longer than those seen in training (e.g., training on length 5, testing on length 15), whereas standard LSTMs fail.
-- **Convex Hull (Section 4.2)**: The model identifies the subset of points forming the convex hull boundary, achieving high accuracy on the set sizes tested.
-- **TSP Performance (Section 4.3)**: On the Traveling Salesman Problem, Pointer Networks achieve tour lengths competitive with some heuristics on the tested instance sizes (Section 4.3).
+Vinyals 等（2015）研究序列到序列模型中的输入顺序“瓶颈”（第 1 节）。传统循环神经网络（RNN）编码器对元素的出现顺序敏感，这给输入本质上是集合的任务（例如排序和几何问题）带来了困难。
+
+论文提出了**读取—处理—写出（Read-Process-Write）**框架。原仓库将它描述为：通过不使用位置编码的注意力编码器，使输入集合的表示对元素置换保持不变（第 3 节），从而有效地将无序集合映射到有序序列。
 
 ---
 
-## The Core Idea: Read-Process-Write
+## 作者具体展示了什么
 
-[Our Addition: Simplified description] Instead of reading tokens one-by-one, the model "reads" the whole set, "processes" it through a global interaction layer, and "writes" the output by pointing to input elements.
+原仓库将第 4 节的泛化结果概括为以下相对于标准 LSTM 的改进：
+- **排序（第 4.1 节）**：在随机数数据集上，读取—处理—写出模型可泛化到远长于训练序列的长度（例如训练长度为 5、测试长度为 15），而标准 LSTM 在这种情况下失败。
+- **凸包（第 4.2 节）**：模型找出构成凸包边界的点的子集，在所测试的集合规模上取得较高准确率。
+- **TSP 表现（第 4.3 节）**：对于旅行商问题（Traveling Salesman Problem，TSP），指针网络在测试实例规模上的巡回路径长度可与某些启发式算法竞争（第 4.3 节）。
+
+---
+
+## 核心思想：读取—处理—写出
+
+【仓库补充：简化描述】模型不再逐个读取词元，而是“读取”整个集合，通过全局交互层进行“处理”，再通过指向输入元素来“写出”结果。
 
 ```
-Input Set: {x1, x2, x3}
+输入集合：{x1, x2, x3}
    |
-[ READ ] -> Self-Attention (permutation invariant) 
+[ 读取 ] -> 自注意力（原文称置换不变；见下方译者核验注） 
    |
-[PROCESS] -> r processing steps (global communication)
+[ 处理 ] -> r 个处理步骤（全局通信）
    |
-[ WRITE ] -> Pointer mechanism (indices as output)
+[ 写出 ] -> 指针机制（输出索引）
 ```
 
 ---
 
-## Key Experimental Results
+## 关键实验结果
 
-### 1. Sorting Numbers (Section 4.1)
-The model learns to sort lists of random numbers. Unlike standard LSTMs, which lose accuracy as sequences grow longer than those seen in training, the Read-Process-Write model generalizes significantly better to out-of-distribution lengths.
+### 1. 数字排序（第 4.1 节）
+模型学习对随机数列表排序。标准 LSTM 在序列长度超过训练范围时准确率下降；相比之下，读取—处理—写出模型对训练分布之外的长度有明显更好的泛化能力。
 
-### 2. Convex Hull (Section 4.2)
-The model is given a set of 2D points and must output the subset that forms the boundary in clockwise order. The model achieves high accuracy on the convex hull task for the set sizes tested in the paper.
+### 2. 凸包（第 4.2 节）
+给定一组二维点，模型必须按顺时针顺序输出构成边界的点的子集。模型在论文测试的集合规模上，在凸包任务中取得较高准确率。
 
-### 3. Traveling Salesman Problem (Section 4.3)
-TSP is an NP-Hard combinatorial optimization problem. The Pointer Network learns a heuristic to find high-quality tours. While it does not guarantee optimality for all complex instances, it shows that a learned pointer-based heuristic can produce competitive tours on the instance sizes tested.
+### 3. 旅行商问题（第 4.3 节）
+TSP 是 NP 难的组合优化问题。指针网络学习一种寻找高质量巡回路径的启发式方法。它不能保证所有复杂实例上的最优性，但表明学习得到的指针式启发方法可在所测试的实例规模上给出具有竞争力的巡回路径。
 
 ---
 
-## The Architecture
+## 架构
 
-### 1. READ (Order-Invariant Encoder)
-Each element $x_i$ is embedded and passed through a Self-Attention layer (Section 3). Since no positional signals are added, the final hidden state of the set is identical regardless of input order.
-- **Self-Attention**: Allows every element to communicate with every other element.
-- **No Positional Encodings**: This is the crucial difference from Transformers for sets.
+### 1. 读取（顺序不变编码器）
+将每个元素 $x_i$ 嵌入后送入自注意力层（第 3 节）。原仓库据此声称：由于没有加入位置信号，无论输入顺序如何，集合的最终隐藏状态都相同。
+- **自注意力（self-attention）**：允许每个元素与所有其他元素通信。
+- **不使用位置编码**：这是处理集合时与普通 Transformer 的关键区别。
 
-### 2. PROCESS (Search Mechanism)
-An LSTM performs $r$ "thought steps" (Section 3) before writing. In each step, it attends to the encoded set to update its own internal state.
-- **r steps**: Let's the model "search" or "reason" about the set.
-- **Query**: The LSTM's hidden state $q_t$.
-- **Key/Value**: The encoded input elements.
+### 2. 处理（搜索机制）
+LSTM 在写出前执行 $r$ 个“思考步骤”（第 3 节）。每一步都对编码后的集合施加注意力，以更新自身内部状态。
+- **r 个步骤**：让模型对集合进行“搜索”或“推理”。
+- **查询（query）**：LSTM 的隐藏状态 $q_t$。
+- **键／值（key/value）**：编码后的输入元素。
 
-### 3. WRITE (Pointer Network Decoder)
-The decoder is an LSTM that generates indices by selecting from input positions (Section 3.1):
+### 3. 写出（指针网络解码器）
+解码器是一个 LSTM，通过选择输入位置生成索引（第 3.1 节）：
 
 ```
 u_i^t = v^T * tanh(W_1 * e_i + W_2 * d_t)
 p(y_t | y_1, ..., y_{t-1}, X) = softmax(u^t)
 ```
 
-**Variables & Dimensions:**
-- `e_i` (hidden): The $i$-th encoded input element (key).
-- `d_t` (hidden): The decoder's current hidden state (query).
-- `W_1`, `W_2`: Weight matrices for the pointer attention.
-- `v`: Weight vector to project to scalar scores.
+**变量与维度：**
+- `e_i`（hidden）：第 $i$ 个编码后的输入元素（键）。
+- `d_t`（hidden）：解码器当前的隐藏状态（查询）。
+- `W_1`、`W_2`：指针注意力的权重矩阵。
+- `v`：投影到标量分数的权重向量。
 
 ---
 
-## Implementation Notes
+## 实现说明
 
-When implementing Pointer Networks, pay attention to these details:
+实现指针网络时，请注意以下细节：
 
-- **Handling Sets**: If you add positional encodings to the READ phase, you break the permutation invariance. The model should produce the same output regardless of how you shuffle the input.
-- **Sampling Without Replacement**: Once an index is selected, it should be **masked** (set to `-1e9` before softmax) so the model doesn't pick it again.
-- **Variable Lengths**: Pointer Networks naturally handle variable input sizes because the "vocabulary" is just the input set.
+- **集合处理**：如果在读取阶段加入位置编码，就会破坏置换不变性。原仓库要求模型无论如何打乱输入都生成相同输出；指针索引与元素值的区别见下方译者核验注。
+- **无放回采样**：一旦选中某个索引，就应将其**屏蔽**（在 softmax 前将分数设为 `-1e9`），以免模型再次选择它。
+- **可变长度**：指针网络的“词表”就是输入集合，因此自然支持可变输入规模。
 
-**Things that will bite you:**
-- **The "Delimiter" Token**: In some tasks (like copy), you need a special token to signal the start of decoding.
-- **Teacher Forcing**: Even with pointing, teacher forcing during training is still standard for sequence generation.
-- **Infinite Loops**: Without proper end-of-sequence logic (or a fixed output length), the model might point forever.
-- **Numerical Stability**: In the attention calculation, use `log_softmax` instead of raw softmax to prevent gradient overflow.
-- **Curriculum Learning**: The authors suggest training on smaller sets first (e.g., length 5) before moving to larger ones (length 20). This helps the model learn the "selection rule" without being overwhelmed by search complexity initially.
+**容易踩的坑：**
+- **“分隔符”词元**：某些任务（例如复制）需要特殊词元标记解码开始。
+- **教师强制（teacher forcing）**：即使采用指针输出，教师强制仍是序列生成训练中的标准做法。
+- **无限循环**：没有适当的序列结束逻辑（或固定输出长度），模型可能一直输出指针。
+- **数值稳定性**：在注意力计算中使用 `log_softmax` 代替直接计算 softmax，以降低梯度溢出的风险。
+- **课程学习（curriculum learning）**：原仓库称作者建议先在较小集合（例如长度 5）上训练，再转向较大集合（长度 20）。这样可帮助模型先学会“选择规则”，避免一开始就面对过高的搜索复杂度。
 
 ---
 
-## What to Build
+## 要构建什么
 
-### Quick Start
+### 快速开始
 
 ```bash
-# Install dependencies
+# 安装依赖
 pip install torch numpy matplotlib
 
-# Train a sorting model
+# 训练排序模型
 python train.py --task sort --set-size 10
 
-# Visualize attention heatmaps
+# 可视化注意力热力图
 python visualization.py --checkpoint checkpoints/model.pt
 ```
 
-### Exercises (in `exercises/`)
+### 练习（位于 `exercises/`）
 
-| # | Task | What You'll Get Out of It |
+| # | 任务 | 你将学到什么 |
 |---|------|---------------------------|
-| 1 | Pointer attention mechanism | Understand how decoder state selects input elements |
-| 2 | Order-invariant set encoder | Build a self-attention encoder that satisfies f(permute(X)) = f(X) |
-| 3 | Train Pointer Network for sorting | End-to-end training loop for mapping sets to sorted indices |
-| 4 | Convex hull with Pointer Networks | Apply pointer selection to a geometric boundary problem |
-| 5 | TSP approximation | Learn a heuristic for NP-Hard combinatorial optimization |
+| 1 | 指针注意力机制 | 理解解码器状态如何选择输入元素 |
+| 2 | 顺序不变集合编码器 | 构建自注意力编码器；原仓库要求 f(permute(X)) = f(X)，其适用范围见译者核验注 |
+| 3 | 训练指针网络进行排序 | 实现将集合映射到排序索引的端到端训练循环 |
+| 4 | 用指针网络求凸包 | 将指针选择用于几何边界问题 |
+| 5 | TSP 近似求解 | 学习 NP 难组合优化问题的启发式方法 |
 
-Solutions are in `exercises/solutions/`. Try to get stuck first.
-
----
-
-## Key Takeaways
-
-1. **Input order matters for standard seq2seq models.** The same set of elements produces different representations depending on the order the encoder reads them. This is a problem for tasks where input is inherently unordered (Section 1).
-
-2. **Attention-based encoding without positional information produces order-invariant representations.** The Read-Process-Write framework uses self-attention to encode the set, making the representation independent of input permutation (Section 3).
-
-3. **Pointer Networks output indices, not vocabulary tokens.** The decoder "points" back to input elements using attention scores as a selection mechanism, which allows variable-size output dictionaries (Section 2).
-
-4. **The model generalizes to longer sequences than it was trained on.** For sorting, training on length 5 and testing on length 15 works because the model learns the selection rule, not a fixed-length mapping (Section 4.1).
+参考解答位于 `exercises/solutions/`。先自己尝试，遇到困难再查看。
 
 ---
 
-## Files in This Directory
+## 要点回顾
 
-| File | What It Is |
+1. **输入顺序会影响标准 seq2seq 模型。**同一组元素会因编码器读取顺序不同而产生不同表示。对于输入本质上无序的任务，这是一个问题（第 1 节）。
+
+2. **原仓库称，不含位置信息的注意力编码可产生顺序不变表示。**其将读取—处理—写出框架描述为使用自注意力编码集合，使表示与输入置换无关（第 3 节）。请结合译者核验注区分逐元素的置换等变表示与聚合后的置换不变表示。
+
+3. **指针网络输出索引，而非固定词表中的词元。**解码器用注意力分数选择输入元素并“指回”它们，因此支持大小可变的输出词典（第 2 节）。
+
+4. **原仓库称模型可泛化到比训练序列更长的序列。**在排序任务中，长度 5 的训练可用于长度 15 的测试，因为模型学到的是选择规则，而非固定长度映射（第 4.1 节）。
+
+---
+
+## 本目录文件
+
+| 文件 | 内容 |
 |------|------------|
-| `implementation.py` | Core Pointer Network and Read-Process-Write modules |
-| `train.py` | Training script with task selection (sort, hull, TSP) |
-| `visualization.py` | Attention heatmaps and pointer trajectory plots |
-| `notebook.ipynb` | Interactive walkthrough of the full pipeline |
-| `exercises/` | 5 exercises with solutions |
-| `PAPER_NOTES.md` | Condensed notes on the original paper |
-| `CHEATSHEET.md` | Quick reference for architecture and hyperparameters |
-| `requirements.txt` | Python dependencies |
+| `implementation.py` | 核心指针网络与读取—处理—写出模块 |
+| `train.py` | 支持任务选择的训练脚本（排序、凸包、TSP） |
+| `visualization.py` | 注意力热力图与指针轨迹图 |
+| `notebook.ipynb` | 完整流程的交互式讲解 |
+| `exercises/` | 5 个练习与参考解答 |
+| `PAPER_NOTES.md` | 原论文的精简笔记 |
+| `CHEATSHEET.md` | 架构与超参数速查 |
+| `requirements.txt` | Python 依赖 |
 
 ---
 
-## Further Reading
+## 延伸阅读
 
-- [Original Paper - Order Matters (arXiv:1511.06391)](https://arxiv.org/abs/1511.06391)
-- [Pointer Networks (Vinyals et al., 2015)](https://arxiv.org/abs/1506.03134) - the predecessor that introduced the pointer mechanism
-- [Set Transformer (Lee et al., 2019)](https://arxiv.org/abs/1810.00825) - a later approach to permutation-invariant set encoding
+- [原论文：《顺序很重要》（Order Matters，arXiv:1511.06391）](https://arxiv.org/abs/1511.06391)
+- [《指针网络》（Pointer Networks，Vinyals 等，2015）](https://arxiv.org/abs/1506.03134)——提出指针机制的前作
+- [《集合 Transformer》（Set Transformer，Lee 等，2019）](https://arxiv.org/abs/1810.00825)——后续提出的置换不变集合编码方法
 
 ---
 
-**Next:** [Day 17 - Neural Turing Machines](../17_neural_turing_machines/)
+**下一章：**[第 17 天——神经图灵机](../17_neural_turing_machines/)
+
+## 译者核验注：原说明、教学实现与待核验内容
+
+- 不带位置编码的自注意力对逐元素输出满足置换等变关系 `f(PX) = P f(X)`；在关闭 dropout 的评估模式下，对输出做平均等对称聚合，才可得到置换不变表示。`implementation.py` 的 `SetEncoder.forward` 返回逐元素张量，没有聚合。原仓库多处将两者混称为“置换不变”，上文保留其观点并在此澄清。
+- 输入置换后，指针索引也必须随输入位置改变，才能指向相同元素。“输出不变”应明确指所选元素及其语义次序，不能直接要求原始索引序列相同。
+- 本地 `ReadProcessWrite` 将 Transformer 集合编码器接到一个仍含 LSTM 编码器的 `PointerNetwork`，没有单独的多步 PROCESS 模块，因此不能据此声称完整实现原论文框架或保证整个模型置换不变。
+- 本章关于论文第 4.1–4.3 节、排序长度泛化、凸包、TSP、课程学习和超参数的对应关系，尚未从可访问的一手全文核实；原仓库列出的实验数字也未在当前环境复现，不作为已验证结论。
+- 以下是原有接口问题，本次未修改算法：`train.py` 仅打印加载提示，没有命令行训练入口；文档中的训练参数及 `get_dataset` 示例因而不能直接使用。`visualization.py` 也没有解析 `--checkpoint` 的入口。请勿将示例命令视作已验证工作流。

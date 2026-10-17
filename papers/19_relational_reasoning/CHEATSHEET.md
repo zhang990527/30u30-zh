@@ -1,89 +1,102 @@
-# Day 19 Cheat Sheet: Relation Networks
+# 第 19 天速查：关系网络
 
-Concise technical reference for the Relation Network (Santoro et al., 2017).
-
----
-
-## The Big Idea
-
-A **Relation Network (RN)** is a set-processing module that forces a relational inductive bias by bottlenecking information through pairwise interactions. Unlike CNNs (local) or RNNs (sequential), the RN treats inputs as a set and processes all $N^2$ object pairings through a shared non-linear function.
+关系网络（Santoro 等，2017）的简明技术参考。
 
 ---
 
-## Quick Start
+## 核心思想
+
+**关系网络（RN）**通过成对交互瓶颈施加关系归纳偏置，是一个集合处理模块。CNN 强调局部结构，RNN 强调序列结构；RN 则把输入视为集合，通过共享非线性函数处理所有 $N^2$ 个对象对。
+
+---
+
+## 快速开始
+
 ```bash
-# Verify environment and permutation invariance
+# 验证环境与排列不变性
 python setup.py
 
-# Train on furthest point task
+# 训练最远点任务
 python train_minimal.py --mode furthest --epochs 30
 
-# Generate relation heatmaps
+# 生成关系热图
 python visualization.py --num-objects 10
 ```
 
 ---
 
-## Key Technical Relationships
+## 关键技术关系
 
-| Measure | Relation Network (RN) | Standard MLP | Transformer (Self-Attn) |
+| 指标 | 关系网络（RN） | 标准 MLP | Transformer（自注意力） |
 |:---|:---|:---|:---|
-| **Input Type** | Unstructured Set | Fixed Vector | Unstructured Set |
-| **Inductive Bias** | Relational / Pairwise | None (Global) | Relational / Dynamic |
-| **Complexity** | $O(N^2)$ | $O(1)$ | $O(N^2)$ |
-| **Order Sensitivity** | Invariant (Sum) | Sensitive | Invariant (w/o Pos Enc) |
+| **输入类型** | 无序集合 | 固定向量 | 无序集合 |
+| **归纳偏置** | 关系／成对交互 | 无显式成对结构（全局） | 关系／动态交互 |
+| **复杂度** | $O(N^2)$ | $O(1)$ | $O(N^2)$ |
+| **顺序敏感性** | 不变（求和） | 敏感 | 无位置编码时具有相应对称性 |
+
+> 译注：原表把无位置编码的 Transformer 一概称为“不变”；自注意力层通常是排列**等变**，还需对称读出才得到集合级不变输出。MLP 的 $O(1)$ 只适用于固定输入维度比较，不表示任意扩大的输入都没有额外成本。
 
 ---
 
-## Hyperparameters & Dimensions
+## 超参数与维度
 
-| Parameter | Symbol | Range | Technical Role |
+| 参数 | 符号 | 范围 | 技术作用 |
 |:---|:---|:---|:---|
-| Object Dim | $d_o$ | 32–128 | Feature vector size per entity |
-| Relation Dim | $d_r$ | 256–512 | Hidden width of $g_{\theta}$ |
-| Global Dim | $d_f$ | 256–512 | Hidden width of $f_{\phi}$ |
-| Dropout | $p$ | 0.5 | Applied in $f_{\phi}$ to prevent overfitting |
+| 对象维度 | $d_o$ | 32–128 | 每个实体的特征向量大小 |
+| 关系维度 | $d_r$ | 256–512 | $g_{\theta}$ 的隐藏层宽度 |
+| 全局维度 | $d_f$ | 256–512 | $f_{\phi}$ 的隐藏层宽度 |
+| 随机失活 | $p$ | 0.5 | 用于 $f_{\phi}$，缓解过拟合 |
 
 ---
 
-## Common Issues & Fixes
+## 常见问题与处理
 
-### 1. Model is Order-Sensitive
-**Problem**: The network produces different results if you shuffle the input set.
-**Fix**: Ensure your final aggregator is a symmetric function.
+### 1. 模型对顺序敏感
+
+**问题：**打乱输入集合后输出不同。
+
+**处理：**确保最终聚合器是对称函数。
+
 ```python
-# WRONG (Order dependent)
-aggregated = g_out.view(batch, -1) 
+# 错误：依赖顺序
+aggregated = g_out.view(batch, -1)
 
-# CORRECT (Invariant)
+# 正确：具有排列不变性
 aggregated = g_out.sum(dim=1)
 ```
 
-### 2. OOM (Out of Memory)
-**Problem**: GPU memory crashes with large object sets.
-**Fix**: Remember that RN is $O(N^2)$. If $N=128$, you are processing 16,384 pairs per batch item. Reduce batch size or number of objects ($N$).
+### 2. 内存／显存不足（OOM）
 
-### 3. Fails on Spatial Tasks (CLEVR)
-**Problem**: Model cannot reason about "left" or "right."
-**Fix**: CNN feature maps don't inherently store absolute coordinates. You must append $(x, y)$ coordinates to each object vector.
+**问题：**对象集合较大时，GPU 显存耗尽。
+
+**处理：**注意 RN 具有 $O(N^2)$ 开销。若 $N=128$，每个批次样本需处理 16,384 个对象对。减小批大小或对象数 $N$。
+
+### 3. 空间任务（CLEVR）表现不佳
+
+**问题：**模型无法判断“左边”或“右边”。
+
+**处理：**CNN 特征图不显式提供绝对坐标，应为对象向量拼接 $(x, y)$ 坐标。
 
 ---
 
-## Troubleshooting Snips
+## 排错代码片段
 
-### Handling $O(N^2)$ Out-Of-Memory
-If your object set is too large for your GPU, avoid explicit loops and use mini-batching for relations:
+### 处理 $O(N^2)$ 带来的显存不足
+
+如果对象集合超过 GPU 容量，可将关系计算分为小批次，而不是一次处理所有对象对：
+
 ```python
-# Instead of processing all N^2 at once:
+# 不一次处理全部 N^2 个对象对：
 for i in range(0, num_pairs, sub_batch_size):
     chunk = pairs[i : i + sub_batch_size]
     g_out_chunk = model.g_theta(chunk)
-    # Sum into total_rel
+    # 累加到 total_rel
 ```
 
-### Efficient Pair Broadcasting
+### 高效的对象对广播
+
 ```python
-# Recommended broadcasting logic
+# 推荐的广播逻辑
 objs_i = objects.unsqueeze(2).expand(B, N, N, D)
 objs_j = objects.unsqueeze(1).expand(B, N, N, D)
 pairs = torch.cat([objs_i, objs_j], dim=-1)
@@ -91,24 +104,26 @@ pairs = torch.cat([objs_i, objs_j], dim=-1)
 
 ---
 
-## Success Criteria
+## 成功标准
 
-- [ ] `setup.py` passes the permutation invariance check.
-- [ ] Model achieves >90% accuracy on the "count" task for $N=10$.
-- [ ] Relation heatmaps show high activations for the predicted "furthest" object.
-- [ ] `implementation.py` uses broadcasting (no Python loops) for pair generation.
+- [ ] `setup.py` 通过排列不变性检查。
+- [ ] $N=10$ 的计数任务准确率 >90%。
+- [ ] 关系热图中，预测“最远”对象具有较强激活。
+- [ ] `implementation.py` 使用广播生成对象对，没有使用 Python 循环。
+
+> 以上为原仓库提出的实验目标，不代表本次本地化已达到的测量结果。
 
 ---
 
-## File Reference
+## 文件参考
 
-| File | Use It For |
+| 文件 | 用途 |
 |:---|:---|
-| `implementation.py` | Core RN class and pairwise broadcasting logic. |
-| `train_minimal.py` | Training CLI and relational task variants. |
-| `visualization.py` | $g_{\theta}$ heatmaps and spatial distribution plots. |
-| `setup.py` | Architectural diagnostics and dependency checks. |
+| `implementation.py` | 核心 RN 类与成对广播逻辑 |
+| `train_minimal.py` | 训练命令行与关系任务变体 |
+| `visualization.py` | $g_{\theta}$ 热图与空间分布图 |
+| `setup.py` | 架构诊断与依赖检查 |
 
 ---
 
-**Next:** [Day 20 - Relational Recurrent Neural Networks](../20_relational_rnn/)
+**下一章：**[第 20 天：关系循环神经网络](../20_Relational_RNNs/)

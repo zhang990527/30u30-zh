@@ -1,11 +1,11 @@
 """
-Training script for Pointer Networks.
+指针网络训练脚本。
 =====================================
 
-Tasks supported:
-- sorting: numerical sorting
-- convex_hull: boundary point identification
-- tsp: traveling salesman problem approximation
+支持的任务：
+- sorting：数字排序
+- convex_hull：识别边界点
+- tsp：旅行商问题近似求解
 """
 
 import torch
@@ -127,4 +127,4 @@ def evaluate(model, dataloader, device):
 
 
 if __name__ == "__main__":
-    print("Training script loaded.")
+    print('训练脚本已加载。')

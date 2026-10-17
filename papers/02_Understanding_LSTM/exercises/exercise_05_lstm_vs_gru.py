@@ -1,23 +1,23 @@
 """
-Exercise 5: LSTM vs GRU Comparison
+练习 5：LSTM 与 GRU 对比
 ===================================
 
-Goal: Implement GRU and compare it to LSTM.
+目标：实现 GRU，并与 LSTM 比较。
 
-Your Task:
-- Implement a GRU (Gated Recurrent Unit) from scratch
-- Train both LSTM and GRU on the same task
-- Compare: speed, performance, parameters
-- Write a comparison report
+你的任务：
+- 从零实现门控循环单元（Gated Recurrent Unit，GRU）
+- 在相同任务上训练 LSTM 与 GRU
+- 比较速度、性能、参数量
+- 撰写比较报告
 
-Learning Objectives:
-1. Understand GRU architecture (3 gates vs 4)
-2. See trade-offs between complexity and performance
-3. Learn when to use GRU vs LSTM
-4. Appreciate design simplifications
+学习目标：
+1. 理解 GRU 架构（三组变换，对应 LSTM 的四组变换）
+2. 观察复杂度与性能之间的权衡
+3. 学习何时选择 GRU 或 LSTM
+4. 理解设计简化
 
-Time: 2-3 hours
-Difficulty: Hard
+用时：2-3 小时
+难度：高
 """
 
 import numpy as np
@@ -31,107 +31,107 @@ from implementation import LSTM
 
 class GRU:
     """
-    Gated Recurrent Unit (GRU) implementation.
-    
-    GRU is a simplified version of LSTM with 3 gates instead of 4:
-    - Reset gate: r_t = σ(W_r·[h_{t-1}, x_t] + b_r)
-    - Update gate: z_t = σ(W_z·[h_{t-1}, x_t] + b_z)
-    - Candidate: h̃_t = tanh(W·[r_t⊙h_{t-1}, x_t] + b)
-    - Hidden: h_t = (1-z_t)⊙h_{t-1} + z_t⊙h̃_t
-    
-    Key differences from LSTM:
-    - No separate cell state (only hidden state)
-    - 3 weight matrices instead of 4
-    - Update gate controls both forget and input
+    门控循环单元（GRU）的实现。
+
+    GRU 将 LSTM 的四组变换简化为三组，包含两个门和一个候选状态：
+    - 重置门：r_t = σ(W_r·[h_{t-1}, x_t] + b_r)
+    - 更新门：z_t = σ(W_z·[h_{t-1}, x_t] + b_z)
+    - 候选状态：h̃_t = tanh(W·[r_t⊙h_{t-1}, x_t] + b)
+    - 隐藏状态：h_t = (1-z_t)⊙h_{t-1} + z_t⊙h̃_t
+
+    与 LSTM 的主要区别：
+    - 没有独立细胞状态，只有隐藏状态
+    - 三组权重矩阵，而不是四组
+    - 更新门同时控制遗忘与写入
     """
     
     def __init__(self, input_size, hidden_size, output_size):
         """
-        Initialize GRU weights.
+        初始化 GRU 权重。
         
-        TODO 1: Initialize 3 weight matrices (reset, update, candidate)
+        TODO 1：初始化三组权重矩阵：重置门、更新门、候选状态
         """
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
         
-        # TODO 2: Reset gate weights
+        # TODO 2：重置门权重
         # self.Wr = ...
         # self.br = ...
         
-        # TODO 3: Update gate weights
+        # TODO 3：更新门权重
         # self.Wz = ...
         # self.bz = ...
         
-        # TODO 4: Candidate weights
+        # TODO 4：候选状态权重
         # self.Wh = ...
         # self.bh = ...
         
-        # TODO 5: Output weights
+        # TODO 5：输出权重
         # self.Wy = ...
         # self.by = ...
         
         pass
     
     def sigmoid(self, x):
-        """Sigmoid activation."""
+        """sigmoid 激活函数。"""
         return 1 / (1 + np.exp(-np.clip(x, -500, 500)))
     
     def forward(self, inputs, targets, h_prev):
         """
-        Forward pass through GRU.
+        通过 GRU 前向传播。
         
-        TODO 6: Implement GRU forward pass
+        TODO 6：实现 GRU 前向传播
         
-        For each time step:
-        1. Compute reset gate: r_t = σ(W_r·[h_{t-1}, x_t] + b_r)
-        2. Compute update gate: z_t = σ(W_z·[h_{t-1}, x_t] + b_z)
-        3. Compute candidate: h̃_t = tanh(W·[r_t⊙h_{t-1}, x_t] + b)
-        4. Update hidden: h_t = (1-z_t)⊙h_{t-1} + z_t⊙h̃_t
-        5. Compute output and loss
+        对每个时间步：
+        1. 计算重置门：r_t = σ(W_r·[h_{t-1}, x_t] + b_r)
+        2. 计算更新门：z_t = σ(W_z·[h_{t-1}, x_t] + b_z)
+        3. 计算候选状态：h̃_t = tanh(W·[r_t⊙h_{t-1}, x_t] + b)
+        4. 更新隐藏状态：h_t = (1-z_t)⊙h_{t-1} + z_t⊙h̃_t
+        5. 计算输出与损失
         
-        Note: No cell state in GRU! Only hidden state.
+        注意：GRU 没有独立细胞状态，只有隐藏状态。
         """
-        # TODO: Implement forward pass
+        # TODO：实现前向传播
         pass
     
     def backward(self):
         """
-        Backward pass (BPTT) through GRU.
+        通过 GRU 执行随时间反向传播（BPTT）。
         
-        TODO 7: Implement GRU backward pass
+        TODO 7：实现 GRU 反向传播
         
-        Hints:
-        - Gradient flows only through hidden state (no cell state)
-        - Need to backprop through reset and update gates
-        - Don't forget gradient clipping!
+        提示：
+        - 梯度仅通过隐藏状态传递，没有独立细胞状态
+        - 需要穿过重置门与更新门反向传播
+        - 不要忘记梯度裁剪
         """
-        # TODO: Implement backward pass
+        # TODO：实现反向传播
         pass
     
     def update_weights(self, learning_rate):
         """
-        Update weights using computed gradients.
+        使用计算出的梯度更新权重。
         
-        TODO 8: Update all weight matrices
+        TODO 8：更新所有权重矩阵
         """
-        # TODO: Implement weight update
+        # TODO：实现权重更新
         pass
 
 
 def count_parameters(model):
     """
-    Count total number of parameters in model.
+    统计模型参数总数。
     
-    TODO 9: Count parameters in each weight matrix
+    TODO 9：统计各权重矩阵中的参数数目
     """
     total = 0
     
     if isinstance(model, LSTM):
-        # TODO: Count LSTM parameters (Wf, Wi, Wc, Wo, Wy + biases)
+        # TODO：统计 LSTM 参数（Wf、Wi、Wc、Wo、Wy 及偏置）
         pass
     elif isinstance(model, GRU):
-        # TODO: Count GRU parameters (Wr, Wz, Wh, Wy + biases)
+        # TODO：统计 GRU 参数（Wr、Wz、Wh、Wy 及偏置）
         pass
     
     return total
@@ -139,41 +139,41 @@ def count_parameters(model):
 
 def train_model(model, text, char_to_idx, num_iterations=1000):
     """
-    Train a model and return timing + loss info.
+    训练模型并返回耗时与损失信息。
     
-    TODO 10: Implement training loop
-    - Track loss
-    - Track time per iteration
-    - Return both
+    TODO 10：实现训练循环
+    - 记录损失
+    - 记录每次迭代耗时
+    - 返回两者
     """
     losses = []
     times = []
     
-    # TODO: Implement training
+    # TODO：实现训练
     
     return losses, times
 
 
 def compare_models(text, char_to_idx, hidden_size=64):
     """
-    Compare LSTM and GRU side by side.
+    并列比较 LSTM 与 GRU。
     
-    TODO 11: Train both models and collect metrics
+    TODO 11：训练两种模型并收集指标
     """
     vocab_size = len(char_to_idx)
     
     print("\n" + "=" * 60)
-    print("MODEL COMPARISON")
+    print('模型比较')
     print("=" * 60)
     
-    # TODO 12: Create LSTM
-    print("\n1. Training LSTM...")
+    # TODO 12：创建 LSTM
+    print('\n1. 正在训练 LSTM……')
     # lstm = LSTM(vocab_size, hidden_size, vocab_size)
     # lstm_params = count_parameters(lstm)
     # lstm_losses, lstm_times = train_model(lstm, text, char_to_idx)
     
-    # TODO 13: Create GRU
-    print("\n2. Training GRU...")
+    # TODO 13：创建 GRU
+    print('\n2. 正在训练 GRU……')
     # gru = GRU(vocab_size, hidden_size, vocab_size)
     # gru_params = count_parameters(gru)
     # gru_losses, gru_times = train_model(gru, text, char_to_idx)
@@ -196,20 +196,20 @@ def compare_models(text, char_to_idx, hidden_size=64):
 
 def plot_comparison(results):
     """
-    Create comparison plots.
+    创建比较图。
     
-    TODO 14: Plot:
-    - Training loss (both models)
-    - Training speed (time per iteration)
-    - Parameter count (bar chart)
+    TODO 14：绘制：
+    - 两种模型的训练损失
+    - 训练速度：每次迭代耗时
+    - 参数量柱状图
     """
     fig, axes = plt.subplots(1, 3, figsize=(15, 4))
     
-    # TODO: Plot 1 - Loss curves
+    # TODO：图 1——损失曲线
     
-    # TODO: Plot 2 - Speed comparison
+    # TODO：图 2——速度比较
     
-    # TODO: Plot 3 - Parameter count
+    # TODO：图 3——参数量
     
     plt.tight_layout()
     plt.show()
@@ -217,61 +217,61 @@ def plot_comparison(results):
 
 def write_comparison_report(results):
     """
-    Write detailed comparison report.
+    撰写详细比较报告。
     
-    TODO 15: Answer these questions:
+    TODO 15：回答以下问题：
     
-    1. Parameters:
-       - How many parameters does each model have?
-       - What's the percentage difference?
+    1. 参数量：
+       - 每种模型有多少参数？
+       - 百分比差异是多少？
     
-    2. Training Speed:
-       - Which model trains faster?
-       - By how much (percentage)?
+    2. 训练速度：
+       - 哪种模型训练更快？
+       - 快多少，百分比是多少？
     
-    3. Final Performance:
-       - Which model achieves lower final loss?
-       - Is the difference significant?
+    3. 最终性能：
+       - 哪种模型的最终损失更低？
+       - 差异是否显著？
     
-    4. Convergence:
-       - Which model converges faster?
-       - How many iterations to reach threshold?
+    4. 收敛：
+       - 哪种模型收敛更快？
+       - 达到阈值需要多少次迭代？
     
-    5. Recommendations:
-       - When would you use LSTM?
-       - When would you use GRU?
-       - What are the trade-offs?
+    5. 建议：
+       - 何时使用 LSTM？
+       - 何时使用 GRU？
+       - 有哪些权衡？
     """
     print("\n" + "=" * 60)
-    print("COMPARISON REPORT")
+    print('比较报告')
     print("=" * 60)
     
-    print("\nYour report here...")
+    print('\n在此填写你的报告……')
 
 
 if __name__ == "__main__":
     print(__doc__)
     
-    # Load data
+    # 加载数据
     with open('../data/input.txt', 'r') as f:
         text = f.read()
     
     chars = sorted(list(set(text)))
     char_to_idx = {ch: i for i, ch in enumerate(chars)}
     
-    print(f"Training on {len(text)} characters")
-    print(f"Vocabulary size: {len(chars)}")
+    print(f"正在训练，文本长度为 {len(text)} 个字符")
+    print(f"词表大小：{len(chars)}")
     
-    # TODO 16: Run comparison
+    # TODO 16：运行比较
     # results = compare_models(text, char_to_idx)
     
-    # TODO 17: Plot results
+    # TODO 17：绘制结果
     # plot_comparison(results)
     
-    # TODO 18: Write report
+    # TODO 18：撰写报告
     # write_comparison_report(results)
     
-    print("\nExercise 5 complete.")
-    print("Compare with solutions/solution_05_lstm_vs_gru.py")
+    print('\n练习 5 结束。')
+    print('与 solutions/solution_05_lstm_vs_gru.py 比较（原文路径；实际为 exercise_05_solution.py）')
     
-    print("\nAll exercises complete. You're ready for Day 3.")
+    print('\n全部练习结束。可以继续学习第 3 天。')

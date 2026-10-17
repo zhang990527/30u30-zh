@@ -1,24 +1,24 @@
 """
-train_minimal.py - Relational Reasoning Training & Generalization Suite
+train_minimal.py：关系推理训练与泛化程序
 
-This script provides a research-grade CLI for training Relation Networks. 
-New to this version is the "Set Size Generalization" evaluation.
+本脚本提供用于训练关系网络的命令行接口。
+该版本增加“集合大小泛化”评估。
 
-Key Features:
-1. Multi-Aggregator Comparison: Training with sum, mean, or max.
-2. Set Size Generalization: Train on N objects, test on M objects.
-3. Coordinate Injection: Testing the effect of spatial awareness.
-4. Robust Performance Metrics: Tracking loss and accuracy across variants.
+主要功能：
+1. 多聚合器比较：使用 sum、mean 或 max 训练。
+2. 集合大小泛化：在 N 个对象上训练，在 M 个对象上测试。
+3. 注入坐标：测试空间感知的影响。
+4. 性能指标：跟踪不同变体的损失和准确率。
 
-Usage:
-    # Train with different aggregators
+用法：
+    # 使用不同聚合器训练
     python train_minimal.py --aggregator mean --epochs 20
     
-    # Run generalization test (Train N=5, Test N=15)
+    # 运行泛化测试（训练 N=5，测试 N=15）
     python train_minimal.py --train-n 5 --test-n 15 --epochs 30
 
-Reference: Santoro et al. (2017) - Section 4.2 (Generalization)
-Author: 30u30 Project
+原仓库引用：Santoro 等（2017）第 4.2 节（泛化）；节号待核验
+作者：30u30 项目
 """
 
 import torch
@@ -33,13 +33,13 @@ from typing import Tuple, Dict
 from implementation import RelationNetwork, add_coordinates
 
 # ============================================================================
-# RELATIONAL DATASETS
+# 关系任务数据集
 # ============================================================================
 
 class RelationalDataset(Dataset):
     """
-    Datasets for relational reasoning tasks.
-    Supports 'furthest' (spatial task) and 'count' (cardinality task).
+    关系推理任务的数据集。
+    支持 furthest（空间任务）和 count（基数任务）。
     """
     def __init__(
         self, 
@@ -53,21 +53,21 @@ class RelationalDataset(Dataset):
         self.samples = []
         
         for _ in range(num_samples):
-            # Objects are 2D coordinates in [-1, 1]
+            # 对象为 [-1, 1] 内的二维坐标
             points = np.random.uniform(-1, 1, (num_objects, 2))
             
             if mode == 'furthest':
-                # Label: Index of the point furthest from origin
-                # Proxies for "Behind/Front" spatial reasoning in CLEVR (Section 4.1).
+                # 标签：离原点最远的点的索引
+                # 作为 CLEVR 中前后空间关系任务的简化替代（原仓库引用第 4.1 节）。
                 distances = np.linalg.norm(points, axis=1)
                 target = np.argmax(distances)
             elif mode == 'count':
-                # Label: Count points in top-right quadrant
-                # Proxies for "How many" counting tasks in CLEVR (Section 4.1).
-                # Explicitly tests the 'sum' vs 'mean' inductive bias.
+                # 标签：右上象限中的点数
+                # 作为 CLEVR 中“有多少”计数任务的简化替代（原仓库引用第 4.1 节）。
+                # 显式测试 sum 与 mean 的归纳偏置。
                 target = np.sum((points[:, 0] > 0) & (points[:, 1] > 0))
             else:
-                raise ValueError(f"Unknown mode: {mode}")
+                raise ValueError(f"未知模式：{mode}")
                 
             self.samples.append((points, target))
             
@@ -78,7 +78,7 @@ class RelationalDataset(Dataset):
         points, target = self.samples[idx]
         points_tensor = torch.tensor(points).float()
         
-        # If the model is coordinate-aware, we use the specific utility
+        # 如果模型启用坐标感知，则使用相应工具函数
         if self.use_coords:
             points_tensor = add_coordinates(points_tensor.unsqueeze(0)).squeeze(0)
             
@@ -86,11 +86,11 @@ class RelationalDataset(Dataset):
 
 
 # ============================================================================
-# TRAINING LOGIC
+# 训练逻辑
 # ============================================================================
 
 def run_evaluation(model, loader, device):
-    """Utility to compute accuracy on a data loader."""
+    """计算给定数据加载器上准确率的工具函数。"""
     model.eval()
     correct = 0
     total = 0
@@ -104,12 +104,12 @@ def run_evaluation(model, loader, device):
 
 
 def run_experiment(args):
-    """Main experiment loop covering training and generalization."""
+    """包含训练与泛化评估的主实验循环。"""
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"--- Day 19 Experiment: [Task: {args.mode}] ---")
-    print(f"Aggregator: {args.aggregator} | Train N: {args.train_n} | Test N: {args.test_n}")
+    print(f"--- 第 19 天实验：[任务：{args.mode}] ---")
+    print(f"聚合器：{args.aggregator} | 训练 N：{args.train_n} | 测试 N：{args.test_n}")
     
-    # 1. Prepare Training Data (N objects)
+    # 1. 准备训练数据（N 个对象）
     train_dataset = RelationalDataset(
         mode=args.mode, 
         num_samples=args.train_samples, 
@@ -118,8 +118,8 @@ def run_experiment(args):
     )
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
     
-    # 2. Prepare Testing Data (M objects - Generalization Test)
-    # If test_n != train_n, this tests if the RN's logic generalizes to larger sets.
+    # 2. 准备测试数据（M 个对象，用于泛化测试）
+    # 若 test_n != train_n，检查 RN 逻辑能否泛化到不同大小集合。
     test_dataset = RelationalDataset(
         mode=args.mode, 
         num_samples=1000, 
@@ -128,18 +128,18 @@ def run_experiment(args):
     )
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
     
-    # 3. Build Model
-    # Determine output dimensions
+    # 3. 构建模型
+    # 确定输出维度
     if args.mode == 'furthest':
-        # Labels are 0 to N-1 for train, but for test N, it might be 0 to M-1.
-        # This is a key limitation: the final f_phi MLP is fixed to a certain output size.
-        # For generalization across set sizes, the task must have a fixed output space 
-        # (like 'count' or 'binary comparison').
+        # 训练标签为 0 到 N-1，测试标签可能为 0 到 M-1。
+        # 一个关键限制是：最终 f_phi MLP 的输出大小固定。
+        # 跨集合大小泛化时，任务应使用固定输出空间，
+        # 例如计数或二元比较，并覆盖所需标签范围。
         if args.train_n != args.test_n:
-            print("[WARNING] Set size generalization on 'furthest' task is limited by f_phi output neurons.")
+            print('[WARNING] furthest 任务的集合大小泛化受到 f_phi 输出神经元数量限制。')
         num_classes = max(args.train_n, args.test_n)
     else:
-        # Counting task: output space is 0 to num_objects
+        # 计数任务：输出空间为 0 到 num_objects
         num_classes = args.test_n + 1
         
     model = RelationNetwork(
@@ -152,7 +152,7 @@ def run_experiment(args):
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     criterion = nn.CrossEntropyLoss()
     
-    # 4. Training Loop
+    # 4. 训练循环
     start_time = time.time()
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -161,7 +161,7 @@ def run_experiment(args):
             x, y = x.to(device), y.to(device)
             optimizer.zero_grad()
             output = model(x)
-            # In counting, labels are indices 0 to count.
+            # 计数任务的标签是从 0 到计数上界的索引。
             loss = criterion(output, y)
             loss.backward()
             optimizer.step()
@@ -170,11 +170,11 @@ def run_experiment(args):
         if epoch % 5 == 0 or epoch == 1:
             train_acc = run_evaluation(model, train_loader, device)
             test_acc = run_evaluation(model, test_loader, device)
-            print(f"Epoch {epoch:2d}/{args.epochs} | Loss: {total_loss/len(train_loader):.4f} | "
-                  f"Train Acc (N={args.train_n}): {train_acc:.3f} | Test Acc (N={args.test_n}): {test_acc:.3f}")
+            print(f"轮次 {epoch:2d}/{args.epochs} | 损失：{total_loss/len(train_loader):.4f} | "
+                  f"训练准确率（N={args.train_n}): {train_acc:.3f} | 测试准确率（N={args.test_n}): {test_acc:.3f}")
 
     print("-" * 50)
-    print(f"Experiment Complete. Generalization Gap: {abs(train_acc - test_acc):.3f}")
+    print(f"实验完成。泛化差距：{abs(train_acc - test_acc):.3f}")
     
     if args.save_model:
         torch.save(model.state_dict(), f"rn_{args.mode}_{args.aggregator}.pt")
@@ -182,24 +182,24 @@ def run_experiment(args):
     return model
 
 # ============================================================================
-# CLI CONFIGURATION
+# 命令行配置
 # ============================================================================
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Day 19: Relation Network Generalization Suite")
+    parser = argparse.ArgumentParser(description='第 19 天：关系网络泛化程序')
     
-    # General Parameters
+    # 通用参数
     parser.add_argument('--mode', type=str, default='count', choices=['furthest', 'count'],
-                        help='Task mode (counting is better for generalization tests)')
+                        help='任务模式（计数更适合泛化测试）')
     parser.add_argument('--aggregator', type=str, default='sum', choices=['sum', 'mean', 'max'],
-                        help='Pooling strategy for relations (sum is standard)')
-    parser.add_argument('--use-coords', action='store_true', help='Inject (x, y) coordinates into objects')
+                        help='关系池化策略（标准选择为 sum）')
+    parser.add_argument('--use-coords', action='store_true', help='向对象注入 (x, y) 坐标')
     
-    # Set Size Parameters
-    parser.add_argument('--train-n', type=int, default=10, help='Set size during training')
-    parser.add_argument('--test-n', type=int, default=10, help='Set size during testing (Generalization)')
+    # 集合大小参数
+    parser.add_argument('--train-n', type=int, default=10, help='训练时的集合大小')
+    parser.add_argument('--test-n', type=int, default=10, help='测试时的集合大小（泛化）')
     
-    # Training Hyperparameters
+    # 训练超参数
     parser.add_argument('--epochs', type=int, default=30)
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--lr', type=float, default=0.001)

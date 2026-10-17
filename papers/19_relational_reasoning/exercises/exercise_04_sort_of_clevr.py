@@ -2,28 +2,28 @@ import torch
 
 def create_contextual_pairs(objects: torch.Tensor, question: torch.Tensor) -> torch.Tensor:
     """
-    TODO: Implement the pairing logic with Question Injection.
+    TODO：实现带问题注入的配对逻辑。
     
-    In Sort-of-CLEVR (Section 4.1), the relation g_theta(o_i, o_j, q) depends 
-    on the question 'q'. We need to broadcast 'q' to every pair.
+    在 Sort-of-CLEVR 中（原仓库引用第 4.1 节），g_theta(o_i, o_j, q)
+    取决于问题 q，需要将 q 广播到每个对象对。
     
-    Inputs:
+    输入：
         objects: (batch_size, N, object_dim)
         question: (batch_size, question_dim)
         
-    Output:
+    输出：
         pairs: (batch_size, N, N, 2*object_dim + question_dim)
         
-    Hint:
-        1. Create pairs (o_i, o_j) of shape (B, N, N, 2*O)
-        2. Expand question 'q' to (B, N, N, Q)
-        3. Concatenate along the last dimension.
+    提示：
+        1. 创建形状为 (B, N, N, 2*O) 的对象对 (o_i, o_j)
+        2. 将问题 q 扩展为 (B, N, N, Q)
+        3. 沿最后一维拼接。
     """
-    # YOUR CODE HERE
+    # 在此填写代码
     pass
 
 def test_contextual_pairs():
-    # Setup
+    # 准备
     batch, N, obj_dim, q_dim = 2, 3, 4, 5
     objects = torch.randn(batch, N, obj_dim)
     question = torch.randn(batch, q_dim)
@@ -31,24 +31,24 @@ def test_contextual_pairs():
     try:
         pairs = create_contextual_pairs(objects, question)
         
-        # Check shape
+        # 检查形状
         expected_shape = (batch, N, N, 2 * obj_dim + q_dim)
-        assert pairs.shape == expected_shape, f"Expected {expected_shape}, got {pairs.shape}"
+        assert pairs.shape == expected_shape, f"预期 {expected_shape}，实际得到 {pairs.shape}"
         
-        # Check content of first pair (0,0) with question
-        # pair[0,0,0] should be cat(avg_obj[0,0], avg_obj[0,0], q[0])
-        # But let's just check the question part is correct
+        # 检查带问题的第一个对象对 (0,0) 的内容
+        # pair[0,0,0] 应为 cat(avg_obj[0,0], avg_obj[0,0], q[0])
+        # 此处只检查问题部分是否正确
         q_part = pairs[:, :, :, -q_dim:]
         
-        # Check if question vector is correctly broadcast
-        # q_part[b, i, j] should equal question[b]
+        # 检查问题向量是否正确广播
+        # q_part[b, i, j] 应等于 question[b]
         diff = (q_part - question.view(batch, 1, 1, q_dim)).abs().max()
-        assert diff < 1e-5, "Question vector was not broadcast correctly."
+        assert diff < 1e-5, '问题向量未正确广播。'
         
-        print("Exercise 4: Contextual Pairs [PASS]")
+        print('练习 4：带上下文的对象对 [PASS]')
         
     except Exception as e:
-        print(f"Exercise 4: [FAIL] {e}")
+        print(f"练习 4：[FAIL] {e}")
 
 if __name__ == "__main__":
     test_contextual_pairs()

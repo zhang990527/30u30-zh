@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="relational_rnns",
     version="0.1.0",
-    description="PyTorch implementation of Relational Recurrent Neural Networks (Santoro et al., 2018)",
+    description='关系循环神经网络的 PyTorch 实现（Santoro 等，2018）',
     author="30u30 Project",
     packages=find_packages(),
     install_requires=[

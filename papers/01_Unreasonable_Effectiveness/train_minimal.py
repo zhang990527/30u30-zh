@@ -1,8 +1,8 @@
 """
-Minimal Training Script for Character-Level RNN
-Train on your own text and generate samples!
+字符级 RNN 的精简训练脚本
+使用自己的文本训练并生成样本。
 
-Usage:
+用法：
     python train_minimal.py --data path/to/text.txt --epochs 100
     python train_minimal.py --generate --checkpoint model.pkl
 """
@@ -16,77 +16,77 @@ from implementation import CharRNN, prepare_data
 
 def train(model, data, char_to_idx, idx_to_char, epochs=100, print_every=10):
     """
-    Train the RNN on data.
+    在给定数据上训练 RNN。
     
-    Parameters:
+    参数：
     -----------
     model : CharRNN
-        The model to train
+        待训练模型
     data : list of int
-        Training data as character indices
+        以字符索引表示的训练数据
     char_to_idx, idx_to_char : dict
-        Character mappings
+        字符映射
     epochs : int
-        Number of passes through the data
+        原说明称为数据遍历轮数；当前实现实际为更新次数
     print_every : int
-        Print sample every N iterations
+        每 N 次迭代输出一次样本
     """
-    n = 0  # Current position in data
-    p = 0  # Iteration counter
-    hprev = np.zeros((model.hidden_size, 1))  # Initial hidden state
+    n = 0  # 当前数据位置
+    p = 0  # 迭代计数器
+    hprev = np.zeros((model.hidden_size, 1))  # 初始隐藏状态
     
-    smooth_loss = -np.log(1.0 / model.vocab_size) * model.seq_length  # Expected loss at start
+    smooth_loss = -np.log(1.0 / model.vocab_size) * model.seq_length  # 起始预期损失
     
-    print(f"\nTraining for {epochs} epochs...")
-    print(f"Initial expected loss: {smooth_loss:.2f}")
+    print(f"\n训练 {epochs} 次更新……")
+    print(f"初始预期损失：{smooth_loss:.2f}")
     print("=" * 60)
     
     start_time = time.time()
     
     for epoch in range(epochs):
-        # Reset position at start of each epoch
+        # 原注释称为每轮开始时重置；实际只在到达数据末尾时重置
         if n + model.seq_length + 1 >= len(data):
             n = 0
-            hprev = np.zeros((model.hidden_size, 1))  # Reset hidden state
+            hprev = np.zeros((model.hidden_size, 1))  # 重置隐藏状态
         
-        # Prepare input and target sequences
+        # 准备输入序列与目标序列
         inputs = data[n:n + model.seq_length]
         targets = data[n + 1:n + model.seq_length + 1]
         
-        # Sample from model occasionally
+        # 定期从模型中采样
         if p % print_every == 0:
-            # Generate sample text
+            # 生成样本文本
             sample_idx = model.sample(hprev, inputs[0], 200, temperature=0.8)
             sample_text = ''.join([idx_to_char[idx] for idx in sample_idx])
             
             elapsed = time.time() - start_time
-            print(f"\n--- Iteration {p} (Epoch {epoch}) | Loss: {smooth_loss:.2f} | Time: {elapsed:.1f}s ---")
-            print(f"Sample:\n{sample_text}\n")
+            print(f"\n--- 迭代 {p}（Epoch 参数计数 {epoch}）| 损失：{smooth_loss:.2f} | 耗时：{elapsed:.1f}s ---")
+            print(f"样本：\n{sample_text}\n")
         
-        # Forward pass
+        # 前向传播
         xs, hs, ys, ps = model.forward(inputs, hprev)
         
-        # Compute loss
+        # 计算损失
         loss = model.loss(ps, targets)
-        smooth_loss = smooth_loss * 0.999 + loss * 0.001  # Exponential moving average
+        smooth_loss = smooth_loss * 0.999 + loss * 0.001  # 指数移动平均
         
-        # Backward pass (compute gradients)
+        # 反向传播（计算梯度）
         gradients = model.backward(xs, hs, ps, targets)
         
-        # Update parameters
+        # 更新参数
         model.update_parameters(gradients)
         
-        # Update hidden state (detach from graph to prevent backprop through entire history)
+        # 更新隐藏状态（语义上截断历史梯度；这里是 NumPy 实现，没有自动求导图）
         hprev = hs[len(inputs) - 1]
         
-        # Move to next sequence
+        # 移动到下一段序列
         n += model.seq_length
         p += 1
     
     total_time = time.time() - start_time
     print(f"\n{'=' * 60}")
     print(f"Training complete! Total time: {total_time:.1f}s")
-    print(f"Final loss: {smooth_loss:.2f}")
+    print(f"最终损失：{smooth_loss:.2f}")
     
     return model, hprev
 
@@ -95,41 +95,41 @@ def generate(model, idx_to_char, seed_text, n_chars=500, temperature=0.8):
     """
     Generate text from trained model.
     
-    Parameters:
+    参数：
     -----------
     model : CharRNN
-        Trained model
+        已训练的模型
     idx_to_char : dict
-        Index to character mapping
+        索引到字符的映射
     seed_text : str
-        Starting text
+        起始文本
     n_chars : int
-        Number of characters to generate
+        要生成的字符数
     temperature : float
-        Sampling temperature (0.5 = conservative, 1.5 = creative)
+        采样温度（0.5 较保守，1.5 更多样）
     """
-    print(f"\nGenerating {n_chars} characters with temperature {temperature}...")
-    print(f"Seed: '{seed_text}'")
+    print(f"\n正在生成 {n_chars} 个字符，温度为 {temperature}...")
+    print(f"起始文本：'{seed_text}'")
     print("=" * 60)
     
-    # Convert seed to indices
+    # 将起始文本转换为索引
     char_to_idx = {ch: i for i, ch in idx_to_char.items()}
     seed_indices = [char_to_idx[ch] for ch in seed_text if ch in char_to_idx]
     
     if not seed_indices:
-        print("Error: No valid characters in seed text")
+        print("错误：起始文本中没有词表内的字符")
         return
     
-    # Initialize hidden state
+    # 初始化隐藏状态
     h = np.zeros((model.hidden_size, 1))
     
-    # Warm up hidden state with seed
+    # 使用起始文本预热隐藏状态
     for idx in seed_indices[:-1]:
         x = np.zeros((model.vocab_size, 1))
         x[idx] = 1
         h = np.tanh(np.dot(model.Wxh, x) + np.dot(model.Whh, h) + model.bh)
     
-    # Generate
+    # 生成
     sample_idx = model.sample(h, seed_indices[-1], n_chars, temperature)
     generated = ''.join([idx_to_char[idx] for idx in sample_idx])
     
@@ -138,61 +138,61 @@ def generate(model, idx_to_char, seed_text, n_chars=500, temperature=0.8):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Train a character-level RNN')
+    parser = argparse.ArgumentParser(description='训练字符级 RNN')
     parser.add_argument('--data', type=str, default='data/tiny_shakespeare.txt',
-                        help='Path to text file')
+                        help='文本文件路径')
     parser.add_argument('--hidden-size', type=int, default=100,
-                        help='Size of hidden layer')
+                        help='隐藏层大小')
     parser.add_argument('--learning-rate', type=float, default=1e-1,
-                        help='Learning rate')
+                        help='学习率')
     parser.add_argument('--seq-length', type=int, default=25,
-                        help='Sequence length for BPTT')
+                        help='BPTT 展开序列长度')
     parser.add_argument('--epochs', type=int, default=100,
-                        help='Number of epochs to train')
+                        help='训练更新次数（保留原参数名 epochs）')
     parser.add_argument('--checkpoint', type=str, default='model.pkl',
-                        help='Path to save/load model')
+                        help='模型保存／加载路径')
     parser.add_argument('--generate', action='store_true',
-                        help='Generate text from saved model')
+                        help='从已保存的模型生成文本')
     parser.add_argument('--seed', type=str, default='The ',
-                        help='Seed text for generation')
+                        help='生成时的起始文本')
     parser.add_argument('--temperature', type=float, default=0.8,
-                        help='Sampling temperature')
+                        help='采样温度')
     parser.add_argument('--gen-length', type=int, default=500,
-                        help='Number of characters to generate')
+                        help='要生成的字符数')
     
     args = parser.parse_args()
     
     if args.generate:
-        # Load model and generate
-        print("Loading model from", args.checkpoint)
+        # 加载模型并生成文本
+        print("正在加载模型：", args.checkpoint)
         with open(args.checkpoint, 'rb') as f:
             model, char_to_idx, idx_to_char = pickle.load(f)
         
         generate(model, idx_to_char, args.seed, args.gen_length, args.temperature)
     
     else:
-        # Load data
-        print(f"Loading data from {args.data}...")
+        # 加载数据
+        print(f"正在加载数据：{args.data}...")
         try:
             with open(args.data, 'r', encoding='utf-8') as f:
                 text = f.read()
         except FileNotFoundError:
-            print(f"Error: Could not find {args.data}")
-            print("Creating sample data...")
+            print(f"错误：找不到 {args.data}")
+            print("正在创建示例数据……")
             text = """To be, or not to be, that is the question:
 Whether 'tis nobler in the mind to suffer
 The slings and arrows of outrageous fortune,
 Or to take arms against a sea of troubles
 And by opposing end them.""" * 10
         
-        print(f"Data loaded: {len(text)} characters")
+        print(f"已加载数据：{len(text)} 个字符")
         
-        # Prepare data
+        # 准备数据
         char_to_idx, idx_to_char, data = prepare_data(text)
-        print(f"Vocabulary: {len(char_to_idx)} unique characters")
-        print(f"Sample: {text[:100]}...")
+        print(f"词表：{len(char_to_idx)} 个不同字符")
+        print(f"样本：{text[:100]}...")
         
-        # Initialize model
+        # 初始化模型
         model = CharRNN(
             vocab_size=len(char_to_idx),
             hidden_size=args.hidden_size,
@@ -200,19 +200,19 @@ And by opposing end them.""" * 10
             seq_length=args.seq_length
         )
         
-        # Train
+        # 训练
         model, hprev = train(model, data, char_to_idx, idx_to_char, 
                             epochs=args.epochs, print_every=10)
         
-        # Save model
-        print(f"\nSaving model to {args.checkpoint}...")
+        # 保存模型
+        print(f"\n正在保存模型到 {args.checkpoint}...")
         with open(args.checkpoint, 'wb') as f:
             pickle.dump((model, char_to_idx, idx_to_char), f)
-        print("Model saved!")
+        print("模型已保存！")
         
-        # Generate sample
+        # 生成样本
         print("\n" + "=" * 60)
-        print("Final sample generation:")
+        print("最终生成样本：")
         generate(model, idx_to_char, args.seed, args.gen_length, args.temperature)
 
 
